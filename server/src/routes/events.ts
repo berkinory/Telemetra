@@ -1,11 +1,11 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, count, desc, eq, gte, lte } from 'drizzle-orm';
 import { apiEvents, db } from '@/db';
 import { requireApiKey } from '@/lib/middleware';
-import { internalServerError } from '@/lib/response';
+import { badRequest, internalServerError } from '@/lib/response';
 import { errorResponses } from '@/lib/schemas';
 import { addApiEvent } from '@/queue';
-import { HttpStatus } from '@/types/errors';
+import { ErrorCode, HttpStatus } from '@/types/errors';
 
 const eventSchema = z.object({
   id: z.string(),
@@ -144,6 +144,23 @@ eventsRouter.openapi(getEventsRoute, async (c) => {
     const userId = c.get('userId');
     const page = Number.parseInt(query.page, 10);
     const pageSize = Number.parseInt(query.pageSize, 10);
+
+    if (Number.isNaN(page) || page < 1) {
+      return badRequest(
+        c,
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid page parameter: must be a positive integer'
+      );
+    }
+
+    if (Number.isNaN(pageSize) || pageSize < 1) {
+      return badRequest(
+        c,
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid pageSize parameter: must be a positive integer'
+      );
+    }
+
     const offset = (page - 1) * pageSize;
 
     const filters: ReturnType<typeof eq | typeof gte | typeof lte>[] = [];
@@ -172,7 +189,7 @@ eventsRouter.openapi(getEventsRoute, async (c) => {
 
     const whereClause = filters.length > 0 ? and(...filters) : undefined;
 
-    const [events, totalCount] = await Promise.all([
+    const [events, [{ count: totalCount }]] = await Promise.all([
       db
         .select()
         .from(apiEvents)
@@ -180,11 +197,7 @@ eventsRouter.openapi(getEventsRoute, async (c) => {
         .orderBy(desc(apiEvents.timestamp))
         .limit(pageSize)
         .offset(offset),
-      db
-        .select()
-        .from(apiEvents)
-        .where(whereClause)
-        .then((rows) => rows.length),
+      db.select({ count: count() }).from(apiEvents).where(whereClause),
     ]);
 
     const totalPages = Math.ceil(totalCount / pageSize);
