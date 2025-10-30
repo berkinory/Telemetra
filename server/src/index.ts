@@ -7,6 +7,7 @@ import { closeQueue } from '@/lib/queue';
 import deviceRouter from '@/routes/device';
 import eventRouter from '@/routes/event';
 import health from '@/routes/health';
+import pingRouter from '@/routes/ping';
 import sessionRouter from '@/routes/session';
 
 const app = new OpenAPIHono<{
@@ -37,6 +38,7 @@ app.use('/web/*', authMiddleware);
 app.route('/health', health);
 app.route('/device', deviceRouter);
 app.route('/session', sessionRouter);
+app.route('/session', pingRouter);
 app.route('/event', eventRouter);
 
 app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));

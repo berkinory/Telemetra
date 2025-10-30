@@ -314,18 +314,6 @@ export function formatPaginationResponse(
   };
 }
 
-export async function updateSessionActivity(
-  sessionId: string,
-  activityTimestamp: Date
-): Promise<void> {
-  await db
-    .update(sessions)
-    .set({
-      lastActivityAt: activityTimestamp,
-    })
-    .where(eq(sessions.sessionId, sessionId));
-}
-
 export async function checkAndCloseExpiredSession(
   sessionId: string,
   currentTimestamp: Date

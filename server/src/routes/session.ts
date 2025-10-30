@@ -3,9 +3,7 @@ import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, sessions } from '@/db';
 import {
   buildFilters,
-  checkAndCloseExpiredSession,
   formatPaginationResponse,
-  updateSessionActivity,
   validateDateRange,
   validateDevice,
   validatePagination,
@@ -19,8 +17,6 @@ import {
   errorResponses,
   HttpStatus,
   listSessionsQuerySchema,
-  pingSessionRequestSchema,
-  pingSessionResponseSchema,
   sessionSchema,
   sessionsListResponseSchema,
 } from '@/schemas';
@@ -72,33 +68,6 @@ const endSessionRoute = createRoute({
       content: {
         'application/json': {
           schema: sessionSchema,
-        },
-      },
-    },
-    ...errorResponses,
-  },
-});
-
-const pingSessionRoute = createRoute({
-  method: 'post',
-  path: '/ping',
-  tags: ['session'],
-  description: 'Ping/Heartbeat for active session',
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: pingSessionRequestSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Session pinged successfully',
-      content: {
-        'application/json': {
-          schema: pingSessionResponseSchema,
         },
       },
     },
@@ -263,65 +232,6 @@ sessionRouter.openapi(endSessionRoute, async (c) => {
       {
         code: ErrorCode.INTERNAL_SERVER_ERROR,
         detail: 'Failed to end session',
-      },
-      HttpStatus.INTERNAL_SERVER_ERROR
-    );
-  }
-});
-
-sessionRouter.openapi(pingSessionRoute, async (c) => {
-  try {
-    const body = c.req.valid('json');
-
-    const sessionValidation = await validateSession(c, body.sessionId);
-    if (!sessionValidation.success) {
-      return sessionValidation.response;
-    }
-
-    const session = sessionValidation.data;
-
-    if (session.endedAt) {
-      return c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: 'Cannot ping an ended session',
-        },
-        HttpStatus.BAD_REQUEST
-      );
-    }
-
-    const currentTimestamp = new Date();
-
-    const wasClosed = await checkAndCloseExpiredSession(
-      body.sessionId,
-      currentTimestamp
-    );
-
-    if (wasClosed) {
-      return c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: 'Session expired. Please create a new session.',
-        },
-        HttpStatus.BAD_REQUEST
-      );
-    }
-
-    await updateSessionActivity(body.sessionId, currentTimestamp);
-
-    return c.json(
-      {
-        sessionId: body.sessionId,
-        lastActivityAt: currentTimestamp.toISOString(),
-      },
-      HttpStatus.OK
-    );
-  } catch (error) {
-    console.error('[Session.Ping] Error:', error);
-    return c.json(
-      {
-        code: ErrorCode.INTERNAL_SERVER_ERROR,
-        detail: 'Failed to ping session',
       },
       HttpStatus.INTERNAL_SERVER_ERROR
     );

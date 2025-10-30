@@ -1,12 +1,11 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, events } from '@/db';
-import { addAnalyticsEvent } from '@/lib/queue';
+import { addAnalyticsEvent, addSessionActivityUpdate } from '@/lib/queue';
 import {
   buildFilters,
   checkAndCloseExpiredSession,
   formatPaginationResponse,
-  updateSessionActivity,
   validateDateRange,
   validatePagination,
   validateSession,
@@ -124,7 +123,10 @@ eventRouter.openapi(createEventRoute, async (c) => {
       );
     }
 
-    await updateSessionActivity(body.sessionId, clientTimestamp);
+    await addSessionActivityUpdate({
+      sessionId: body.sessionId,
+      lastActivityAt: clientTimestamp.getTime(),
+    });
 
     await addAnalyticsEvent({
       eventId: body.eventId,

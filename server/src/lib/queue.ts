@@ -1,6 +1,7 @@
+import { eq } from 'drizzle-orm';
 import Redis from 'ioredis';
 import { z } from 'zod';
-import { db, events } from '@/db';
+import { db, events, sessions } from '@/db';
 
 const analyticsEventDataSchema = z.object({
   eventId: z.string(),
@@ -22,14 +23,31 @@ const analyticsEventDataSchema = z.object({
 
 export type AnalyticsEventData = z.infer<typeof analyticsEventDataSchema>;
 
+const sessionActivityUpdateSchema = z.object({
+  sessionId: z.string(),
+  lastActivityAt: z
+    .number()
+    .refine(
+      (val) => val > 1e12,
+      'timestamp must be in milliseconds since Unix epoch (not seconds)'
+    ),
+});
+
+export type SessionActivityUpdateData = z.infer<
+  typeof sessionActivityUpdateSchema
+>;
+
 const REDIS_QUEUE_KEY = 'analytics:events:queue';
+const REDIS_SESSION_ACTIVITY_QUEUE_KEY = 'analytics:sessions:activity:queue';
 const BATCH_SIZE = 50;
 const BATCH_INTERVAL_MS = 5000;
 
 class SimpleAnalyticsQueue {
   private readonly redis: Redis;
   private processingTimer: NodeJS.Timeout | null = null;
+  private sessionActivityTimer: NodeJS.Timeout | null = null;
   private isProcessing = false;
+  private isProcessingSessionActivity = false;
   private isClosing = false;
   private isClosed = false;
 
@@ -64,6 +82,23 @@ class SimpleAnalyticsQueue {
     this.startProcessingTimer();
   }
 
+  async addSessionActivityUpdate(
+    update: SessionActivityUpdateData
+  ): Promise<void> {
+    if (this.isClosing || this.isClosed) {
+      throw new Error(
+        'Queue is shutting down or closed; cannot accept new updates'
+      );
+    }
+
+    await this.redis.rpush(
+      REDIS_SESSION_ACTIVITY_QUEUE_KEY,
+      JSON.stringify(update)
+    );
+
+    this.startSessionActivityTimer();
+  }
+
   private startProcessingTimer(): void {
     if (this.processingTimer) {
       return;
@@ -72,6 +107,20 @@ class SimpleAnalyticsQueue {
     this.processingTimer = setInterval(() => {
       this.processBatch().catch((error) => {
         process.stderr.write(`[Queue] Timer error: ${error}\n`);
+      });
+    }, BATCH_INTERVAL_MS);
+  }
+
+  private startSessionActivityTimer(): void {
+    if (this.sessionActivityTimer) {
+      return;
+    }
+
+    this.sessionActivityTimer = setInterval(() => {
+      this.processSessionActivityBatch().catch((error) => {
+        process.stderr.write(
+          `[Queue] Session activity timer error: ${error}\n`
+        );
       });
     }, BATCH_INTERVAL_MS);
   }
@@ -258,6 +307,151 @@ class SimpleAnalyticsQueue {
     }
   }
 
+  private async processSessionActivityBatch(): Promise<void> {
+    if (this.isProcessingSessionActivity) {
+      return;
+    }
+
+    this.isProcessingSessionActivity = true;
+
+    try {
+      const updateStrings = await this.fetchSessionActivityBatch();
+
+      if (updateStrings.length === 0) {
+        this.stopSessionActivityTimer();
+        return;
+      }
+
+      const { validUpdates, originalStrings } =
+        this.parseAndValidateSessionActivity(updateStrings);
+
+      if (validUpdates.length === 0) {
+        return;
+      }
+
+      await this.updateSessionActivities(validUpdates, originalStrings);
+
+      process.stdout.write(
+        `[Queue] Processed ${validUpdates.length} session activity updates\n`
+      );
+    } catch (error) {
+      process.stderr.write(
+        `[Queue] Session activity processing error: ${error}\n`
+      );
+    } finally {
+      this.isProcessingSessionActivity = false;
+    }
+  }
+
+  private async fetchSessionActivityBatch(): Promise<string[]> {
+    const updateStrings: string[] = [];
+
+    for (let i = 0; i < BATCH_SIZE; i++) {
+      const updateString = await this.redis.lpop(
+        REDIS_SESSION_ACTIVITY_QUEUE_KEY
+      );
+      if (!updateString) {
+        break;
+      }
+      updateStrings.push(updateString);
+    }
+
+    return updateStrings;
+  }
+
+  private parseAndValidateSessionActivity(updateStrings: string[]): {
+    validUpdates: SessionActivityUpdateData[];
+    originalStrings: string[];
+  } {
+    const validUpdates: SessionActivityUpdateData[] = [];
+    const originalStrings: string[] = [];
+
+    for (const updateString of updateStrings) {
+      try {
+        const parsedData = JSON.parse(updateString);
+        const validationResult =
+          sessionActivityUpdateSchema.safeParse(parsedData);
+
+        if (validationResult.success) {
+          validUpdates.push(validationResult.data);
+          originalStrings.push(updateString);
+        } else {
+          process.stderr.write(
+            `[Queue] Validation failed for session activity update: ${updateString.slice(0, 100)}...\n`
+          );
+        }
+      } catch (error) {
+        process.stderr.write(
+          `[Queue] Failed to parse session activity update JSON: ${updateString.slice(0, 100)}... Error: ${error instanceof Error ? error.message : String(error)}\n`
+        );
+      }
+    }
+
+    return { validUpdates, originalStrings };
+  }
+
+  private async updateSessionActivities(
+    updatesList: SessionActivityUpdateData[],
+    originalStrings: string[]
+  ): Promise<void> {
+    try {
+      await db.transaction(async (tx) => {
+        for (const update of updatesList) {
+          await tx
+            .update(sessions)
+            .set({
+              lastActivityAt: new Date(update.lastActivityAt),
+            })
+            .where(eq(sessions.sessionId, update.sessionId));
+        }
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : '';
+
+      process.stderr.write(
+        `[Queue] CRITICAL: Database update failed for ${updatesList.length} session activity updates. Error: ${errorMessage}\n`
+      );
+      process.stderr.write(`[Queue] Stack trace: ${errorStack}\n`);
+
+      try {
+        await this.requeueSessionActivityUpdates(originalStrings);
+        process.stdout.write(
+          `[Queue] Successfully re-queued ${originalStrings.length} session activity updates after DB failure\n`
+        );
+      } catch (requeueError) {
+        const requeueErrorMessage =
+          requeueError instanceof Error
+            ? requeueError.message
+            : String(requeueError);
+
+        process.stderr.write(
+          `[Queue] CRITICAL: Failed to re-queue session activity updates after DB failure. Updates may be lost! Error: ${requeueErrorMessage}\n`
+        );
+        throw requeueError;
+      }
+
+      throw error;
+    }
+  }
+
+  private async requeueSessionActivityUpdates(
+    updateStrings: string[]
+  ): Promise<void> {
+    if (updateStrings.length === 0) {
+      return;
+    }
+
+    const pipeline = this.redis.pipeline();
+
+    for (const updateString of updateStrings) {
+      pipeline.rpush(REDIS_SESSION_ACTIVITY_QUEUE_KEY, updateString);
+    }
+
+    await pipeline.exec();
+  }
+
   private stopProcessingTimer(): void {
     if (this.processingTimer) {
       clearInterval(this.processingTimer);
@@ -265,13 +459,28 @@ class SimpleAnalyticsQueue {
     }
   }
 
+  private stopSessionActivityTimer(): void {
+    if (this.sessionActivityTimer) {
+      clearInterval(this.sessionActivityTimer);
+      this.sessionActivityTimer = null;
+    }
+  }
+
   async getQueueSize(): Promise<number> {
     return await this.redis.llen(REDIS_QUEUE_KEY);
+  }
+
+  async getSessionActivityQueueSize(): Promise<number> {
+    return await this.redis.llen(REDIS_SESSION_ACTIVITY_QUEUE_KEY);
   }
 
   async flush(): Promise<void> {
     while ((await this.getQueueSize()) > 0) {
       await this.processBatch();
+    }
+
+    while ((await this.getSessionActivityQueueSize()) > 0) {
+      await this.processSessionActivityBatch();
     }
   }
 
@@ -283,12 +492,13 @@ class SimpleAnalyticsQueue {
     this.isClosing = true;
 
     this.stopProcessingTimer();
+    this.stopSessionActivityTimer();
 
     const maxWaitMs = 30_000;
     const pollIntervalMs = 100;
     const startTime = Date.now();
 
-    while (this.isProcessing) {
+    while (this.isProcessing || this.isProcessingSessionActivity) {
       if (Date.now() - startTime > maxWaitMs) {
         process.stderr.write(
           '[Queue] Warning: Timeout waiting for in-flight processing to finish\n'
@@ -327,10 +537,19 @@ export const addAnalyticsEvent = async (
   await analyticsQueue.addEvent(event);
 };
 
+export const addSessionActivityUpdate = async (
+  update: SessionActivityUpdateData
+): Promise<void> => {
+  await analyticsQueue.addSessionActivityUpdate(update);
+};
+
 export const getQueueMetrics = async () => {
   const queueSize = await analyticsQueue.getQueueSize();
+  const sessionActivityQueueSize =
+    await analyticsQueue.getSessionActivityQueueSize();
   return {
     queueSize,
+    sessionActivityQueueSize,
   };
 };
 
