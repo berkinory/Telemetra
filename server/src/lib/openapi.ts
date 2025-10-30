@@ -11,7 +11,7 @@ export const configureOpenAPI = (app: any) => {
     },
     servers: [
       {
-        url: 'https://api.Telemetra.dev',
+        url: 'https://api.telemetra.dev',
         description: 'Production server',
       },
       {
