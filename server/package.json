@@ -5,6 +5,7 @@
     "build": "bun build --compile --minify --sourcemap --outfile server src/index.ts",
     "start": "bun run src/index.ts",
     "check": "bunx ultracite fix --unsafe",
+    "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

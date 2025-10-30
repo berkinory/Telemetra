@@ -229,7 +229,33 @@ class SimpleAnalyticsQueue {
       pipeline.rpush(REDIS_QUEUE_KEY, eventString);
     }
 
-    await pipeline.exec();
+    const results = await pipeline.exec();
+
+    if (results) {
+      this.validateRequeueResults(results, eventStrings);
+    }
+  }
+
+  private validateRequeueResults(
+    results: [Error | null, unknown][],
+    eventStrings: string[]
+  ): void {
+    for (let i = 0; i < results.length; i++) {
+      const [err] = results[i];
+      if (err) {
+        const eventString = eventStrings[i];
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const eventPreview = eventString?.substring(0, 100) ?? 'unknown';
+        console.error(
+          `[Queue.Requeue] Failed to requeue event at index ${i}:`,
+          errorMessage,
+          `Event: ${eventPreview}...`
+        );
+        throw new Error(
+          `Failed to requeue event at index ${i}: ${errorMessage}`
+        );
+      }
+    }
   }
 
   private stopProcessingTimer(): void {

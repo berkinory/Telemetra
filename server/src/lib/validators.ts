@@ -132,10 +132,10 @@ export async function validateApiKey(
       success: false,
       response: c.json(
         {
-          code: ErrorCode.VALIDATION_ERROR,
+          code: ErrorCode.NOT_FOUND,
           detail: 'API key not found',
         },
-        HttpStatus.BAD_REQUEST
+        HttpStatus.NOT_FOUND
       ),
     };
   }
@@ -159,10 +159,10 @@ export async function validateDevice(
       success: false,
       response: c.json(
         {
-          code: ErrorCode.VALIDATION_ERROR,
+          code: ErrorCode.NOT_FOUND,
           detail: 'Device not found',
         },
-        HttpStatus.BAD_REQUEST
+        HttpStatus.NOT_FOUND
       ),
     };
   }
@@ -186,10 +186,10 @@ export async function validateSession(
       success: false,
       response: c.json(
         {
-          code: ErrorCode.VALIDATION_ERROR,
+          code: ErrorCode.NOT_FOUND,
           detail: 'Session not found',
         },
-        HttpStatus.BAD_REQUEST
+        HttpStatus.NOT_FOUND
       ),
     };
   }
