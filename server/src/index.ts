@@ -57,8 +57,10 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
 if (process.env.NODE_ENV === 'development') {
-  process.on('beforeExit', async () => {
-    await closeQueue();
+  process.on('beforeExit', () => {
+    closeQueue().catch((error) => {
+      console.error('[Server] Error during beforeExit cleanup:', error);
+    });
   });
 }
 
