@@ -39,7 +39,8 @@ export type SessionActivityUpdateData = z.infer<
 
 const REDIS_QUEUE_KEY = 'analytics:events:queue';
 const REDIS_SESSION_ACTIVITY_QUEUE_KEY = 'analytics:sessions:activity:queue';
-const BATCH_SIZE = 50;
+const REDIS_SESSION_ACTIVITY_CACHE_KEY = 'session:activity:'; // Prefix for cache keys
+const BATCH_SIZE = 100;
 const BATCH_INTERVAL_MS = 5000;
 
 class SimpleAnalyticsQueue {
@@ -91,12 +92,24 @@ class SimpleAnalyticsQueue {
       );
     }
 
+    const cacheKey = `${REDIS_SESSION_ACTIVITY_CACHE_KEY}${update.sessionId}`;
+    await this.redis.set(cacheKey, update.lastActivityAt.toString());
+
     await this.redis.rpush(
       REDIS_SESSION_ACTIVITY_QUEUE_KEY,
       JSON.stringify(update)
     );
 
     this.startSessionActivityTimer();
+  }
+
+  async getSessionLastActivity(sessionId: string): Promise<number | null> {
+    const cacheKey = `${REDIS_SESSION_ACTIVITY_CACHE_KEY}${sessionId}`;
+    const cached = await this.redis.get(cacheKey);
+    if (cached) {
+      return Number.parseInt(cached, 10);
+    }
+    return null;
   }
 
   private startProcessingTimer(): void {
@@ -158,17 +171,7 @@ class SimpleAnalyticsQueue {
   }
 
   private async fetchEventBatch(): Promise<string[]> {
-    const eventStrings: string[] = [];
-
-    for (let i = 0; i < BATCH_SIZE; i++) {
-      const eventString = await this.redis.lpop(REDIS_QUEUE_KEY);
-      if (!eventString) {
-        break;
-      }
-      eventStrings.push(eventString);
-    }
-
-    return eventStrings;
+    return await this.fetchBatch(REDIS_QUEUE_KEY, 'event');
   }
 
   private parseAndValidateEvents(eventStrings: string[]): {
@@ -344,19 +347,50 @@ class SimpleAnalyticsQueue {
   }
 
   private async fetchSessionActivityBatch(): Promise<string[]> {
-    const updateStrings: string[] = [];
+    return await this.fetchBatch(
+      REDIS_SESSION_ACTIVITY_QUEUE_KEY,
+      'session activity'
+    );
+  }
 
+  private async fetchBatch(
+    queueKey: string,
+    batchType: string
+  ): Promise<string[]> {
+    const pipeline = this.redis.pipeline();
     for (let i = 0; i < BATCH_SIZE; i++) {
-      const updateString = await this.redis.lpop(
-        REDIS_SESSION_ACTIVITY_QUEUE_KEY
-      );
-      if (!updateString) {
-        break;
-      }
-      updateStrings.push(updateString);
+      pipeline.lpop(queueKey);
     }
 
-    return updateStrings;
+    const results = await pipeline.exec();
+    return this.processBatchResults(results, batchType);
+  }
+
+  private processBatchResults(
+    results: [Error | null, unknown][] | null,
+    batchType: string
+  ): string[] {
+    const items: string[] = [];
+
+    if (!results) {
+      return items;
+    }
+
+    for (const [err, result] of results) {
+      if (err) {
+        process.stderr.write(
+          `[Queue] Error fetching ${batchType} batch: ${err instanceof Error ? err.message : String(err)}\n`
+        );
+        break;
+      }
+      if (result && typeof result === 'string') {
+        items.push(result);
+      } else if (!result) {
+        break;
+      }
+    }
+
+    return items;
   }
 
   private parseAndValidateSessionActivity(updateStrings: string[]): {
@@ -542,6 +576,10 @@ export const addSessionActivityUpdate = async (
 ): Promise<void> => {
   await analyticsQueue.addSessionActivityUpdate(update);
 };
+
+export const getSessionLastActivity = async (
+  sessionId: string
+): Promise<number | null> => analyticsQueue.getSessionLastActivity(sessionId);
 
 export const getQueueMetrics = async () => {
   const queueSize = await analyticsQueue.getQueueSize();
