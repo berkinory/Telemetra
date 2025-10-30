@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, events } from '@/db';
+import { addAnalyticsEvent } from '@/lib/queue';
 import { internalServerError } from '@/lib/response';
 import {
   buildFilters,
@@ -9,7 +10,6 @@ import {
   validateSession,
   validateTimestamp,
 } from '@/lib/validators';
-import { addAnalyticsEvent } from '@/queue';
 import {
   createEventRequestSchema,
   errorResponses,

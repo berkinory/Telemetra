@@ -1,7 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { sql } from 'drizzle-orm';
 import { db } from '@/db';
-import { isQueueHealthy } from '@/queue';
 import { errorResponses } from '@/schemas';
 import { HttpStatus } from '@/types/codes';
 
@@ -85,14 +84,12 @@ health.openapi(getHealthRoute, async (c) => {
 
   try {
     const redisStart = Date.now();
-    const isHealthy = await isQueueHealthy();
+    const { getQueueMetrics } = await import('@/lib/queue');
+    await getQueueMetrics();
     services.redis = {
-      status: isHealthy ? 'healthy' : 'unhealthy',
+      status: 'healthy',
       latency: Date.now() - redisStart,
     };
-    if (!isHealthy) {
-      overallStatus = 'unhealthy';
-    }
   } catch (error) {
     console.error('Redis health check failed:', error);
     overallStatus = 'unhealthy';
