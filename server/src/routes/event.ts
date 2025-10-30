@@ -191,13 +191,30 @@ eventRouter.openapi(getEventsRoute, async (c) => {
       db.select({ count: count() }).from(events).where(whereClause),
     ]);
 
-    const formattedEvents = eventsList.map((event) => ({
-      eventId: event.eventId,
-      sessionId: event.sessionId,
-      name: event.name,
-      params: event.params ? JSON.parse(event.params) : null,
-      timestamp: event.timestamp.toISOString(),
-    }));
+    const formattedEvents = eventsList.map((event) => {
+      let parsedParams: Record<
+        string,
+        string | number | boolean | null
+      > | null = null;
+      if (event.params) {
+        try {
+          parsedParams = JSON.parse(event.params) as Record<
+            string,
+            string | number | boolean | null
+          >;
+        } catch {
+          parsedParams = null;
+        }
+      }
+
+      return {
+        eventId: event.eventId,
+        sessionId: event.sessionId,
+        name: event.name,
+        params: parsedParams,
+        timestamp: event.timestamp.toISOString(),
+      };
+    });
 
     return c.json(
       {

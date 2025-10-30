@@ -204,7 +204,7 @@ export function validateDateRange(
   c: Context,
   startDate?: string,
   endDate?: string
-): ValidationResult<{ startDate: Date; endDate: Date }> {
+): ValidationResult<void> {
   if (startDate && endDate) {
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -251,19 +251,16 @@ export function validateDateRange(
 
   return {
     success: true,
-    data: {
-      startDate: startDate ? new Date(startDate) : new Date(0),
-      endDate: endDate ? new Date(endDate) : new Date(),
-    },
+    data: undefined,
   };
 }
 
 export function buildFilters<T extends AnyColumn>(options: {
   filters: SQL[];
   startDateColumn?: T;
-  startDateValue?: string;
+  startDateValue?: string | Date;
   endDateColumn?: T;
-  endDateValue?: string;
+  endDateValue?: string | Date;
 }): SQL | undefined {
   const {
     filters,
@@ -276,7 +273,10 @@ export function buildFilters<T extends AnyColumn>(options: {
   const combined = [...filters];
 
   if (startDateColumn && startDateValue) {
-    const startDate = new Date(startDateValue);
+    const startDate =
+      startDateValue instanceof Date
+        ? startDateValue
+        : new Date(startDateValue);
     if (Number.isNaN(startDate.getTime())) {
       throw new TypeError(
         `Invalid startDateValue: "${startDateValue}" is not a valid date`
@@ -286,7 +286,8 @@ export function buildFilters<T extends AnyColumn>(options: {
   }
 
   if (endDateColumn && endDateValue) {
-    const endDate = new Date(endDateValue);
+    const endDate =
+      endDateValue instanceof Date ? endDateValue : new Date(endDateValue);
     if (Number.isNaN(endDate.getTime())) {
       throw new TypeError(
         `Invalid endDateValue: "${endDateValue}" is not a valid date`
