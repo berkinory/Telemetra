@@ -1,27 +1,28 @@
-FROM oven/bun:1.3 AS base
+FROM oven/bun:1.3.1 AS builder
 WORKDIR /app
 
-FROM base AS install
-RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
+COPY package.json bun.lock ./
 
-FROM base AS release
+RUN bun install --frozen-lockfile
+
+COPY . .
+
+RUN bun build \
+	--compile \
+	--minify-whitespace \
+	--minify-syntax \
+	--target bun \
+	--outfile server \
+	src/index.ts
+
+FROM gcr.io/distroless/base AS runtime
+
 WORKDIR /app
 
-RUN addgroup --system bunuser && \
-    adduser --system --ingroup bunuser bunuser
+COPY --from=builder --chown=65532:65532 /app/server .
 
-COPY --from=install --chown=bunuser:bunuser /temp/prod/node_modules node_modules
-
-COPY --chown=bunuser:bunuser . .
-
-USER bunuser
+USER 65532:65532
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=3 \
-  CMD bun --eval "await fetch('http://localhost:3000/v1/health').then(r => r.ok ? process.exit(0) : process.exit(1))" || exit 1
-
-  
-CMD ["bun", "run", "src/index.ts"]
+CMD ["./server"]
