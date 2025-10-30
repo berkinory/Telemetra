@@ -1,14 +1,15 @@
 import type { SQL } from 'drizzle-orm';
-import { type AnyColumn, and, gte, lte } from 'drizzle-orm';
+import { type AnyColumn, and, count, eq, gte, isNull, lte } from 'drizzle-orm';
 import type { Context } from 'hono';
-import { db } from '@/db';
-import type { apikey, devices, sessions } from '@/db/schema';
+import { db, sessions } from '@/db';
+import type { apikey, devices } from '@/db/schema';
 import { ErrorCode, HttpStatus } from '@/schemas';
 
 const MAX_PAGE_SIZE = 100;
+const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
 
 export type ValidationResult<T = void> =
-  | { success: true; data: T }
+  | (T extends void ? { success: true } : { success: true; data: T })
   // biome-ignore lint/suspicious/noExplicitAny: OpenAPI TypedResponse compatibility requires any
   | { success: false; response: Response | any };
 
@@ -77,7 +78,7 @@ export function validateTimestamp(
   c: Context,
   timestampStr: string,
   fieldName = 'timestamp',
-  maxDiffMs = 60 * 60 * 1000
+  maxDiffMs = 10 * 60 * 1000
 ): ValidationResult<Date> {
   const clientTimestamp = new Date(timestampStr);
 
@@ -100,13 +101,13 @@ export function validateTimestamp(
   );
 
   if (timeDiffMs > maxDiffMs) {
-    const maxDiffHours = maxDiffMs / (60 * 60 * 1000);
+    const maxDiffMinutes = maxDiffMs / (60 * 1000);
     return {
       success: false,
       response: c.json(
         {
           code: ErrorCode.VALIDATION_ERROR,
-          detail: `${fieldName} is too far from server time (max ${maxDiffHours} hour difference)`,
+          detail: `${fieldName} is too far from server time (max ${maxDiffMinutes} minutes difference)`,
         },
         HttpStatus.BAD_REQUEST
       ),
@@ -200,12 +201,71 @@ export async function validateSession(
   };
 }
 
+export function validateDateRange(
+  c: Context,
+  startDate?: string,
+  endDate?: string
+): ValidationResult<void> {
+  if (startDate) {
+    const start = new Date(startDate);
+    if (Number.isNaN(start.getTime())) {
+      return {
+        success: false,
+        response: c.json(
+          {
+            code: ErrorCode.VALIDATION_ERROR,
+            detail: 'Invalid startDate format',
+          },
+          HttpStatus.BAD_REQUEST
+        ),
+      };
+    }
+  }
+
+  if (endDate) {
+    const end = new Date(endDate);
+    if (Number.isNaN(end.getTime())) {
+      return {
+        success: false,
+        response: c.json(
+          {
+            code: ErrorCode.VALIDATION_ERROR,
+            detail: 'Invalid endDate format',
+          },
+          HttpStatus.BAD_REQUEST
+        ),
+      };
+    }
+  }
+
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (start > end) {
+      return {
+        success: false,
+        response: c.json(
+          {
+            code: ErrorCode.VALIDATION_ERROR,
+            detail: 'startDate must be before or equal to endDate',
+          },
+          HttpStatus.BAD_REQUEST
+        ),
+      };
+    }
+  }
+
+  return {
+    success: true,
+  };
+}
+
 export function buildFilters<T extends AnyColumn>(options: {
   filters: SQL[];
   startDateColumn?: T;
-  startDateValue?: string;
+  startDateValue?: string | Date;
   endDateColumn?: T;
-  endDateValue?: string;
+  endDateValue?: string | Date;
 }): SQL | undefined {
   const {
     filters,
@@ -218,7 +278,10 @@ export function buildFilters<T extends AnyColumn>(options: {
   const combined = [...filters];
 
   if (startDateColumn && startDateValue) {
-    const startDate = new Date(startDateValue);
+    const startDate =
+      startDateValue instanceof Date
+        ? startDateValue
+        : new Date(startDateValue);
     if (Number.isNaN(startDate.getTime())) {
       throw new TypeError(
         `Invalid startDateValue: "${startDateValue}" is not a valid date`
@@ -228,7 +291,8 @@ export function buildFilters<T extends AnyColumn>(options: {
   }
 
   if (endDateColumn && endDateValue) {
-    const endDate = new Date(endDateValue);
+    const endDate =
+      endDateValue instanceof Date ? endDateValue : new Date(endDateValue);
     if (Number.isNaN(endDate.getTime())) {
       throw new TypeError(
         `Invalid endDateValue: "${endDateValue}" is not a valid date`
@@ -253,4 +317,45 @@ export function formatPaginationResponse(
     pageSize,
     totalPages,
   };
+}
+
+export async function checkAndCloseExpiredSession(
+  sessionId: string,
+  currentTimestamp: Date
+): Promise<boolean> {
+  const session = await db.query.sessions.findFirst({
+    where: (table, { eq: eqFn }) => eqFn(table.sessionId, sessionId),
+  });
+
+  if (!session || session.endedAt) {
+    return false;
+  }
+
+  const timeSinceLastActivity =
+    currentTimestamp.getTime() - session.lastActivityAt.getTime();
+
+  if (timeSinceLastActivity > SESSION_TIMEOUT_MS) {
+    await db
+      .update(sessions)
+      .set({
+        endedAt: session.lastActivityAt,
+      })
+      .where(eq(sessions.sessionId, sessionId));
+    return true;
+  }
+
+  return false;
+}
+
+export async function getActiveSessionsCount(minutes = 5): Promise<number> {
+  const cutoffTime = new Date(Date.now() - minutes * 60 * 1000);
+
+  const [{ count: activeCount }] = await db
+    .select({ count: count() })
+    .from(sessions)
+    .where(
+      and(isNull(sessions.endedAt), gte(sessions.lastActivityAt, cutoffTime))
+    );
+
+  return activeCount;
 }

@@ -33,6 +33,10 @@ export const configureOpenAPI = (app: any) => {
         description: 'Session tracking and management',
       },
       {
+        name: 'ping',
+        description: 'Session ping/heartbeat for active session monitoring',
+      },
+      {
         name: 'event',
         description: 'Event tracking and analytics',
       },

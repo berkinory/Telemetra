@@ -4,6 +4,7 @@ import { db, sessions } from '@/db';
 import {
   buildFilters,
   formatPaginationResponse,
+  validateDateRange,
   validateDevice,
   validatePagination,
   validateSession,
@@ -138,6 +139,7 @@ sessionRouter.openapi(createSessionRoute, async (c) => {
         deviceId: body.deviceId,
         startedAt: clientStartedAt,
         endedAt: null,
+        lastActivityAt: clientStartedAt,
       })
       .returning();
 
@@ -147,6 +149,7 @@ sessionRouter.openapi(createSessionRoute, async (c) => {
         deviceId: newSession.deviceId,
         startedAt: newSession.startedAt.toISOString(),
         endedAt: newSession.endedAt ? newSession.endedAt.toISOString() : null,
+        lastActivityAt: newSession.lastActivityAt.toISOString(),
       },
       HttpStatus.OK
     );
@@ -193,6 +196,16 @@ sessionRouter.openapi(endSessionRoute, async (c) => {
       clientEndedAt = timestampValidation.data;
     }
 
+    if (clientEndedAt < existingSession.startedAt) {
+      return c.json(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'endedAt cannot be before startedAt',
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
     const [updatedSession] = await db
       .update(sessions)
       .set({
@@ -209,6 +222,7 @@ sessionRouter.openapi(endSessionRoute, async (c) => {
         endedAt: updatedSession.endedAt
           ? updatedSession.endedAt.toISOString()
           : null,
+        lastActivityAt: updatedSession.lastActivityAt.toISOString(),
       },
       HttpStatus.OK
     );
@@ -255,6 +269,15 @@ sessionRouter.openapi(getSessionsRoute, async (c) => {
 
     const { page, pageSize, offset } = paginationValidation.data;
 
+    const dateRangeValidation = validateDateRange(
+      c,
+      query.startDate,
+      query.endDate
+    );
+    if (!dateRangeValidation.success) {
+      return dateRangeValidation.response;
+    }
+
     const filters: SQL[] = [eq(sessions.deviceId, deviceId)];
 
     const whereClause = buildFilters({
@@ -281,6 +304,7 @@ sessionRouter.openapi(getSessionsRoute, async (c) => {
       deviceId: session.deviceId,
       startedAt: session.startedAt.toISOString(),
       endedAt: session.endedAt ? session.endedAt.toISOString() : null,
+      lastActivityAt: session.lastActivityAt.toISOString(),
     }));
 
     return c.json(

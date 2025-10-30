@@ -1,10 +1,10 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import { count, desc, eq, type SQL } from 'drizzle-orm';
-import { db, events } from '@/db';
-import { addAnalyticsEvent } from '@/lib/queue';
+import { and, count, desc, eq, isNull, type SQL } from 'drizzle-orm';
+import { db, events, sessions } from '@/db';
 import {
   buildFilters,
   formatPaginationResponse,
+  validateDateRange,
   validatePagination,
   validateSession,
   validateTimestamp,
@@ -84,13 +84,75 @@ eventRouter.openapi(createEventRoute, async (c) => {
     }
 
     const clientTimestamp = timestampValidation.data;
+    const session = sessionValidation.data;
 
-    await addAnalyticsEvent({
-      eventId: body.eventId,
-      sessionId: body.sessionId,
-      name: body.name,
-      params: body.params,
-      timestamp: clientTimestamp.getTime(),
+    if (session.endedAt && clientTimestamp > session.endedAt) {
+      return c.json(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'Event timestamp cannot be after session endedAt',
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    if (clientTimestamp < session.startedAt) {
+      return c.json(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'Event timestamp cannot be before session startedAt',
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    await db.transaction(async (tx) => {
+      const currentSession = await tx.query.sessions.findFirst({
+        where: (table, { eq: eqFn }) => eqFn(table.sessionId, body.sessionId),
+      });
+
+      if (!currentSession) {
+        throw new Error('Session not found');
+      }
+
+      if (currentSession.endedAt) {
+        throw new Error('Session expired. Please create a new session.');
+      }
+
+      const serverTimestamp = new Date();
+      const timeSinceLastActivity =
+        serverTimestamp.getTime() - currentSession.lastActivityAt.getTime();
+
+      if (timeSinceLastActivity > 10 * 60 * 1000) {
+        await tx
+          .update(sessions)
+          .set({
+            endedAt: currentSession.lastActivityAt,
+          })
+          .where(eq(sessions.sessionId, body.sessionId));
+        throw new Error('Session expired. Please create a new session.');
+      }
+
+      const updateResult = await tx
+        .update(sessions)
+        .set({
+          lastActivityAt: serverTimestamp,
+        })
+        .where(
+          and(eq(sessions.sessionId, body.sessionId), isNull(sessions.endedAt))
+        );
+
+      if (updateResult.rowCount === 0) {
+        throw new Error('Cannot update an ended session');
+      }
+
+      await tx.insert(events).values({
+        eventId: body.eventId,
+        sessionId: body.sessionId,
+        name: body.name,
+        params: body.params ? JSON.stringify(body.params) : null,
+        timestamp: clientTimestamp,
+      });
     });
 
     return c.json(
@@ -104,6 +166,22 @@ eventRouter.openapi(createEventRoute, async (c) => {
       HttpStatus.OK
     );
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to create event';
+
+    if (
+      errorMessage.includes('Session expired') ||
+      errorMessage.includes('not found')
+    ) {
+      return c.json(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: errorMessage,
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
     console.error('[Event.Create] Error:', error);
     return c.json(
       {
@@ -136,6 +214,15 @@ eventRouter.openapi(getEventsRoute, async (c) => {
 
     const { page, pageSize, offset } = paginationValidation.data;
 
+    const dateRangeValidation = validateDateRange(
+      c,
+      query.startDate,
+      query.endDate
+    );
+    if (!dateRangeValidation.success) {
+      return dateRangeValidation.response;
+    }
+
     const filters: SQL[] = [eq(events.sessionId, sessionId)];
 
     if (query.eventName) {
@@ -161,13 +248,30 @@ eventRouter.openapi(getEventsRoute, async (c) => {
       db.select({ count: count() }).from(events).where(whereClause),
     ]);
 
-    const formattedEvents = eventsList.map((event) => ({
-      eventId: event.eventId,
-      sessionId: event.sessionId,
-      name: event.name,
-      params: event.params ? JSON.parse(event.params) : null,
-      timestamp: event.timestamp.toISOString(),
-    }));
+    const formattedEvents = eventsList.map((event) => {
+      let parsedParams: Record<
+        string,
+        string | number | boolean | null
+      > | null = null;
+      if (event.params) {
+        try {
+          parsedParams = JSON.parse(event.params) as Record<
+            string,
+            string | number | boolean | null
+          >;
+        } catch {
+          parsedParams = null;
+        }
+      }
+
+      return {
+        eventId: event.eventId,
+        sessionId: event.sessionId,
+        name: event.name,
+        params: parsedParams,
+        timestamp: event.timestamp.toISOString(),
+      };
+    });
 
     return c.json(
       {

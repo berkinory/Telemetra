@@ -14,13 +14,6 @@ const healthResponseSchema = z.object({
       error: z.string().optional(),
       message: z.string().optional(),
     }),
-    redis: z.object({
-      status: z.enum(['healthy', 'unhealthy', 'unknown']),
-      latency: z.number(),
-      error: z.string().optional(),
-      message: z.string().optional(),
-      queueSize: z.number().optional(),
-    }),
   }),
   responseTime: z.number().openapi({ example: 10 }),
 });
@@ -50,7 +43,6 @@ type ServiceStatus = {
   latency: number;
   error?: string;
   message?: string;
-  queueSize?: number;
 };
 
 type HealthCheckData = {
@@ -59,7 +51,6 @@ type HealthCheckData = {
   status: 'healthy' | 'unhealthy';
   services: {
     database: ServiceStatus;
-    redis: ServiceStatus;
   };
   responseTime: number;
 };
@@ -70,7 +61,6 @@ health.openapi(getHealthRoute, async (c) => {
 
   const services: HealthCheckData['services'] = {
     database: { status: 'unknown', latency: 0 },
-    redis: { status: 'unknown', latency: 0 },
   };
 
   try {
@@ -86,41 +76,10 @@ health.openapi(getHealthRoute, async (c) => {
     services.database = {
       status: 'unhealthy',
       latency: 0,
-    };
-  }
-
-  try {
-    const redisStart = Date.now();
-    const { getQueueMetrics } = await import('@/lib/queue');
-    const metrics = await getQueueMetrics();
-    const latency = Date.now() - redisStart;
-
-    const isHealthy = metrics.queueSize < 10_000;
-
-    services.redis = {
-      status: isHealthy ? 'healthy' : 'unhealthy',
-      latency,
-      queueSize: metrics.queueSize,
-      ...(isHealthy
-        ? {}
-        : {
-            message: `Queue size (${metrics.queueSize}) exceeds healthy threshold`,
-          }),
-    };
-
-    if (!isHealthy) {
-      overallStatus = 'unhealthy';
-    }
-  } catch (error) {
-    console.error('Redis health check failed:', error);
-    overallStatus = 'unhealthy';
-    services.redis = {
-      status: 'unhealthy',
-      latency: 0,
       error:
         error instanceof Error
           ? error.message
-          : 'Unknown Redis connection error',
+          : 'Unknown database connection error',
     };
   }
 
