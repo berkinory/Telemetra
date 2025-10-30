@@ -8,6 +8,7 @@ export const HttpStatus = {
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
+  METHOD_NOT_ALLOWED: 405,
   CONFLICT: 409,
   TOO_MANY_REQUESTS: 429,
   INTERNAL_SERVER_ERROR: 500,
@@ -21,6 +22,7 @@ export const ErrorCode = {
   UNAUTHORIZED: 'UNAUTHORIZED',
   FORBIDDEN: 'FORBIDDEN',
   NOT_FOUND: 'NOT_FOUND',
+  METHOD_NOT_ALLOWED: 'METHOD_NOT_ALLOWED',
   CONFLICT: 'CONFLICT',
   TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
@@ -37,6 +39,7 @@ export const errorResponseSchema = z
         ErrorCode.UNAUTHORIZED,
         ErrorCode.FORBIDDEN,
         ErrorCode.NOT_FOUND,
+        ErrorCode.METHOD_NOT_ALLOWED,
         ErrorCode.CONFLICT,
         ErrorCode.TOO_MANY_REQUESTS,
         ErrorCode.INTERNAL_SERVER_ERROR,
@@ -119,6 +122,14 @@ export const errorResponses = {
   },
   404: {
     description: 'Not Found',
+    content: {
+      'application/json': {
+        schema: errorResponseSchema,
+      },
+    },
+  },
+  405: {
+    description: 'Method Not Allowed',
     content: {
       'application/json': {
         schema: errorResponseSchema,

@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, devices } from '@/db';
+import { methodNotAllowed } from '@/lib/response';
 import {
   buildFilters,
   formatPaginationResponse,
@@ -215,5 +216,7 @@ deviceRouter.openapi(getDevicesRoute, async (c) => {
     );
   }
 });
+
+deviceRouter.notFound((c) => methodNotAllowed(c, ['GET', 'POST']));
 
 export default deviceRouter;

@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { and, eq, isNull } from 'drizzle-orm';
 import { db, sessions } from '@/db';
+import { methodNotAllowed } from '@/lib/response';
 import { validateSession } from '@/lib/validators';
 import {
   ErrorCode,
@@ -137,5 +138,7 @@ pingRouter.openapi(pingSessionRoute, async (c) => {
     );
   }
 });
+
+pingRouter.notFound((c) => methodNotAllowed(c, ['POST']));
 
 export default pingRouter;

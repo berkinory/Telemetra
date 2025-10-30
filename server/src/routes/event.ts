@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { and, count, desc, eq, isNull, type SQL } from 'drizzle-orm';
 import { db, events, sessions } from '@/db';
+import { methodNotAllowed } from '@/lib/response';
 import {
   buildFilters,
   formatPaginationResponse,
@@ -291,5 +292,7 @@ eventRouter.openapi(getEventsRoute, async (c) => {
     );
   }
 });
+
+eventRouter.notFound((c) => methodNotAllowed(c, ['GET', 'POST']));
 
 export default eventRouter;

@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, sessions } from '@/db';
+import { methodNotAllowed } from '@/lib/response';
 import {
   buildFilters,
   formatPaginationResponse,
@@ -325,5 +326,7 @@ sessionRouter.openapi(getSessionsRoute, async (c) => {
     );
   }
 });
+
+sessionRouter.notFound((c) => methodNotAllowed(c, ['GET', 'POST', 'PATCH']));
 
 export default sessionRouter;

@@ -67,6 +67,20 @@ export function notFound(
   return c.json(response, HttpStatus.NOT_FOUND);
 }
 
+export function methodNotAllowed(
+  c: Context,
+  allowedMethods: string[]
+): Response {
+  const response: ErrorResponse<{ allowedMethods: string[] }> = {
+    code: ErrorCode.METHOD_NOT_ALLOWED,
+    detail: `Method not allowed. Allowed methods: ${allowedMethods.join(', ')}`,
+    meta: { allowedMethods },
+  };
+  const res = c.json(response, HttpStatus.METHOD_NOT_ALLOWED);
+  res.headers.set('Allow', allowedMethods.join(', '));
+  return res;
+}
+
 export function conflict(
   c: Context,
   code: ErrorCode,

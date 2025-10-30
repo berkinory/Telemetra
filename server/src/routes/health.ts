@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { pool } from '@/db';
+import { methodNotAllowed } from '@/lib/response';
 import { errorResponses, HttpStatus } from '@/schemas';
 
 const healthResponseSchema = z.object({
@@ -94,5 +95,7 @@ health.openapi(getHealthRoute, async (c) => {
 
   return c.json(data, HttpStatus.OK);
 });
+
+health.notFound((c) => methodNotAllowed(c, ['GET']));
 
 export default health;
