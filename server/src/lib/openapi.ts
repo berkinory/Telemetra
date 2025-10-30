@@ -25,24 +25,16 @@ export const configureOpenAPI = (app: any) => {
         description: 'System health and status checks',
       },
       {
-        name: 'auth',
-        description: 'Authentication and authorization',
+        name: 'device',
+        description: 'Device management and operations',
       },
       {
-        name: 'profile',
-        description: 'User profile management',
+        name: 'session',
+        description: 'Session tracking and management',
       },
       {
-        name: 'filters',
-        description: 'Filter management and operations',
-      },
-      {
-        name: 'jobs',
-        description: 'Job processing and status tracking',
-      },
-      {
-        name: 'notifications',
-        description: 'User notification preferences',
+        name: 'event',
+        description: 'Event tracking and analytics',
       },
     ],
     components: {
