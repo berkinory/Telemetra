@@ -1,7 +1,6 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, devices } from '@/db';
-import { internalServerError } from '@/lib/response';
 import {
   buildFilters,
   formatPaginationResponse,
@@ -12,10 +11,11 @@ import {
   createDeviceRequestSchema,
   deviceSchema,
   devicesListResponseSchema,
+  ErrorCode,
   errorResponses,
+  HttpStatus,
   listDevicesQuerySchema,
 } from '@/schemas';
-import { HttpStatus } from '@/types/codes';
 
 const createDeviceRoute = createRoute({
   method: 'post',
@@ -121,7 +121,13 @@ deviceRouter.openapi(createDeviceRoute, async (c) => {
     );
   } catch (error) {
     console.error('[Device.Upsert] Error:', error);
-    return internalServerError(c, 'Failed to create or update device');
+    return c.json(
+      {
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        detail: 'Failed to create or update device',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 });
 
@@ -190,7 +196,13 @@ deviceRouter.openapi(getDevicesRoute, async (c) => {
     );
   } catch (error) {
     console.error('[Device.List] Error:', error);
-    return internalServerError(c, 'Failed to fetch devices');
+    return c.json(
+      {
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        detail: 'Failed to fetch devices',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 });
 

@@ -2,7 +2,6 @@ import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, events } from '@/db';
 import { addAnalyticsEvent } from '@/lib/queue';
-import { internalServerError } from '@/lib/response';
 import {
   buildFilters,
   formatPaginationResponse,
@@ -12,12 +11,13 @@ import {
 } from '@/lib/validators';
 import {
   createEventRequestSchema,
+  ErrorCode,
   errorResponses,
   eventSchema,
   eventsListResponseSchema,
+  HttpStatus,
   listEventsQuerySchema,
 } from '@/schemas';
-import { HttpStatus } from '@/types/codes';
 
 const createEventRoute = createRoute({
   method: 'post',
@@ -105,7 +105,13 @@ eventRouter.openapi(createEventRoute, async (c) => {
     );
   } catch (error) {
     console.error('[Event.Create] Error:', error);
-    return internalServerError(c, 'Failed to create event');
+    return c.json(
+      {
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        detail: 'Failed to create event',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 });
 
@@ -172,7 +178,13 @@ eventRouter.openapi(getEventsRoute, async (c) => {
     );
   } catch (error) {
     console.error('[Event.List] Error:', error);
-    return internalServerError(c, 'Failed to fetch events');
+    return c.json(
+      {
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        detail: 'Failed to fetch events',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 });
 

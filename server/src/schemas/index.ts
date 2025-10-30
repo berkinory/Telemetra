@@ -1,8 +1,12 @@
 export {
   dateFilterQuerySchema,
-  type ErrorResponseSchema,
+  ErrorCode,
+  type ErrorCode as ErrorCodeType,
+  type ErrorResponse,
   errorResponseSchema,
   errorResponses,
+  HttpStatus,
+  type HttpStatus as HttpStatusType,
   type PaginationSchema,
   paginationQuerySchema,
   paginationSchema,

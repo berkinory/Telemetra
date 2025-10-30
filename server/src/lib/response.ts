@@ -1,55 +1,119 @@
 import type { Context } from 'hono';
-import { ErrorCode, HttpStatus } from '@/types/codes';
+import { ErrorCode, type ErrorResponse, HttpStatus } from '@/schemas';
 
-export function badRequest(c: Context, code: ErrorCode, detail: string) {
-  return c.json({ code, detail }, HttpStatus.BAD_REQUEST);
+export function success<TData>(
+  c: Context,
+  data: TData,
+  status: HttpStatus = HttpStatus.OK
+) {
+  const statusCode = status === HttpStatus.NO_CONTENT ? 204 : status;
+  // biome-ignore lint/suspicious/noExplicitAny: Hono c.json() accepts number for status
+  return c.json(data, statusCode as any);
 }
 
-export function badRequestWithMeta(
+export function badRequest(
+  c: Context,
+  code: ErrorCode,
+  detail: string
+): Response {
+  const response: ErrorResponse = {
+    code,
+    detail,
+  };
+  return c.json(response, HttpStatus.BAD_REQUEST);
+}
+
+export function badRequestWithMeta<TMeta extends Record<string, unknown>>(
   c: Context,
   code: ErrorCode,
   detail: string,
-  meta: unknown
-) {
-  return c.json({ code, detail, meta }, HttpStatus.BAD_REQUEST);
+  meta: TMeta
+): Response {
+  const response: ErrorResponse<TMeta> = {
+    code,
+    detail,
+    meta,
+  } as ErrorResponse<TMeta>;
+  return c.json(response, HttpStatus.BAD_REQUEST);
 }
 
-export function unauthorized(c: Context, detail: string) {
-  return c.json(
-    { code: ErrorCode.UNAUTHORIZED, detail },
-    HttpStatus.UNAUTHORIZED
-  );
+export function unauthorized(c: Context, detail: string): Response {
+  const response: ErrorResponse = {
+    code: ErrorCode.UNAUTHORIZED,
+    detail,
+  };
+  return c.json(response, HttpStatus.UNAUTHORIZED);
+}
+
+export function forbidden(c: Context, detail: string): Response {
+  const response: ErrorResponse = {
+    code: ErrorCode.FORBIDDEN,
+    detail,
+  };
+  return c.json(response, HttpStatus.FORBIDDEN);
+}
+
+export function notFound(
+  c: Context,
+  code: ErrorCode,
+  detail: string
+): Response {
+  const response: ErrorResponse = {
+    code,
+    detail,
+  };
+  return c.json(response, HttpStatus.NOT_FOUND);
+}
+
+export function conflict(
+  c: Context,
+  code: ErrorCode,
+  detail: string
+): Response {
+  const response: ErrorResponse = {
+    code,
+    detail,
+  };
+  return c.json(response, HttpStatus.CONFLICT);
 }
 
 export function tooManyRequests(
   c: Context,
   detail: string,
   retryAfter: string
-) {
-  return c.json(
-    { code: ErrorCode.TOO_MANY_REQUESTS, detail, meta: { retryAfter } },
-    HttpStatus.TOO_MANY_REQUESTS
-  );
+): Response {
+  const response: ErrorResponse<{ retryAfter: string }> = {
+    code: ErrorCode.TOO_MANY_REQUESTS,
+    detail,
+    meta: { retryAfter },
+  };
+  return c.json(response, HttpStatus.TOO_MANY_REQUESTS);
 }
 
-export function internalServerError(c: Context, detail: string) {
-  return c.json(
-    { code: ErrorCode.INTERNAL_SERVER_ERROR, detail },
-    HttpStatus.INTERNAL_SERVER_ERROR
-  );
+export function internalServerError(c: Context, detail: string): Response {
+  const response: ErrorResponse = {
+    code: ErrorCode.INTERNAL_SERVER_ERROR,
+    detail,
+  };
+  return c.json(response, HttpStatus.INTERNAL_SERVER_ERROR);
 }
 
-export function errorResponseWithMeta(
+export function errorResponse<
+  TMeta extends Record<string, unknown> | undefined = undefined,
+>(
   c: Context,
   options: {
     status: HttpStatus;
     code: ErrorCode;
     detail: string;
-    meta: unknown;
+    meta?: TMeta;
   }
-) {
-  return c.json(
-    { code: options.code, detail: options.detail, meta: options.meta },
-    options.status
-  );
+): Response {
+  const response: ErrorResponse<TMeta> = {
+    code: options.code,
+    detail: options.detail,
+    ...(options.meta !== undefined ? { meta: options.meta } : {}),
+  } as ErrorResponse<TMeta>;
+  // biome-ignore lint/suspicious/noExplicitAny: Hono c.json() accepts number for status
+  return c.json(response, options.status as any);
 }
