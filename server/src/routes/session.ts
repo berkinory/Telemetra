@@ -15,7 +15,7 @@ const sessionSchema = z.object({
 const createSessionRequestSchema = z.object({
   sessionId: z.string(),
   deviceId: z.string(),
-  startedAt: z.string().optional(),
+  startedAt: z.string(),
 });
 
 const endSessionRequestSchema = z.object({
@@ -135,12 +135,36 @@ sessionRouter.openapi(createSessionRoute, async (c) => {
       );
     }
 
+    const clientStartedAt = new Date(body.startedAt);
+    const serverTimestamp = new Date();
+
+    if (Number.isNaN(clientStartedAt.getTime())) {
+      return badRequest(
+        c,
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid startedAt format'
+      );
+    }
+
+    const timeDiffMs = Math.abs(
+      serverTimestamp.getTime() - clientStartedAt.getTime()
+    );
+    const oneHourMs = 60 * 60 * 1000;
+
+    if (timeDiffMs > oneHourMs) {
+      return badRequest(
+        c,
+        ErrorCode.VALIDATION_ERROR,
+        'startedAt is too far from server time (max 1 hour difference)'
+      );
+    }
+
     const [newSession] = await db
       .insert(sessions)
       .values({
         sessionId: body.sessionId,
         deviceId: body.deviceId,
-        startedAt: body.startedAt ? new Date(body.startedAt) : new Date(),
+        startedAt: clientStartedAt,
         endedAt: null,
       })
       .returning();
@@ -176,10 +200,38 @@ sessionRouter.openapi(endSessionRoute, async (c) => {
       return badRequest(c, ErrorCode.VALIDATION_ERROR, 'Session already ended');
     }
 
+    const serverTimestamp = new Date();
+    let clientEndedAt = serverTimestamp;
+
+    if (body.endedAt) {
+      clientEndedAt = new Date(body.endedAt);
+
+      if (Number.isNaN(clientEndedAt.getTime())) {
+        return badRequest(
+          c,
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid endedAt format'
+        );
+      }
+
+      const timeDiffMs = Math.abs(
+        serverTimestamp.getTime() - clientEndedAt.getTime()
+      );
+      const oneHourMs = 60 * 60 * 1000;
+
+      if (timeDiffMs > oneHourMs) {
+        return badRequest(
+          c,
+          ErrorCode.VALIDATION_ERROR,
+          'endedAt is too far from server time (max 1 hour difference)'
+        );
+      }
+    }
+
     const [updatedSession] = await db
       .update(sessions)
       .set({
-        endedAt: body.endedAt ? new Date(body.endedAt) : new Date(),
+        endedAt: clientEndedAt,
       })
       .where(eq(sessions.sessionId, body.sessionId))
       .returning();

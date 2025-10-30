@@ -29,7 +29,7 @@ const createEventRequestSchema = z.object({
       z.union([z.string(), z.number(), z.boolean(), z.null()])
     )
     .optional(),
-  timestamp: z.string().optional(),
+  timestamp: z.string(),
 });
 
 const eventsListResponseSchema = z.object({
@@ -106,14 +106,36 @@ eventRouter.openapi(createEventRoute, async (c) => {
       return badRequest(c, ErrorCode.VALIDATION_ERROR, 'Session not found');
     }
 
-    const timestamp = body.timestamp ? new Date(body.timestamp) : new Date();
+    const clientTimestamp = new Date(body.timestamp);
+    const serverTimestamp = new Date();
+
+    if (Number.isNaN(clientTimestamp.getTime())) {
+      return badRequest(
+        c,
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid timestamp format'
+      );
+    }
+
+    const timeDiffMs = Math.abs(
+      serverTimestamp.getTime() - clientTimestamp.getTime()
+    );
+    const oneHourMs = 60 * 60 * 1000;
+
+    if (timeDiffMs > oneHourMs) {
+      return badRequest(
+        c,
+        ErrorCode.VALIDATION_ERROR,
+        'Timestamp is too far from server time (max 1 hour difference)'
+      );
+    }
 
     await addAnalyticsEvent({
       eventId: body.eventId,
       sessionId: body.sessionId,
       name: body.name,
       params: body.params,
-      timestamp: timestamp.getTime(),
+      timestamp: clientTimestamp.getTime(),
     });
 
     return c.json(
@@ -122,7 +144,7 @@ eventRouter.openapi(createEventRoute, async (c) => {
         sessionId: body.sessionId,
         name: body.name,
         params: body.params ?? null,
-        timestamp: timestamp.toISOString(),
+        timestamp: clientTimestamp.toISOString(),
       },
       HttpStatus.OK
     );
