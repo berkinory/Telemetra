@@ -28,6 +28,7 @@ export const session = pgTable(
     token: text('token').notNull().unique(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
+      .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
     ipAddress: text('ip_address'),
@@ -106,9 +107,11 @@ export const apikey = pgTable(
     requestCount: integer('request_count').default(0),
     remaining: integer('remaining'),
     lastRequest: timestamp('last_request'),
-    expiresAt: timestamp('expires_at'),
-    createdAt: timestamp('created_at').notNull(),
-    updatedAt: timestamp('updated_at').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
     permissions: text('permissions'),
     metadata: text('metadata'),
   },

@@ -88,7 +88,7 @@ pingRouter.openapi(pingSessionRoute, async (c) => {
         throw new Error('Session expired. Please create a new session.');
       }
 
-      await tx
+      const result = await tx
         .update(sessions)
         .set({
           lastActivityAt: currentTimestamp,
@@ -96,6 +96,10 @@ pingRouter.openapi(pingSessionRoute, async (c) => {
         .where(
           and(eq(sessions.sessionId, body.sessionId), isNull(sessions.endedAt))
         );
+
+      if (result.rowCount === 0) {
+        throw new Error('Cannot ping an ended session');
+      }
     });
 
     return c.json(

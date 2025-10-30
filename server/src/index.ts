@@ -1,5 +1,6 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
+import { pool } from '@/db';
 import { auth } from '@/lib/auth';
 import { authMiddleware } from '@/lib/middleware';
 import { configureOpenAPI } from '@/lib/openapi';
@@ -44,8 +45,13 @@ app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));
 
 configureOpenAPI(app);
 
-const shutdown = (_signal: string) => {
+const shutdown = async (signal: string) => {
   try {
+    console.log(`[Server] Received ${signal}, shutting down gracefully...`);
+
+    await pool.end();
+    console.log('[Server] Database pool closed');
+
     process.exit(0);
   } catch (error) {
     console.error('[Server] Error during shutdown:', error);

@@ -119,8 +119,9 @@ eventRouter.openapi(createEventRoute, async (c) => {
         throw new Error('Session expired. Please create a new session.');
       }
 
+      const serverTimestamp = new Date();
       const timeSinceLastActivity =
-        clientTimestamp.getTime() - currentSession.lastActivityAt.getTime();
+        serverTimestamp.getTime() - currentSession.lastActivityAt.getTime();
 
       if (timeSinceLastActivity > 10 * 60 * 1000) {
         await tx
@@ -132,14 +133,18 @@ eventRouter.openapi(createEventRoute, async (c) => {
         throw new Error('Session expired. Please create a new session.');
       }
 
-      await tx
+      const updateResult = await tx
         .update(sessions)
         .set({
-          lastActivityAt: clientTimestamp,
+          lastActivityAt: serverTimestamp,
         })
         .where(
           and(eq(sessions.sessionId, body.sessionId), isNull(sessions.endedAt))
         );
+
+      if (updateResult.rowCount === 0) {
+        throw new Error('Cannot update an ended session');
+      }
 
       await tx.insert(events).values({
         eventId: body.eventId,

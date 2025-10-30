@@ -19,6 +19,10 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
+pool.on('error', (error) => {
+  console.error('[Database] Unexpected error on idle client:', error);
+});
+
 const schema = {
   user,
   session,
@@ -31,6 +35,8 @@ const schema = {
 };
 
 export const db = drizzle({ client: pool, schema });
+
+export { pool };
 
 export {
   account,
