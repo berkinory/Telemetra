@@ -53,6 +53,12 @@ class SimpleAnalyticsQueue {
   }
 
   async addEvent(event: AnalyticsEventData): Promise<void> {
+    if (this.isClosing || this.isClosed) {
+      throw new Error(
+        'Queue is shutting down or closed; cannot accept new events'
+      );
+    }
+
     await this.redis.rpush(REDIS_QUEUE_KEY, JSON.stringify(event));
 
     this.startProcessingTimer();
@@ -85,15 +91,16 @@ class SimpleAnalyticsQueue {
         return;
       }
 
-      const eventsList = this.parseAndValidateEvents(eventStrings);
+      const { validEvents, originalStrings } =
+        this.parseAndValidateEvents(eventStrings);
 
-      if (eventsList.length === 0) {
+      if (validEvents.length === 0) {
         return;
       }
 
-      await this.insertEvents(eventsList);
+      await this.insertEvents(validEvents, originalStrings);
 
-      process.stdout.write(`[Queue] Processed ${eventsList.length} events\n`);
+      process.stdout.write(`[Queue] Processed ${validEvents.length} events\n`);
     } catch (error) {
       process.stderr.write(`[Queue] Processing error: ${error}\n`);
     } finally {
@@ -115,17 +122,22 @@ class SimpleAnalyticsQueue {
     return eventStrings;
   }
 
-  private parseAndValidateEvents(eventStrings: string[]): AnalyticsEventData[] {
-    const eventsList: AnalyticsEventData[] = [];
+  private parseAndValidateEvents(eventStrings: string[]): {
+    validEvents: AnalyticsEventData[];
+    originalStrings: string[];
+  } {
+    const validEvents: AnalyticsEventData[] = [];
+    const originalStrings: string[] = [];
 
     for (const eventString of eventStrings) {
       const parsedEvent = this.parseAndValidateEvent(eventString);
       if (parsedEvent) {
-        eventsList.push(parsedEvent);
+        validEvents.push(parsedEvent);
+        originalStrings.push(eventString);
       }
     }
 
-    return eventsList;
+    return { validEvents, originalStrings };
   }
 
   private parseAndValidateEvent(
@@ -154,7 +166,10 @@ class SimpleAnalyticsQueue {
     }
   }
 
-  private async insertEvents(eventsList: AnalyticsEventData[]): Promise<void> {
+  private async insertEvents(
+    eventsList: AnalyticsEventData[],
+    originalStrings: string[]
+  ): Promise<void> {
     const eventsToInsert = eventsList.map((event) => ({
       eventId: event.eventId,
       sessionId: event.sessionId,
@@ -163,7 +178,58 @@ class SimpleAnalyticsQueue {
       timestamp: new Date(event.timestamp),
     }));
 
-    await db.insert(events).values(eventsToInsert).onConflictDoNothing();
+    try {
+      await db.insert(events).values(eventsToInsert).onConflictDoNothing();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : '';
+
+      process.stderr.write(
+        `[Queue] CRITICAL: Database insert failed for ${eventsList.length} events. Error: ${errorMessage}\n`
+      );
+      process.stderr.write(`[Queue] Stack trace: ${errorStack}\n`);
+      process.stderr.write(
+        `[Queue] Event IDs: ${eventsList.map((e) => e.eventId).join(', ')}\n`
+      );
+
+      try {
+        await this.requeueEvents(originalStrings);
+        process.stdout.write(
+          `[Queue] Successfully re-queued ${originalStrings.length} events after DB failure\n`
+        );
+      } catch (requeueError) {
+        const requeueErrorMessage =
+          requeueError instanceof Error
+            ? requeueError.message
+            : String(requeueError);
+
+        process.stderr.write(
+          `[Queue] CRITICAL: Failed to re-queue events after DB failure. Events may be lost! Error: ${requeueErrorMessage}\n`
+        );
+        process.stderr.write(
+          `[Queue] Lost events: ${originalStrings.join('\n')}\n`
+        );
+
+        throw requeueError;
+      }
+
+      throw error;
+    }
+  }
+
+  private async requeueEvents(eventStrings: string[]): Promise<void> {
+    if (eventStrings.length === 0) {
+      return;
+    }
+
+    const pipeline = this.redis.pipeline();
+
+    for (const eventString of eventStrings) {
+      pipeline.rpush(REDIS_QUEUE_KEY, eventString);
+    }
+
+    await pipeline.exec();
   }
 
   private stopProcessingTimer(): void {
@@ -190,13 +256,39 @@ class SimpleAnalyticsQueue {
 
     this.isClosing = true;
 
+    this.stopProcessingTimer();
+
+    const maxWaitMs = 30_000;
+    const pollIntervalMs = 100;
+    const startTime = Date.now();
+
+    while (this.isProcessing) {
+      if (Date.now() - startTime > maxWaitMs) {
+        process.stderr.write(
+          '[Queue] Warning: Timeout waiting for in-flight processing to finish\n'
+        );
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+    }
+
     try {
-      this.stopProcessingTimer();
       await this.flush();
+    } catch (flushError) {
+      process.stderr.write(
+        `[Queue] Error during flush: ${flushError instanceof Error ? flushError.message : String(flushError)}\n`
+      );
+    }
+
+    try {
       await this.redis.quit();
       this.isClosed = true;
-    } finally {
-      this.isClosing = false;
+    } catch (quitError) {
+      process.stderr.write(
+        `[Queue] Error during redis.quit(): ${quitError instanceof Error ? quitError.message : String(quitError)}\n`
+      );
+      this.isClosed = true;
+      throw quitError;
     }
   }
 }
