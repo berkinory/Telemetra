@@ -27,10 +27,10 @@ export const createDeviceRequestSchema = z
   .object({
     deviceId: z.string().openapi({ example: 'device_abc123' }),
     apikeyId: z.string().openapi({ example: 'apikey_xyz789' }),
-    identifier: z.string().optional().openapi({ example: 'user@example.com' }),
-    brand: z.string().optional().openapi({ example: 'Apple' }),
-    osVersion: z.string().optional().openapi({ example: '17.0.1' }),
-    platform: z.string().optional().openapi({ example: 'iOS' }),
+    identifier: z.string().nullish().openapi({ example: 'user@example.com' }),
+    brand: z.string().nullish().openapi({ example: 'Apple' }),
+    osVersion: z.string().nullish().openapi({ example: '17.0.1' }),
+    platform: z.string().nullish().openapi({ example: 'iOS' }),
   })
   .openapi('CreateDeviceRequest');
 
