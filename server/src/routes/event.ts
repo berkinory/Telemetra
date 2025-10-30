@@ -1,8 +1,7 @@
-import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, events } from '@/db';
 import { internalServerError } from '@/lib/response';
-import { errorResponses, paginationSchema } from '@/lib/schemas';
 import {
   buildFilters,
   formatPaginationResponse,
@@ -11,38 +10,14 @@ import {
   validateTimestamp,
 } from '@/lib/validators';
 import { addAnalyticsEvent } from '@/queue';
+import {
+  createEventRequestSchema,
+  errorResponses,
+  eventSchema,
+  eventsListResponseSchema,
+  listEventsQuerySchema,
+} from '@/schemas';
 import { HttpStatus } from '@/types/codes';
-
-const eventSchema = z.object({
-  eventId: z.string(),
-  sessionId: z.string(),
-  name: z.string(),
-  params: z
-    .record(
-      z.string(),
-      z.union([z.string(), z.number(), z.boolean(), z.null()])
-    )
-    .nullable(),
-  timestamp: z.string(),
-});
-
-const createEventRequestSchema = z.object({
-  eventId: z.string(),
-  sessionId: z.string(),
-  name: z.string(),
-  params: z
-    .record(
-      z.string(),
-      z.union([z.string(), z.number(), z.boolean(), z.null()])
-    )
-    .optional(),
-  timestamp: z.string(),
-});
-
-const eventsListResponseSchema = z.object({
-  events: z.array(eventSchema),
-  pagination: paginationSchema,
-});
 
 const createEventRoute = createRoute({
   method: 'post',
@@ -77,14 +52,7 @@ const getEventsRoute = createRoute({
   tags: ['event'],
   description: 'List events for a specific session',
   request: {
-    query: z.object({
-      sessionId: z.string(),
-      page: z.string().optional().default('1'),
-      pageSize: z.string().optional().default('50'),
-      eventName: z.string().optional(),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
-    }),
+    query: listEventsQuerySchema,
   },
   responses: {
     200: {

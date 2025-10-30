@@ -1,8 +1,8 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { sql } from 'drizzle-orm';
 import { db } from '@/db';
-import { errorResponses } from '@/lib/schemas';
 import { isQueueHealthy } from '@/queue';
+import { errorResponses } from '@/schemas';
 import { HttpStatus } from '@/types/codes';
 
 const healthResponseSchema = z.object({

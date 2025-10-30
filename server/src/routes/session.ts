@@ -1,8 +1,7 @@
-import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, sessions } from '@/db';
 import { badRequest, internalServerError } from '@/lib/response';
-import { errorResponses, paginationSchema } from '@/lib/schemas';
 import {
   buildFilters,
   formatPaginationResponse,
@@ -11,30 +10,15 @@ import {
   validateSession,
   validateTimestamp,
 } from '@/lib/validators';
+import {
+  createSessionRequestSchema,
+  endSessionRequestSchema,
+  errorResponses,
+  listSessionsQuerySchema,
+  sessionSchema,
+  sessionsListResponseSchema,
+} from '@/schemas';
 import { ErrorCode, HttpStatus } from '@/types/codes';
-
-const sessionSchema = z.object({
-  sessionId: z.string(),
-  deviceId: z.string(),
-  startedAt: z.string(),
-  endedAt: z.string().nullable(),
-});
-
-const createSessionRequestSchema = z.object({
-  sessionId: z.string(),
-  deviceId: z.string(),
-  startedAt: z.string(),
-});
-
-const endSessionRequestSchema = z.object({
-  sessionId: z.string(),
-  endedAt: z.string().optional(),
-});
-
-const sessionsListResponseSchema = z.object({
-  sessions: z.array(sessionSchema),
-  pagination: paginationSchema,
-});
 
 const createSessionRoute = createRoute({
   method: 'post',
@@ -96,13 +80,7 @@ const getSessionsRoute = createRoute({
   tags: ['session'],
   description: 'List sessions for a specific device',
   request: {
-    query: z.object({
-      deviceId: z.string(),
-      page: z.string().optional().default('1'),
-      pageSize: z.string().optional().default('50'),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
-    }),
+    query: listSessionsQuerySchema,
   },
   responses: {
     200: {
