@@ -22,7 +22,6 @@ export type BatchJobData = {
 };
 
 const REDIS_EVENTS_KEY = 'analytics_events_buffer';
-const REDIS_TIMER_KEY = 'analytics_events_timer';
 
 const safeJsonParse = (jsonString: string): AnalyticsEventData | null => {
   try {
@@ -57,33 +56,30 @@ const popEventsFromBuffer = async (
   redis: Redis,
   maxCount: number
 ): Promise<string[]> => {
-  const events: string[] = [];
+  const events = await redis.lpop(REDIS_EVENTS_KEY, maxCount);
 
-  for (let i = 0; i < maxCount; i++) {
-    const event = await redis.lpop(REDIS_EVENTS_KEY);
-    if (!event) {
-      break;
-    }
-    events.push(event);
+  if (!events) {
+    return [];
   }
 
-  return events;
+  return Array.isArray(events) ? events : [events];
 };
 
 class RedisAnalyticsEventsBuffer {
   private readonly redis = createRedisClient();
   private batchTimer: NodeJS.Timeout | null = null;
+  private isProcessing = false;
 
   async addEvent(event: AnalyticsEventData): Promise<void> {
-    const timerExists = await this.redis.exists(REDIS_TIMER_KEY);
-    if (timerExists) {
-      await this.redis.lpush(REDIS_EVENTS_KEY, JSON.stringify(event));
+    if (this.isProcessing) {
+      await this.redis.rpush(REDIS_EVENTS_KEY, JSON.stringify(event));
       return;
     }
 
-    await this.redis.lpush(REDIS_EVENTS_KEY, JSON.stringify(event));
-
-    const bufferSize = await this.redis.llen(REDIS_EVENTS_KEY);
+    const bufferSize = await this.redis.rpush(
+      REDIS_EVENTS_KEY,
+      JSON.stringify(event)
+    );
 
     if (bufferSize > BATCH_CONFIG.MAX_BUFFER_SIZE) {
       await this.redis.ltrim(
@@ -99,6 +95,12 @@ class RedisAnalyticsEventsBuffer {
   }
 
   private async processBatch(): Promise<void> {
+    if (this.isProcessing) {
+      return;
+    }
+
+    this.isProcessing = true;
+
     try {
       const eventStrings = await popEventsFromBuffer(
         this.redis,
@@ -106,6 +108,7 @@ class RedisAnalyticsEventsBuffer {
       );
 
       if (eventStrings.length === 0) {
+        this.isProcessing = false;
         return;
       }
 
@@ -119,28 +122,27 @@ class RedisAnalyticsEventsBuffer {
 
       if (events.length === 0) {
         console.warn('[Queue] No valid events found in batch');
+        this.isProcessing = false;
         return;
       }
 
       await enqueueBatchJob(events);
 
-      await this.redis.setex(
-        REDIS_TIMER_KEY,
-        Math.ceil(BATCH_CONFIG.BATCH_INTERVAL_MS / 1000),
-        '1'
-      );
+      if (this.batchTimer) {
+        clearTimeout(this.batchTimer);
+      }
 
-      this.batchTimer = setTimeout(async () => {
-        try {
-          await this.redis.del(REDIS_TIMER_KEY);
-        } catch (error) {
-          console.error('[Queue] Timer cleanup error:', error);
-        }
+      this.batchTimer = setTimeout(() => {
+        this.isProcessing = false;
         this.batchTimer = null;
       }, BATCH_CONFIG.BATCH_INTERVAL_MS);
     } catch (error) {
       console.error('[Queue] Batch processing error:', error);
-      await this.redis.del(REDIS_TIMER_KEY);
+      this.isProcessing = false;
+      if (this.batchTimer) {
+        clearTimeout(this.batchTimer);
+        this.batchTimer = null;
+      }
     }
   }
 
@@ -152,12 +154,12 @@ class RedisAnalyticsEventsBuffer {
     await this.processBatch();
   }
 
-  async stop(): Promise<void> {
+  stop(): void {
     if (this.batchTimer) {
       clearTimeout(this.batchTimer);
       this.batchTimer = null;
     }
-    await this.redis.del(REDIS_TIMER_KEY);
+    this.isProcessing = false;
   }
 }
 

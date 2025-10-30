@@ -2,6 +2,7 @@ import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { errorResponses } from '@/lib/schemas';
+import { isQueueHealthy } from '@/queue';
 import { HttpStatus } from '@/types/codes';
 
 const healthResponseSchema = z.object({
@@ -10,6 +11,10 @@ const healthResponseSchema = z.object({
   status: z.enum(['healthy', 'unhealthy']).openapi({ example: 'healthy' }),
   services: z.object({
     database: z.object({
+      status: z.enum(['healthy', 'unhealthy', 'unknown']),
+      latency: z.number(),
+    }),
+    redis: z.object({
       status: z.enum(['healthy', 'unhealthy', 'unknown']),
       latency: z.number(),
     }),
@@ -48,6 +53,7 @@ type HealthCheckData = {
   status: 'healthy' | 'unhealthy';
   services: {
     database: ServiceStatus;
+    redis: ServiceStatus;
   };
   responseTime: number;
 };
@@ -58,6 +64,7 @@ health.openapi(getHealthRoute, async (c) => {
 
   const services: HealthCheckData['services'] = {
     database: { status: 'unknown', latency: 0 },
+    redis: { status: 'unknown', latency: 0 },
   };
 
   try {
@@ -71,6 +78,25 @@ health.openapi(getHealthRoute, async (c) => {
     console.error('Database health check failed:', error);
     overallStatus = 'unhealthy';
     services.database = {
+      status: 'unhealthy',
+      latency: 0,
+    };
+  }
+
+  try {
+    const redisStart = Date.now();
+    const isHealthy = await isQueueHealthy();
+    services.redis = {
+      status: isHealthy ? 'healthy' : 'unhealthy',
+      latency: Date.now() - redisStart,
+    };
+    if (!isHealthy) {
+      overallStatus = 'unhealthy';
+    }
+  } catch (error) {
+    console.error('Redis health check failed:', error);
+    overallStatus = 'unhealthy';
+    services.redis = {
       status: 'unhealthy',
       latency: 0,
     };

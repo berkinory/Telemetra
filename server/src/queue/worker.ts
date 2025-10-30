@@ -4,10 +4,10 @@ import { getRedisConnection, QUEUE_CONFIG } from './config';
 import type { BatchJobData } from './index';
 
 const processBatchJob = async (job: Job<BatchJobData>): Promise<void> => {
-  const { events: eventsList } = job.data;
+  const { events: eventsList, batchId } = job.data;
 
   if (eventsList.length === 0) {
-    console.warn('[Worker] No events to process in batch');
+    console.warn(`[Worker] No events to process in batch ${batchId}`);
     return;
   }
 
@@ -19,7 +19,16 @@ const processBatchJob = async (job: Job<BatchJobData>): Promise<void> => {
     timestamp: new Date(event.timestamp),
   }));
 
-  await db.insert(events).values(eventsToInsert);
+  try {
+    await db
+      .insert(events)
+      .values(eventsToInsert)
+      .onConflictDoNothing()
+      .returning({ eventId: events.eventId });
+  } catch (error) {
+    console.error(`[Worker] Database error in batch ${batchId}:`, error);
+    throw error;
+  }
 };
 
 export const createAnalyticsEventsWorker = (): Worker<BatchJobData> => {

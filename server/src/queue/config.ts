@@ -48,7 +48,7 @@ export const closeRedisConnection = async (): Promise<void> => {
 
 export const BATCH_CONFIG = {
   BATCH_SIZE: 50,
-  BATCH_INTERVAL_MS: 3000,
+  BATCH_INTERVAL_MS: 5000,
   MAX_BUFFER_SIZE: 500,
 } as const;
 
