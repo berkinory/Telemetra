@@ -1,7 +1,6 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
-import { db, events } from '@/db';
-import { addAnalyticsEvent, addSessionActivityUpdate } from '@/lib/queue';
+import { db, events, sessions } from '@/db';
 import {
   buildFilters,
   checkAndCloseExpiredSession,
@@ -123,17 +122,21 @@ eventRouter.openapi(createEventRoute, async (c) => {
       );
     }
 
-    await addSessionActivityUpdate({
-      sessionId: body.sessionId,
-      lastActivityAt: clientTimestamp.getTime(),
-    });
+    await db.transaction(async (tx) => {
+      await tx
+        .update(sessions)
+        .set({
+          lastActivityAt: clientTimestamp,
+        })
+        .where(eq(sessions.sessionId, body.sessionId));
 
-    await addAnalyticsEvent({
-      eventId: body.eventId,
-      sessionId: body.sessionId,
-      name: body.name,
-      params: body.params,
-      timestamp: clientTimestamp.getTime(),
+      await tx.insert(events).values({
+        eventId: body.eventId,
+        sessionId: body.sessionId,
+        name: body.name,
+        params: body.params ? JSON.stringify(body.params) : null,
+        timestamp: clientTimestamp,
+      });
     });
 
     return c.json(

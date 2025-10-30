@@ -3,7 +3,6 @@ import { type AnyColumn, and, count, eq, gte, isNull, lte } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { db, sessions } from '@/db';
 import type { apikey, devices } from '@/db/schema';
-import { getSessionLastActivity } from '@/lib/queue';
 import { ErrorCode, HttpStatus } from '@/schemas';
 
 const MAX_PAGE_SIZE = 100;
@@ -319,35 +318,22 @@ export async function checkAndCloseExpiredSession(
   sessionId: string,
   currentTimestamp: Date
 ): Promise<boolean> {
-  // Try Redis cache first (fast path)
-  const cachedLastActivity = await getSessionLastActivity(sessionId);
+  const session = await db.query.sessions.findFirst({
+    where: (table, { eq: eqFn }) => eqFn(table.sessionId, sessionId),
+  });
 
-  let lastActivityAt: Date;
-
-  if (cachedLastActivity) {
-    // Use cached value from Redis
-    lastActivityAt = new Date(cachedLastActivity);
-  } else {
-    // Fallback to SQLite (for old sessions or cache miss)
-    const session = await db.query.sessions.findFirst({
-      where: (table, { eq: eqFn }) => eqFn(table.sessionId, sessionId),
-    });
-
-    if (!session || session.endedAt) {
-      return false;
-    }
-
-    lastActivityAt = session.lastActivityAt;
+  if (!session || session.endedAt) {
+    return false;
   }
 
   const timeSinceLastActivity =
-    currentTimestamp.getTime() - lastActivityAt.getTime();
+    currentTimestamp.getTime() - session.lastActivityAt.getTime();
 
   if (timeSinceLastActivity > SESSION_TIMEOUT_MS) {
     await db
       .update(sessions)
       .set({
-        endedAt: lastActivityAt,
+        endedAt: session.lastActivityAt,
       })
       .where(eq(sessions.sessionId, sessionId));
     return true;

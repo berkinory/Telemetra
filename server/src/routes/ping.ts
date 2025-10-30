@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import { addSessionActivityUpdate } from '@/lib/queue';
+import { eq } from 'drizzle-orm';
+import { db, sessions } from '@/db';
 import { checkAndCloseExpiredSession, validateSession } from '@/lib/validators';
 import {
   ErrorCode,
@@ -76,10 +77,12 @@ pingRouter.openapi(pingSessionRoute, async (c) => {
       );
     }
 
-    await addSessionActivityUpdate({
-      sessionId: body.sessionId,
-      lastActivityAt: currentTimestamp.getTime(),
-    });
+    await db
+      .update(sessions)
+      .set({
+        lastActivityAt: currentTimestamp,
+      })
+      .where(eq(sessions.sessionId, body.sessionId));
 
     return c.json(
       {
