@@ -165,11 +165,17 @@ export const sessions = sqliteTable(
       .references(() => devices.deviceId, { onDelete: 'cascade' }),
     startedAt: integer('started_at', { mode: 'timestamp_ms' }).notNull(),
     endedAt: integer('ended_at', { mode: 'timestamp_ms' }),
+    lastActivityAt: integer('last_activity_at', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
   },
   (table) => ({
     deviceIdIdx: index('sessions_analytics_device_id_idx').on(table.deviceId),
     startedAtIdx: index('sessions_analytics_started_at_idx').on(
       table.startedAt
+    ),
+    lastActivityAtIdx: index('sessions_analytics_last_activity_at_idx').on(
+      table.lastActivityAt
     ),
   })
 );

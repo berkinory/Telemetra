@@ -4,7 +4,9 @@ import { db, events } from '@/db';
 import { addAnalyticsEvent } from '@/lib/queue';
 import {
   buildFilters,
+  checkAndCloseExpiredSession,
   formatPaginationResponse,
+  updateSessionActivity,
   validateDateRange,
   validatePagination,
   validateSession,
@@ -86,15 +88,6 @@ eventRouter.openapi(createEventRoute, async (c) => {
 
     const clientTimestamp = timestampValidation.data;
     const session = sessionValidation.data;
-    if (clientTimestamp < session.startedAt) {
-      return c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: 'Event timestamp cannot be before session startedAt',
-        },
-        HttpStatus.BAD_REQUEST
-      );
-    }
 
     if (session.endedAt && clientTimestamp > session.endedAt) {
       return c.json(
@@ -105,6 +98,33 @@ eventRouter.openapi(createEventRoute, async (c) => {
         HttpStatus.BAD_REQUEST
       );
     }
+
+    if (clientTimestamp < session.startedAt) {
+      return c.json(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'Event timestamp cannot be before session startedAt',
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const wasClosed = await checkAndCloseExpiredSession(
+      body.sessionId,
+      clientTimestamp
+    );
+
+    if (wasClosed) {
+      return c.json(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'Session expired. Please create a new session.',
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    await updateSessionActivity(body.sessionId, clientTimestamp);
 
     await addAnalyticsEvent({
       eventId: body.eventId,
