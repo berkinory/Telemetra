@@ -6,7 +6,9 @@ if (!process.env.REDIS_URL) {
 
 export const redis = new Redis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
-  enableReadyCheck: false,
+  enableReadyCheck: true,
+  connectTimeout: 10_000,
+  lazyConnect: false,
 });
 
 redis.on('error', (error) => {
@@ -27,4 +29,5 @@ export const STREAM_KEYS = {
 } as const;
 
 export const CONSUMER_GROUP = 'batch-processor';
-export const CONSUMER_NAME = 'worker-1';
+export const CONSUMER_NAME =
+  process.env.CONSUMER_NAME || `worker-${process.pid}`;

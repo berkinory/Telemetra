@@ -78,8 +78,20 @@ export async function readFromStream(
 
     return entries.map(([id, fields]) => {
       const dataIndex = fields.indexOf('data');
+      if (dataIndex === -1 || dataIndex + 1 >= fields.length) {
+        throw new Error(`Missing 'data' field in stream entry ${id}`);
+      }
+
       const dataJson = fields[dataIndex + 1];
-      const data = JSON.parse(dataJson) as QueueItem;
+      let data: QueueItem;
+      try {
+        data = JSON.parse(dataJson) as QueueItem;
+      } catch (error) {
+        throw new Error(
+          `Failed to parse data for entry ${id}: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+
       return { id, data };
     });
   } catch (error) {

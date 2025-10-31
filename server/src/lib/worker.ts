@@ -1,5 +1,4 @@
-import { eq } from 'drizzle-orm';
-import { db, events, sessions } from '@/db';
+import { db, events, pool } from '@/db';
 import {
   acknowledgeMessage,
   CONSUMER_GROUP,
@@ -49,8 +48,11 @@ async function insertEvents(
   }
 
   try {
-    await db.insert(events).values(eventsToInsert);
-    return eventsToInsert.length;
+    const result = await db
+      .insert(events)
+      .values(eventsToInsert)
+      .onConflictDoNothing({ target: events.eventId });
+    return result.rowCount ?? 0;
   } catch (error) {
     console.error('[Worker] Failed to insert events:', error);
     return 0;
@@ -64,30 +66,33 @@ async function updateSessionActivities(
     return 0;
   }
 
-  let processed = 0;
   const sessionUpdates = Array.from(sessionActivities.values());
 
-  for (const activity of sessionUpdates) {
-    try {
-      const result = await db
-        .update(sessions)
-        .set({
-          lastActivityAt: activity.timestamp,
-        })
-        .where(eq(sessions.sessionId, activity.sessionId));
+  try {
+    const values = sessionUpdates
+      .map(
+        (_, index) => `($${index * 2 + 1}::text, $${index * 2 + 2}::timestamp)`
+      )
+      .join(', ');
 
-      if (result.rowCount !== null && result.rowCount > 0) {
-        processed += 1;
-      }
-    } catch (error) {
-      console.error(
-        `[Worker] Failed to update session ${activity.sessionId}:`,
-        error
-      );
+    const params: (string | Date)[] = [];
+    for (const activity of sessionUpdates) {
+      params.push(activity.sessionId, activity.timestamp);
     }
-  }
 
-  return processed;
+    const query = `
+      UPDATE sessions_analytics s
+      SET last_activity_at = v.timestamp
+      FROM (VALUES ${values}) AS v(session_id, timestamp)
+      WHERE s.session_id = v.session_id
+    `;
+
+    const result = await pool.query(query, params);
+    return result.rowCount ?? 0;
+  } catch (error) {
+    console.error('[Worker] Failed to batch update sessions:', error);
+    return 0;
+  }
 }
 
 function processEventItem(
@@ -168,11 +173,9 @@ function processBatchItems(batch: BatchEntry[]): {
   return { eventsToInsert, sessionActivities };
 }
 
-async function processBatch(
-  batch: BatchEntry[]
-): Promise<{ processed: number; failed: number }> {
+async function processBatch(batch: BatchEntry[]): Promise<void> {
   if (batch.length === 0) {
-    return { processed: 0, failed: 0 };
+    return;
   }
 
   const { eventsToInsert, sessionActivities } = processBatchItems(batch);
@@ -182,8 +185,22 @@ async function processBatch(
     updateSessionActivities(sessionActivities),
   ]);
 
-  const processed = eventsProcessed + activitiesProcessed;
-  const failed = batch.length - processed;
+  const eventsSucceeded = eventsProcessed === eventsToInsert.length;
+  const activitiesSucceeded = activitiesProcessed === sessionActivities.size;
+
+  if (!eventsSucceeded) {
+    console.error(
+      `[Worker] Batch processing failed - events: ${eventsProcessed}/${eventsToInsert.length} - messages not acknowledged`
+    );
+    return;
+  }
+
+  if (!activitiesSucceeded) {
+    console.error(
+      `[Worker] Batch processing failed - sessions: ${activitiesProcessed}/${sessionActivities.size} - messages not acknowledged`
+    );
+    return;
+  }
 
   for (const entry of batch) {
     try {
@@ -195,8 +212,6 @@ async function processBatch(
       );
     }
   }
-
-  return { processed, failed };
 }
 
 async function collectBatch(
@@ -271,9 +286,9 @@ async function processStream(streamKey: string): Promise<void> {
       return;
     }
 
-    const { processed, failed } = await processBatch(batch);
+    await processBatch(batch);
     console.log(
-      `[Worker] Processed batch: ${processed} succeeded, ${failed} failed (stream: ${streamKey})`
+      `[Worker] Successfully processed batch of ${batch.length} items (stream: ${streamKey})`
     );
   } catch (error) {
     console.error(`[Worker] Error processing stream ${streamKey}:`, error);
@@ -288,8 +303,20 @@ export async function startWorker(): Promise<void> {
 
   console.log('[Worker] Started batch processor');
 
+  let shouldStop = false;
+
+  process.on('SIGTERM', () => {
+    console.log('[Worker] Received SIGTERM, shutting down gracefully...');
+    shouldStop = true;
+  });
+
+  process.on('SIGINT', () => {
+    console.log('[Worker] Received SIGINT, shutting down gracefully...');
+    shouldStop = true;
+  });
+
   async function runLoop(): Promise<void> {
-    while (true) {
+    while (!shouldStop) {
       try {
         await Promise.all([
           processStream(STREAM_KEYS.EVENTS),
@@ -300,6 +327,7 @@ export async function startWorker(): Promise<void> {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
+    console.log('[Worker] Shutdown complete');
   }
 
   runLoop().catch((error) => {
