@@ -1,3 +1,4 @@
+import { compress } from '@hono/bun-compress';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
 import { pool } from '@/db';
@@ -22,6 +23,8 @@ const app = new OpenAPIHono<{
 const corsOrigins = [process.env.WEB_URL || 'http://localhost:3001'].filter(
   Boolean
 );
+
+app.use('*', compress());
 
 app.use(
   '/api/auth/*',
