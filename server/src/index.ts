@@ -4,7 +4,7 @@ import { pool } from '@/db';
 import { auth } from '@/lib/auth';
 import { authMiddleware } from '@/lib/middleware';
 import { configureOpenAPI } from '@/lib/openapi';
-import { redis } from '@/lib/redis';
+import { redis, redisHealth, redisQueue } from '@/lib/redis';
 import { startWorker } from '@/lib/worker';
 import deviceRouter from '@/routes/device';
 import eventRouter from '@/routes/event';
@@ -68,8 +68,8 @@ const shutdown = async (signal: string) => {
       console.log('[Server] Worker stopped');
     }
 
-    await redis.quit();
-    console.log('[Server] Redis connection closed');
+    await Promise.all([redis.quit(), redisHealth.quit(), redisQueue.quit()]);
+    console.log('[Server] Redis connections closed');
 
     await pool.end();
     console.log('[Server] Database pool closed');

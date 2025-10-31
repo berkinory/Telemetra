@@ -1,4 +1,4 @@
-import { redis, STREAM_KEYS } from './redis';
+import { redis, redisQueue, STREAM_KEYS } from './redis';
 
 export { CONSUMER_GROUP, CONSUMER_NAME, STREAM_KEYS } from './redis';
 
@@ -25,7 +25,7 @@ export async function addToQueue(item: QueueItem): Promise<void> {
   const streamKey =
     item.type === 'event' ? STREAM_KEYS.EVENTS : STREAM_KEYS.PINGS;
 
-  await redis.xadd(
+  await redisQueue.xadd(
     streamKey,
     '*',
     'data',
@@ -40,8 +40,7 @@ export async function addBatchToQueue(items: QueueItem[]): Promise<void> {
     return;
   }
 
-  const pipeline = redis.pipeline();
-  const timestamp = Date.now().toString();
+  const pipeline = redisQueue.pipeline();
 
   for (const item of items) {
     const streamKey =
@@ -53,11 +52,26 @@ export async function addBatchToQueue(items: QueueItem[]): Promise<void> {
       'data',
       JSON.stringify(item),
       'timestamp',
-      timestamp
+      Date.now().toString()
     );
   }
 
-  await pipeline.exec();
+  const results = await pipeline.exec();
+  if (!results) {
+    throw new Error('Pipeline execution failed');
+  }
+
+  const errors = results
+    .map((r, i) =>
+      r[0] ? { index: i, item: items[i], error: r[0].message } : null
+    )
+    .filter((e): e is NonNullable<typeof e> => e !== null);
+
+  if (errors.length > 0) {
+    throw new Error(
+      `Failed to add ${errors.length} of ${items.length} items to queue: ${JSON.stringify(errors)}`
+    );
+  }
 }
 
 type ReadFromStreamOptions = {
@@ -167,5 +181,20 @@ export async function acknowledgeBatchMessages(
     pipeline.xack(streamKey, groupName, messageId);
   }
 
-  await pipeline.exec();
+  const results = await pipeline.exec();
+  if (!results) {
+    throw new Error('Pipeline execution failed');
+  }
+
+  const errors = results
+    .map((r, i) =>
+      r[0] ? { index: i, message: messages[i], error: r[0].message } : null
+    )
+    .filter((e): e is NonNullable<typeof e> => e !== null);
+
+  if (errors.length > 0) {
+    throw new Error(
+      `Failed to acknowledge ${errors.length} of ${messages.length} messages: ${JSON.stringify(errors)}`
+    );
+  }
 }
