@@ -337,9 +337,6 @@ export async function invalidateSessionCache(sessionId: string): Promise<void> {
   try {
     await db.$cache?.invalidate({ tags: `session:${sessionId}` });
   } catch (error) {
-    console.error(
-      `[Cache] Failed to invalidate session ${sessionId}:`,
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    console.error(`[Cache] Failed to invalidate session ${sessionId}:`, error);
   }
 }

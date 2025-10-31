@@ -15,7 +15,7 @@ import { redis } from './redis';
 
 const BATCH_MAX_SIZE = 100;
 const BATCH_WAIT_TIME_MS = 8000;
-const XREAD_BLOCK_MS = 1000;
+const XREAD_BLOCK_MS = 15_000;
 
 type BatchEntry = {
   id: string;

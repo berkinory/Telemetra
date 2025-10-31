@@ -1,6 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { pool } from '@/db';
-import { redis } from '@/lib/redis';
+import { redisHealth } from '@/lib/redis';
 import { methodNotAllowed } from '@/lib/response';
 import { errorResponses, HttpStatus } from '@/schemas';
 
@@ -119,7 +119,7 @@ health.openapi(getHealthRoute, async (c) => {
 
   try {
     const redisStart = Date.now();
-    await redis.ping();
+    await redisHealth.ping();
     services.redis = {
       status: 'healthy',
       latency: Date.now() - redisStart,
@@ -139,11 +139,24 @@ health.openapi(getHealthRoute, async (c) => {
 
   const totalLatency = Date.now() - startTime;
 
+  const cacheEnabled =
+    !!process.env.REDIS_REST_URL && !!process.env.REDIS_REST_TOKEN;
+
   const data: HealthCheckData = {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     status: overallStatus,
-    services,
+    services: {
+      ...services,
+      cache: {
+        enabled: cacheEnabled,
+        ...(cacheEnabled && {
+          strategy: 'explicit',
+          ttl: 300,
+          cachedTables: ['sessions'],
+        }),
+      },
+    },
     responseTime: totalLatency,
   };
 

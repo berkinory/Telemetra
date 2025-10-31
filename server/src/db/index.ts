@@ -42,17 +42,31 @@ const schema = {
   events,
 };
 
-const cacheConfig =
-  process.env.REDIS_REST_URL && process.env.REDIS_REST_TOKEN
-    ? upstashCache({
-        url: process.env.REDIS_REST_URL,
-        token: process.env.REDIS_REST_TOKEN,
-        global: false,
-        config: {
-          ex: 300,
-        },
-      })
-    : undefined;
+let cacheConfig: ReturnType<typeof upstashCache> | undefined;
+try {
+  if (process.env.REDIS_REST_URL && process.env.REDIS_REST_TOKEN) {
+    cacheConfig = upstashCache({
+      url: process.env.REDIS_REST_URL,
+      token: process.env.REDIS_REST_TOKEN,
+      global: false,
+      config: {
+        ex: 300,
+      },
+    });
+    console.log(
+      '[Database] Redis cache enabled (TTL: 300s, Strategy: explicit)'
+    );
+  } else {
+    console.log(
+      '[Database] Redis cache disabled (environment variables not set)'
+    );
+    cacheConfig = undefined;
+  }
+} catch (error) {
+  console.error('[Database] Failed to initialize Redis cache:', error);
+  console.log('[Database] Continuing without cache');
+  cacheConfig = undefined;
+}
 
 export const db = drizzle({
   client: pool,

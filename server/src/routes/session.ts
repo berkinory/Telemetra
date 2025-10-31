@@ -135,10 +135,7 @@ sessionRouter.openapi(createSessionRoute, async (c) => {
       HttpStatus.OK
     );
   } catch (error) {
-    console.error(
-      '[Session.Create] Error:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    console.error('[Session.Create] Error:', error);
     return c.json(
       {
         code: ErrorCode.INTERNAL_SERVER_ERROR,
@@ -225,10 +222,7 @@ sessionRouter.openapi(getSessionsRoute, async (c) => {
       HttpStatus.OK
     );
   } catch (error) {
-    console.error(
-      '[Session.List] Error:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    console.error('[Session.List] Error:', error);
     return c.json(
       {
         code: ErrorCode.INTERNAL_SERVER_ERROR,
