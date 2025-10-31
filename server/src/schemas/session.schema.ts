@@ -54,22 +54,6 @@ export const endSessionRequestSchema = z
   })
   .openapi('EndSessionRequest');
 
-export const pingSessionRequestSchema = z
-  .object({
-    sessionId: z.string().openapi({ example: 'session_xyz123' }),
-  })
-  .openapi('PingSessionRequest');
-
-export const pingSessionResponseSchema = z
-  .object({
-    sessionId: z.string().openapi({ example: 'session_xyz123' }),
-    lastActivityAt: z
-      .string()
-      .datetime()
-      .openapi({ example: '2024-01-01T00:30:00Z' }),
-  })
-  .openapi('PingSessionResponse');
-
 export const listSessionsQuerySchema = paginationQuerySchema
   .merge(dateFilterQuerySchema)
   .extend({
@@ -87,7 +71,5 @@ export const sessionsListResponseSchema = z
 export type SessionSchema = z.infer<typeof sessionSchema>;
 export type CreateSessionRequest = z.infer<typeof createSessionRequestSchema>;
 export type EndSessionRequest = z.infer<typeof endSessionRequestSchema>;
-export type PingSessionRequest = z.infer<typeof pingSessionRequestSchema>;
-export type PingSessionResponse = z.infer<typeof pingSessionResponseSchema>;
 export type ListSessionsQuery = z.infer<typeof listSessionsQuerySchema>;
 export type SessionsListResponse = z.infer<typeof sessionsListResponseSchema>;

@@ -35,7 +35,12 @@ export {
   type ListEventsQuery,
   listEventsQuerySchema,
 } from './event.schema';
-
+export {
+  type PingSessionRequest,
+  type PingSessionResponse,
+  pingSessionRequestSchema,
+  pingSessionResponseSchema,
+} from './ping.schema';
 export {
   type CreateSessionRequest,
   createSessionRequestSchema,
@@ -43,10 +48,6 @@ export {
   endSessionRequestSchema,
   type ListSessionsQuery,
   listSessionsQuerySchema,
-  type PingSessionRequest,
-  type PingSessionResponse,
-  pingSessionRequestSchema,
-  pingSessionResponseSchema,
   type SessionSchema,
   type SessionsListResponse,
   sessionSchema,
