@@ -1,6 +1,5 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import { eq } from 'drizzle-orm';
-import { db, sessions } from '@/db';
+import { addToQueue } from '@/lib/queue';
 import { methodNotAllowed } from '@/lib/response';
 import { validateSession, validateTimestamp } from '@/lib/validators';
 import {
@@ -67,25 +66,10 @@ pingRouter.openapi(pingSessionRoute, async (c) => {
 
     const clientTimestamp = timestampValidation.data;
 
-    await db.transaction(async (tx) => {
-      const currentSession = await tx.query.sessions.findFirst({
-        where: (table, { eq: eqFn }) => eqFn(table.sessionId, body.sessionId),
-      });
-
-      if (!currentSession) {
-        throw new Error('Session not found');
-      }
-
-      const result = await tx
-        .update(sessions)
-        .set({
-          lastActivityAt: clientTimestamp,
-        })
-        .where(eq(sessions.sessionId, body.sessionId));
-
-      if (result.rowCount === 0) {
-        throw new Error('Failed to update session');
-      }
+    await addToQueue({
+      type: 'ping',
+      sessionId: body.sessionId,
+      timestamp: clientTimestamp.toISOString(),
     });
 
     return c.json(
@@ -96,19 +80,6 @@ pingRouter.openapi(pingSessionRoute, async (c) => {
       HttpStatus.OK
     );
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Failed to ping session';
-
-    if (errorMessage.includes('not found')) {
-      return c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: errorMessage,
-        },
-        HttpStatus.BAD_REQUEST
-      );
-    }
-
     console.error('[Session.Ping] Error:', error);
     return c.json(
       {
