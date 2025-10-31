@@ -47,14 +47,27 @@ app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));
 
 configureOpenAPI(app);
 
-startWorker().catch((error) => {
-  console.error('[Server] Failed to start worker:', error);
-  process.exit(1);
-});
+let workerHandle: { stop: () => Promise<void> } | null = null;
+
+startWorker()
+  .then((handle) => {
+    workerHandle = handle;
+  })
+  .catch((error) => {
+    console.error('[Server] Failed to start worker:', error);
+    process.exit(1);
+  });
 
 const shutdown = async (signal: string) => {
   try {
     console.log(`[Server] Received ${signal}, shutting down gracefully...`);
+
+    // Stop worker first to finish in-flight batches
+    if (workerHandle) {
+      console.log('[Server] Stopping worker...');
+      await workerHandle.stop();
+      console.log('[Server] Worker stopped');
+    }
 
     await redis.quit();
     console.log('[Server] Redis connection closed');

@@ -96,9 +96,13 @@ export async function readFromStream(
     });
   } catch (error) {
     if (error instanceof Error && error.message.includes('NOGROUP')) {
+      console.log(
+        `[Queue] Consumer group '${groupName}' not found for stream '${streamKey}', creating...`
+      );
       await createConsumerGroup(streamKey, groupName);
       return null;
     }
+    console.error(`[Queue] Error reading from stream '${streamKey}':`, error);
     throw error;
   }
 }

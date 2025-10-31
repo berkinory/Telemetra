@@ -227,16 +227,19 @@ async function collectBatch(
     receivedAt: Date.now(),
   }));
 
-  const elapsed = Date.now() - startTime;
-  const remainingWait = Math.max(0, BATCH_WAIT_TIME_MS - elapsed);
-
+  // If we already have a full batch, process immediately
   if (batch.length >= BATCH_MAX_SIZE) {
     return batch.sort(
       (a, b) => extractTimestamp(a.data) - extractTimestamp(b.data)
     );
   }
 
-  if (remainingWait > 0) {
+  const elapsed = Date.now() - startTime;
+  const remainingWait = Math.max(0, BATCH_WAIT_TIME_MS - elapsed);
+
+  // Only wait if we have some items but not enough
+  // This prevents unnecessary waiting when stream is empty
+  if (remainingWait > 0 && batch.length > 0) {
     await new Promise((resolve) => {
       setTimeout(resolve, remainingWait);
     });
@@ -298,7 +301,9 @@ async function processStream(streamKey: string): Promise<void> {
   }
 }
 
-export async function startWorker(): Promise<void> {
+export async function startWorker(): Promise<{
+  stop: () => Promise<void>;
+}> {
   await Promise.all([
     createConsumerGroup(STREAM_KEYS.EVENTS, CONSUMER_GROUP),
     createConsumerGroup(STREAM_KEYS.PINGS, CONSUMER_GROUP),
@@ -307,16 +312,20 @@ export async function startWorker(): Promise<void> {
   console.log('[Worker] Started batch processor');
 
   let shouldStop = false;
+  let loopPromise: Promise<void> | null = null;
 
-  process.on('SIGTERM', () => {
+  const sigtermHandler = () => {
     console.log('[Worker] Received SIGTERM, shutting down gracefully...');
     shouldStop = true;
-  });
+  };
 
-  process.on('SIGINT', () => {
+  const sigintHandler = () => {
     console.log('[Worker] Received SIGINT, shutting down gracefully...');
     shouldStop = true;
-  });
+  };
+
+  process.on('SIGTERM', sigtermHandler);
+  process.on('SIGINT', sigintHandler);
 
   async function runLoop(): Promise<void> {
     while (!shouldStop) {
@@ -327,14 +336,27 @@ export async function startWorker(): Promise<void> {
         ]);
       } catch (error) {
         console.error('[Worker] Error in main loop:', error);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 1000);
+        });
       }
     }
     console.log('[Worker] Shutdown complete');
   }
 
-  runLoop().catch((error) => {
+  loopPromise = runLoop().catch((error) => {
     console.error('[Worker] Fatal error:', error);
-    process.exit(1);
+    throw error;
   });
+
+  return {
+    stop: async () => {
+      shouldStop = true;
+      process.off('SIGTERM', sigtermHandler);
+      process.off('SIGINT', sigintHandler);
+      if (loopPromise) {
+        await loopPromise;
+      }
+    },
+  };
 }

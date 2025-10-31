@@ -9,6 +9,24 @@ export const redis = new Redis(process.env.REDIS_URL, {
   enableReadyCheck: true,
   connectTimeout: 10_000,
   lazyConnect: false,
+  retryStrategy: (times) => {
+    if (times > 10) {
+      console.error('[Redis] Max retries exceeded, giving up');
+      return null; // Stop retrying
+    }
+    const delay = Math.min(times * 100, 3000); // Max 3s delay
+    console.log(`[Redis] Retrying connection in ${delay}ms (attempt ${times})`);
+    return delay;
+  },
+  reconnectOnError: (error) => {
+    const targetErrors = ['READONLY', 'ECONNRESET', 'ETIMEDOUT'];
+    if (
+      targetErrors.some((targetError) => error.message.includes(targetError))
+    ) {
+      return true;
+    }
+    return false;
+  },
 });
 
 redis.on('error', (error) => {
