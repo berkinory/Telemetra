@@ -78,6 +78,12 @@ type HealthCheckData = {
   services: {
     database: ServiceStatus;
     redis: ServiceStatus;
+    cache?: {
+      enabled: boolean;
+      strategy?: string;
+      ttl?: number;
+      cachedTables?: string[];
+    };
   };
   responseTime: number;
 };
