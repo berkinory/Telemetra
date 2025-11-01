@@ -7,11 +7,11 @@ import { authMiddleware } from '@/lib/middleware';
 import { configureOpenAPI } from '@/lib/openapi';
 import { redis, redisHealth, redisQueue } from '@/lib/redis';
 import { startWorker } from '@/lib/worker';
-import deviceRouter from '@/routes/device';
-import eventRouter from '@/routes/event';
+import { deviceSdkRouter, deviceWebRouter } from '@/routes/device';
+import { eventSdkRouter, eventWebRouter } from '@/routes/event';
 import health from '@/routes/health';
-import pingRouter from '@/routes/ping';
-import sessionRouter from '@/routes/session';
+import { pingSdkRouter } from '@/routes/ping';
+import { sessionSdkRouter, sessionWebRouter } from '@/routes/session';
 import { ErrorCode, HttpStatus } from '@/schemas';
 
 const app = new OpenAPIHono<{
@@ -75,10 +75,15 @@ app.onError((err, c) => {
 });
 
 app.route('/health', health);
-app.route('/device', deviceRouter);
-app.route('/session', sessionRouter);
-app.route('/ping', pingRouter);
-app.route('/event', eventRouter);
+
+app.route('/sdk/devices', deviceSdkRouter);
+app.route('/sdk/sessions', sessionSdkRouter);
+app.route('/sdk/events', eventSdkRouter);
+app.route('/sdk/ping', pingSdkRouter);
+
+app.route('/web/devices', deviceWebRouter);
+app.route('/web/sessions', sessionWebRouter);
+app.route('/web/events', eventWebRouter);
 
 app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));
 

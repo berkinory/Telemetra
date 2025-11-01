@@ -53,6 +53,16 @@ export const listEventsQuerySchema = paginationQuerySchema
     apiKeyId: z.string().openapi({ example: 'apikey_abc123' }),
     eventName: z.string().optional().openapi({ example: 'button_clicked' }),
   })
+  .refine(
+    (data) => {
+      const hasSession = !!data.sessionId;
+      const hasDevice = !!data.deviceId;
+      return !(hasSession && hasDevice);
+    },
+    {
+      message: 'Provide either sessionId or deviceId, not both',
+    }
+  )
   .openapi('ListEventsQuery');
 
 export const eventsListResponseSchema = z

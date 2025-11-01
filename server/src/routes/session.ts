@@ -238,11 +238,9 @@ sessionWebRouter.openapi(getSessionsRoute, async (c) => {
   }
 });
 
-const sessionRouter = new OpenAPIHono();
-
-sessionRouter.all('*', async (c, next) => {
+sessionSdkRouter.all('*', async (c, next) => {
   const method = c.req.method;
-  const allowedMethods = ['GET', 'POST'];
+  const allowedMethods = ['POST'];
 
   if (!allowedMethods.includes(method)) {
     return methodNotAllowed(c, allowedMethods);
@@ -251,7 +249,15 @@ sessionRouter.all('*', async (c, next) => {
   await next();
 });
 
-sessionRouter.route('/', sessionSdkRouter);
-sessionRouter.route('/', sessionWebRouter);
+sessionWebRouter.all('*', async (c, next) => {
+  const method = c.req.method;
+  const allowedMethods = ['GET'];
 
-export default sessionRouter;
+  if (!allowedMethods.includes(method)) {
+    return methodNotAllowed(c, allowedMethods);
+  }
+
+  await next();
+});
+
+export { sessionSdkRouter, sessionWebRouter };

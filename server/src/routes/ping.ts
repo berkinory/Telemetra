@@ -39,16 +39,16 @@ const pingSessionRoute = createRoute({
   },
 });
 
-const pingRouter = new OpenAPIHono<{
+const pingSdkRouter = new OpenAPIHono<{
   Variables: {
     apiKey: ApiKey;
     userId: string;
   };
 }>();
 
-pingRouter.use('*', requireApiKey);
+pingSdkRouter.use('*', requireApiKey);
 
-pingRouter.all('*', async (c, next) => {
+pingSdkRouter.all('*', async (c, next) => {
   const method = c.req.method;
   const allowedMethods = ['POST'];
 
@@ -59,7 +59,7 @@ pingRouter.all('*', async (c, next) => {
   await next();
 });
 
-pingRouter.openapi(pingSessionRoute, async (c) => {
+pingSdkRouter.openapi(pingSessionRoute, async (c) => {
   try {
     const body = c.req.valid('json');
     const apiKey = c.get('apiKey');
@@ -115,4 +115,4 @@ pingRouter.openapi(pingSessionRoute, async (c) => {
   }
 });
 
-export default pingRouter;
+export { pingSdkRouter };

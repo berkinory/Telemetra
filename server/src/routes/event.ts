@@ -1,7 +1,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, inArray, type SQL } from 'drizzle-orm';
 import { ulid } from 'ulid';
-import { db, events } from '@/db';
+import { db, events, sessions } from '@/db';
 import type { ApiKey, Session, User } from '@/db/schema';
 import {
   requireApiKey,
@@ -217,23 +217,12 @@ eventWebRouter.openapi(getEventsRoute, async (c) => {
     if (sessionId) {
       filters.push(eq(events.sessionId, sessionId));
     } else if (deviceId) {
-      const deviceSessions = await db.query.sessions.findMany({
-        where: (table, { eq: eqFn }) => eqFn(table.deviceId, deviceId),
-      });
+      const deviceSessionsSubquery = db
+        .select({ sessionId: sessions.sessionId })
+        .from(sessions)
+        .where(eq(sessions.deviceId, deviceId));
 
-      const sessionIds = deviceSessions.map((s) => s.sessionId);
-
-      if (sessionIds.length === 0) {
-        return c.json(
-          {
-            events: [],
-            pagination: formatPaginationResponse(0, page, pageSize),
-          },
-          HttpStatus.OK
-        );
-      }
-
-      filters.push(inArray(events.sessionId, sessionIds));
+      filters.push(inArray(events.sessionId, deviceSessionsSubquery));
     }
 
     if (query.eventName) {
@@ -286,11 +275,9 @@ eventWebRouter.openapi(getEventsRoute, async (c) => {
   }
 });
 
-const eventRouter = new OpenAPIHono();
-
-eventRouter.all('*', async (c, next) => {
+eventSdkRouter.all('*', async (c, next) => {
   const method = c.req.method;
-  const allowedMethods = ['GET', 'POST'];
+  const allowedMethods = ['POST'];
 
   if (!allowedMethods.includes(method)) {
     return methodNotAllowed(c, allowedMethods);
@@ -299,7 +286,15 @@ eventRouter.all('*', async (c, next) => {
   await next();
 });
 
-eventRouter.route('/', eventSdkRouter);
-eventRouter.route('/', eventWebRouter);
+eventWebRouter.all('*', async (c, next) => {
+  const method = c.req.method;
+  const allowedMethods = ['GET'];
 
-export default eventRouter;
+  if (!allowedMethods.includes(method)) {
+    return methodNotAllowed(c, allowedMethods);
+  }
+
+  await next();
+});
+
+export { eventSdkRouter, eventWebRouter };

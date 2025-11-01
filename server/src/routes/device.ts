@@ -329,11 +329,9 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
   }
 });
 
-const deviceRouter = new OpenAPIHono();
-
-deviceRouter.all('*', async (c, next) => {
+deviceSdkRouter.all('*', async (c, next) => {
   const method = c.req.method;
-  const allowedMethods = ['GET', 'POST'];
+  const allowedMethods = ['POST'];
 
   if (!allowedMethods.includes(method)) {
     return methodNotAllowed(c, allowedMethods);
@@ -342,7 +340,15 @@ deviceRouter.all('*', async (c, next) => {
   await next();
 });
 
-deviceRouter.route('/', deviceSdkRouter);
-deviceRouter.route('/', deviceWebRouter);
+deviceWebRouter.all('*', async (c, next) => {
+  const method = c.req.method;
+  const allowedMethods = ['GET'];
 
-export default deviceRouter;
+  if (!allowedMethods.includes(method)) {
+    return methodNotAllowed(c, allowedMethods);
+  }
+
+  await next();
+});
+
+export { deviceSdkRouter, deviceWebRouter };
