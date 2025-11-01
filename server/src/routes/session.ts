@@ -73,7 +73,6 @@ const getSessionsRoute = createRoute({
 const sessionRouter = new OpenAPIHono<{
   Variables: {
     apiKey: ApiKey;
-    userId: string;
   };
 }>();
 
@@ -94,16 +93,6 @@ sessionRouter.openapi(createSessionRoute, async (c) => {
   try {
     const body = c.req.valid('json');
     const apiKey = c.get('apiKey');
-
-    if (!apiKey?.id) {
-      return c.json(
-        {
-          code: ErrorCode.UNAUTHORIZED,
-          detail: 'API key is required',
-        },
-        HttpStatus.UNAUTHORIZED
-      );
-    }
 
     const deviceValidation = await validateDevice(c, body.deviceId, apiKey.id);
     if (!deviceValidation.success) {
@@ -171,16 +160,6 @@ sessionRouter.openapi(getSessionsRoute, async (c) => {
     const query = c.req.valid('query');
     const { deviceId } = query;
     const apiKey = c.get('apiKey');
-
-    if (!apiKey?.id) {
-      return c.json(
-        {
-          code: ErrorCode.UNAUTHORIZED,
-          detail: 'API key is required',
-        },
-        HttpStatus.UNAUTHORIZED
-      );
-    }
 
     if (!deviceId) {
       return c.json(
