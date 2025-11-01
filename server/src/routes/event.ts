@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
+import { ulid } from 'ulid';
 import { db, events } from '@/db';
 import type { ApiKey } from '@/db/schema';
 import { requireApiKey } from '@/lib/middleware';
@@ -133,7 +134,7 @@ eventRouter.openapi(createEventRoute, async (c) => {
       );
     }
 
-    const eventId = crypto.randomUUID();
+    const eventId = ulid();
 
     await addToQueue({
       type: 'event',
@@ -232,30 +233,13 @@ eventRouter.openapi(getEventsRoute, async (c) => {
       db.select({ count: count() }).from(events).where(whereClause),
     ]);
 
-    const formattedEvents = eventsList.map((event) => {
-      let parsedParams: Record<
-        string,
-        string | number | boolean | null
-      > | null = null;
-      if (event.params) {
-        try {
-          parsedParams = JSON.parse(event.params) as Record<
-            string,
-            string | number | boolean | null
-          >;
-        } catch {
-          parsedParams = null;
-        }
-      }
-
-      return {
-        eventId: event.eventId,
-        sessionId: event.sessionId,
-        name: event.name,
-        params: parsedParams,
-        timestamp: event.timestamp.toISOString(),
-      };
-    });
+    const formattedEvents = eventsList.map((event) => ({
+      eventId: event.eventId,
+      sessionId: event.sessionId,
+      name: event.name,
+      params: event.params,
+      timestamp: event.timestamp.toISOString(),
+    }));
 
     return c.json(
       {

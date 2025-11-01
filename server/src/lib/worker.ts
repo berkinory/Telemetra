@@ -41,7 +41,7 @@ async function insertEvents(
     eventId: string;
     sessionId: string;
     name: string;
-    params: string | null;
+    params: Record<string, string | number | boolean | null> | null;
     timestamp: Date;
   }[]
 ): Promise<{ success: boolean; insertedCount: number }> {
@@ -103,7 +103,7 @@ function processEventItem(
     eventId: string;
     sessionId: string;
     name: string;
-    params: string | null;
+    params: Record<string, string | number | boolean | null> | null;
     timestamp: Date;
   }[],
   sessionActivities: Map<string, SessionActivity>
@@ -115,7 +115,7 @@ function processEventItem(
     eventId: eventData.eventId,
     sessionId: eventData.sessionId,
     name: eventData.name,
-    params: eventData.params ? JSON.stringify(eventData.params) : null,
+    params: eventData.params ?? null,
     timestamp,
   });
 
@@ -149,7 +149,7 @@ function processBatchItems(batch: BatchEntry[]): {
     eventId: string;
     sessionId: string;
     name: string;
-    params: string | null;
+    params: Record<string, string | number | boolean | null> | null;
     timestamp: Date;
   }[];
   sessionActivities: Map<string, SessionActivity>;
@@ -158,7 +158,7 @@ function processBatchItems(batch: BatchEntry[]): {
     eventId: string;
     sessionId: string;
     name: string;
-    params: string | null;
+    params: Record<string, string | number | boolean | null> | null;
     timestamp: Date;
   }[] = [];
 

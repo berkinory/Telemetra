@@ -13,7 +13,7 @@ export const eventParamsSchema = z.record(
 
 export const eventSchema = z
   .object({
-    eventId: z.string().openapi({ example: 'event_abc123' }),
+    eventId: z.string().openapi({ example: '01JCXYZ5K3QWERTYUIOP01234' }),
     sessionId: z.string().openapi({ example: 'session_xyz123' }),
     name: z.string().openapi({ example: 'button_clicked' }),
     params: eventParamsSchema.nullable().openapi({

@@ -2,10 +2,12 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
 } from 'drizzle-orm/pg-core';
+import { ulid } from 'ulid';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -148,7 +150,7 @@ export const sessions = pgTable(
       .notNull()
       .references(() => devices.deviceId, { onDelete: 'cascade' }),
     startedAt: timestamp('started_at').notNull(),
-    lastActivityAt: timestamp('last_activity_at').defaultNow().notNull(),
+    lastActivityAt: timestamp('last_activity_at').notNull(),
   },
   (table) => ({
     deviceIdIdx: index('sessions_analytics_device_id_idx').on(table.deviceId),
@@ -166,12 +168,15 @@ export const events = pgTable(
   {
     eventId: text('event_id')
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => ulid()),
     sessionId: text('session_id')
       .notNull()
       .references(() => sessions.sessionId, { onDelete: 'cascade' }),
     name: text('name').notNull(),
-    params: text('params'),
+    params: jsonb('params').$type<Record<
+      string,
+      string | number | boolean | null
+    > | null>(),
     timestamp: timestamp('timestamp').notNull(),
   },
   (table) => ({
