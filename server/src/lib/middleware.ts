@@ -21,9 +21,8 @@ export const authMiddleware = async (c: any, next: any) => {
 export const requireAuth = async (c: any, next: any) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
-  const UNAUTHORIZED_STATUS = 401;
   if (!session) {
-    return c.json({ error: 'Unauthorized' }, UNAUTHORIZED_STATUS);
+    return unauthorized(c, 'Authentication required');
   }
 
   c.set('user', session.user);

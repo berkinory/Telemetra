@@ -12,13 +12,35 @@ import eventRouter from '@/routes/event';
 import health from '@/routes/health';
 import pingRouter from '@/routes/ping';
 import sessionRouter from '@/routes/session';
+import { ErrorCode, HttpStatus } from '@/schemas';
 
 const app = new OpenAPIHono<{
   Variables: {
     user: typeof auth.$Infer.Session.user | null;
     session: typeof auth.$Infer.Session.session | null;
   };
-}>().basePath('/v1');
+}>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      const zodErrors = result.error.issues || [];
+      const errors = zodErrors.map((err) => {
+        const pathStr = err.path.map(String).join('.');
+        return `${pathStr ? `${pathStr}: ` : ''}${err.message}`;
+      });
+
+      return c.json(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: errors.length > 0 ? errors.join(', ') : 'Validation failed',
+          meta: {
+            errors: zodErrors,
+          },
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+  },
+}).basePath('/v1');
 
 const corsOrigins = [process.env.WEB_URL || 'http://localhost:3001'].filter(
   Boolean
@@ -39,6 +61,18 @@ app.use(
 );
 
 app.use('/web/*', authMiddleware);
+
+app.onError((err, c) => {
+  console.error('[Server] Unhandled error:', err);
+
+  return c.json(
+    {
+      code: ErrorCode.INTERNAL_SERVER_ERROR,
+      detail: err.message || 'An unexpected error occurred',
+    },
+    HttpStatus.INTERNAL_SERVER_ERROR
+  );
+});
 
 app.route('/health', health);
 app.route('/device', deviceRouter);
