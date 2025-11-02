@@ -194,7 +194,7 @@ function processErrorItem(
     sessionId: errorData.sessionId,
     message: errorData.message,
     type: errorData.errorType,
-    stackTrace: errorData.stackTrace ?? null,
+    stackTrace: errorData.stackTrace,
     timestamp,
   });
 

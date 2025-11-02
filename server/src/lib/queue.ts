@@ -25,7 +25,7 @@ export type ErrorQueueItem = {
   sessionId: string;
   message: string;
   errorType: string;
-  stackTrace?: string;
+  stackTrace: string | null;
   timestamp: string;
 };
 

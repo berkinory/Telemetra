@@ -1,7 +1,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import { count, desc, eq, type SQL } from 'drizzle-orm';
+import { count, desc, eq, inArray, type SQL } from 'drizzle-orm';
 import { ulid } from 'ulid';
-import { db, errors } from '@/db';
+import { db, devices, errors, sessions } from '@/db';
 import type { ApiKey, Session, User } from '@/db/schema';
 import {
   requireApiKey,
@@ -157,7 +157,7 @@ errorSdkRouter.openapi(createErrorRoute, async (c) => {
         sessionId: body.sessionId,
         message: body.message,
         type: body.type,
-        stackTrace: body.stackTrace ?? null,
+        stackTrace: body.stackTrace,
         timestamp: clientTimestamp.toISOString(),
       },
       HttpStatus.OK
@@ -179,9 +179,11 @@ errorWebRouter.openapi(getErrorsRoute, async (c) => {
     const query = c.req.valid('query');
     const { sessionId, apiKeyId } = query;
 
-    const sessionValidation = await validateSession(c, sessionId, apiKeyId);
-    if (!sessionValidation.success) {
-      return sessionValidation.response;
+    if (sessionId) {
+      const sessionValidation = await validateSession(c, sessionId, apiKeyId);
+      if (!sessionValidation.success) {
+        return sessionValidation.response;
+      }
     }
 
     const paginationValidation = validatePagination(
@@ -204,7 +206,19 @@ errorWebRouter.openapi(getErrorsRoute, async (c) => {
       return dateRangeValidation.response;
     }
 
-    const filters: SQL[] = [eq(errors.sessionId, sessionId)];
+    const filters: SQL[] = [];
+
+    if (sessionId) {
+      filters.push(eq(errors.sessionId, sessionId));
+    } else {
+      const apiKeySessions = db
+        .select({ sessionId: sessions.sessionId })
+        .from(sessions)
+        .innerJoin(devices, eq(sessions.deviceId, devices.deviceId))
+        .where(eq(devices.apiKeyId, apiKeyId));
+
+      filters.push(inArray(errors.sessionId, apiKeySessions));
+    }
 
     if (query.type) {
       filters.push(eq(errors.type, query.type));

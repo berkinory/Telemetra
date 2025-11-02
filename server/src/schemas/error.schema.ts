@@ -36,7 +36,7 @@ export const createErrorRequestSchema = z
       .string()
       .openapi({ example: "Cannot read property 'name' of undefined" }),
     type: z.string().openapi({ example: 'TypeError' }),
-    stackTrace: z.string().optional().openapi({
+    stackTrace: z.string().nullable().openapi({
       example: 'LoginScreen.js:67\nButton.js:23\nApp.js:12',
     }),
     timestamp: z
@@ -49,7 +49,7 @@ export const createErrorRequestSchema = z
 export const listErrorsQuerySchema = paginationQuerySchema
   .merge(dateFilterQuerySchema)
   .extend({
-    sessionId: z.string().openapi({ example: 'session_xyz123' }),
+    sessionId: z.string().optional().openapi({ example: 'session_xyz123' }),
     apiKeyId: z.string().openapi({ example: 'apikey_abc123' }),
     type: z.string().optional().openapi({ example: 'TypeError' }),
   })
