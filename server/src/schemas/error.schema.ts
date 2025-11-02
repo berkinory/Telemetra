@@ -66,4 +66,3 @@ export type ErrorSchema = z.infer<typeof errorSchema>;
 export type CreateErrorRequest = z.infer<typeof createErrorRequestSchema>;
 export type ListErrorsQuery = z.infer<typeof listErrorsQuerySchema>;
 export type ErrorsListResponse = z.infer<typeof errorsListResponseSchema>;
-
