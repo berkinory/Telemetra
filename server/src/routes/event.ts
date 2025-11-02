@@ -1,15 +1,20 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import { count, desc, eq, type SQL } from 'drizzle-orm';
+import { count, desc, eq, inArray, type SQL } from 'drizzle-orm';
 import { ulid } from 'ulid';
-import { db, events } from '@/db';
-import type { ApiKey } from '@/db/schema';
-import { requireApiKey } from '@/lib/middleware';
+import { db, events, sessions } from '@/db';
+import type { ApiKey, Session, User } from '@/db/schema';
+import {
+  requireApiKey,
+  requireAuth,
+  verifyApiKeyOwnership,
+} from '@/lib/middleware';
 import { addToQueue } from '@/lib/queue';
 import { methodNotAllowed } from '@/lib/response';
 import {
   buildFilters,
   formatPaginationResponse,
   validateDateRange,
+  validateDevice,
   validatePagination,
   validateSession,
   validateTimestamp,
@@ -29,6 +34,7 @@ const createEventRoute = createRoute({
   path: '/',
   tags: ['event'],
   description: 'Create a new event',
+  security: [{ BearerAuth: [] }],
   request: {
     body: {
       content: {
@@ -56,6 +62,7 @@ const getEventsRoute = createRoute({
   path: '/',
   tags: ['event'],
   description: 'List events for a specific session',
+  security: [{ CookieAuth: [] }],
   request: {
     query: listEventsQuerySchema,
   },
@@ -72,27 +79,26 @@ const getEventsRoute = createRoute({
   },
 });
 
-const eventRouter = new OpenAPIHono<{
+const eventSdkRouter = new OpenAPIHono<{
   Variables: {
     apiKey: ApiKey;
     userId: string;
   };
 }>();
 
-eventRouter.use('*', requireApiKey);
+eventSdkRouter.use('*', requireApiKey);
 
-eventRouter.all('*', async (c, next) => {
-  const method = c.req.method;
-  const allowedMethods = ['GET', 'POST'];
+const eventWebRouter = new OpenAPIHono<{
+  Variables: {
+    user: User;
+    session: Session;
+    apiKey: ApiKey;
+  };
+}>();
 
-  if (!allowedMethods.includes(method)) {
-    return methodNotAllowed(c, allowedMethods);
-  }
+eventWebRouter.use('*', requireAuth, verifyApiKeyOwnership);
 
-  await next();
-});
-
-eventRouter.openapi(createEventRoute, async (c) => {
+eventSdkRouter.openapi(createEventRoute, async (c) => {
   try {
     const body = c.req.valid('json');
     const apiKey = c.get('apiKey');
@@ -167,25 +173,23 @@ eventRouter.openapi(createEventRoute, async (c) => {
   }
 });
 
-eventRouter.openapi(getEventsRoute, async (c) => {
+eventWebRouter.openapi(getEventsRoute, async (c) => {
   try {
     const query = c.req.valid('query');
-    const { sessionId } = query;
-    const apiKey = c.get('apiKey');
+    const { sessionId, deviceId, apiKeyId } = query;
 
-    if (!apiKey?.id) {
-      return c.json(
-        {
-          code: ErrorCode.UNAUTHORIZED,
-          detail: 'API key is required',
-        },
-        HttpStatus.UNAUTHORIZED
-      );
+    if (sessionId) {
+      const sessionValidation = await validateSession(c, sessionId, apiKeyId);
+      if (!sessionValidation.success) {
+        return sessionValidation.response;
+      }
     }
 
-    const sessionValidation = await validateSession(c, sessionId, apiKey.id);
-    if (!sessionValidation.success) {
-      return sessionValidation.response;
+    if (deviceId) {
+      const deviceValidation = await validateDevice(c, deviceId, apiKeyId);
+      if (!deviceValidation.success) {
+        return deviceValidation.response;
+      }
     }
 
     const paginationValidation = validatePagination(
@@ -208,7 +212,18 @@ eventRouter.openapi(getEventsRoute, async (c) => {
       return dateRangeValidation.response;
     }
 
-    const filters: SQL[] = [eq(events.sessionId, sessionId)];
+    const filters: SQL[] = [];
+
+    if (sessionId) {
+      filters.push(eq(events.sessionId, sessionId));
+    } else if (deviceId) {
+      const deviceSessionsSubquery = db
+        .select({ sessionId: sessions.sessionId })
+        .from(sessions)
+        .where(eq(sessions.deviceId, deviceId));
+
+      filters.push(inArray(events.sessionId, deviceSessionsSubquery));
+    }
 
     if (query.eventName) {
       filters.push(eq(events.name, query.eventName));
@@ -260,4 +275,26 @@ eventRouter.openapi(getEventsRoute, async (c) => {
   }
 });
 
-export default eventRouter;
+eventSdkRouter.all('*', async (c, next) => {
+  const method = c.req.method;
+  const allowedMethods = ['POST'];
+
+  if (!allowedMethods.includes(method)) {
+    return methodNotAllowed(c, allowedMethods);
+  }
+
+  await next();
+});
+
+eventWebRouter.all('*', async (c, next) => {
+  const method = c.req.method;
+  const allowedMethods = ['GET'];
+
+  if (!allowedMethods.includes(method)) {
+    return methodNotAllowed(c, allowedMethods);
+  }
+
+  await next();
+});
+
+export { eventSdkRouter, eventWebRouter };

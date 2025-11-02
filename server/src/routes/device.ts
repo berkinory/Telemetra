@@ -1,8 +1,12 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { count, desc, eq, type SQL } from 'drizzle-orm';
 import { db, devices } from '@/db';
-import type { ApiKey } from '@/db/schema';
-import { requireApiKey } from '@/lib/middleware';
+import type { ApiKey, Session, User } from '@/db/schema';
+import {
+  requireApiKey,
+  requireAuth,
+  verifyApiKeyOwnership,
+} from '@/lib/middleware';
 import { methodNotAllowed } from '@/lib/response';
 import {
   buildFilters,
@@ -12,10 +16,12 @@ import {
 } from '@/lib/validators';
 import {
   createDeviceRequestSchema,
+  deviceDetailSchema,
   deviceSchema,
   devicesListResponseSchema,
   ErrorCode,
   errorResponses,
+  getDeviceQuerySchema,
   HttpStatus,
   listDevicesQuerySchema,
 } from '@/schemas';
@@ -25,6 +31,7 @@ const createDeviceRoute = createRoute({
   path: '/',
   tags: ['device'],
   description: 'Create or update a device',
+  security: [{ BearerAuth: [] }],
   request: {
     body: {
       content: {
@@ -52,6 +59,7 @@ const getDevicesRoute = createRoute({
   path: '/',
   tags: ['device'],
   description: 'List devices for a specific API key',
+  security: [{ CookieAuth: [] }],
   request: {
     query: listDevicesQuerySchema,
   },
@@ -68,28 +76,49 @@ const getDevicesRoute = createRoute({
   },
 });
 
-const deviceRouter = new OpenAPIHono<{
+const getDeviceRoute = createRoute({
+  method: 'get',
+  path: '/:deviceId',
+  tags: ['device'],
+  description: 'Get device details with last activity',
+  security: [{ CookieAuth: [] }],
+  request: {
+    query: getDeviceQuerySchema,
+  },
+  responses: {
+    200: {
+      description: 'Device details',
+      content: {
+        'application/json': {
+          schema: deviceDetailSchema,
+        },
+      },
+    },
+    ...errorResponses,
+  },
+});
+
+const deviceSdkRouter = new OpenAPIHono<{
   Variables: {
     apiKey: ApiKey;
     userId: string;
   };
 }>();
 
-deviceRouter.use('*', requireApiKey);
+deviceSdkRouter.use('*', requireApiKey);
 
-deviceRouter.all('*', async (c, next) => {
-  const method = c.req.method;
-  const allowedMethods = ['GET', 'POST'];
+const deviceWebRouter = new OpenAPIHono<{
+  Variables: {
+    user: User;
+    session: Session;
+    apiKey: ApiKey;
+  };
+}>();
 
-  if (!allowedMethods.includes(method)) {
-    return methodNotAllowed(c, allowedMethods);
-  }
-
-  await next();
-});
+deviceWebRouter.use('*', requireAuth, verifyApiKeyOwnership);
 
 // biome-ignore lint/suspicious/noExplicitAny: OpenAPI handler type inference issue with union response types
-deviceRouter.openapi(createDeviceRoute, async (c: any) => {
+deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
   try {
     const body = c.req.valid('json');
     const apiKey = c.get('apiKey');
@@ -168,20 +197,9 @@ deviceRouter.openapi(createDeviceRoute, async (c: any) => {
   }
 });
 
-deviceRouter.openapi(getDevicesRoute, async (c) => {
+deviceWebRouter.openapi(getDevicesRoute, async (c) => {
   try {
     const query = c.req.valid('query');
-    const apiKey = c.get('apiKey');
-
-    if (!apiKey?.id) {
-      return c.json(
-        {
-          code: ErrorCode.UNAUTHORIZED,
-          detail: 'API key is required',
-        },
-        HttpStatus.UNAUTHORIZED
-      );
-    }
 
     const paginationValidation = validatePagination(
       c,
@@ -203,7 +221,7 @@ deviceRouter.openapi(getDevicesRoute, async (c) => {
       return dateRangeValidation.response;
     }
 
-    const filters: SQL[] = [eq(devices.apiKeyId, apiKey.id)];
+    const filters: SQL[] = [eq(devices.apiKeyId, query.apiKeyId)];
 
     if (query.platform) {
       filters.push(eq(devices.platform, query.platform));
@@ -256,4 +274,81 @@ deviceRouter.openapi(getDevicesRoute, async (c) => {
   }
 });
 
-export default deviceRouter;
+// biome-ignore lint/suspicious/noExplicitAny: OpenAPI handler type inference issue with union response types
+deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
+  try {
+    const { deviceId } = c.req.param();
+    const query = c.req.valid('query');
+
+    const device = await db.query.devices.findFirst({
+      where: (table, { eq: eqFn, and: andFn }) =>
+        andFn(
+          eqFn(table.deviceId, deviceId),
+          eqFn(table.apiKeyId, query.apiKeyId)
+        ),
+    });
+
+    if (!device) {
+      return c.json(
+        {
+          code: ErrorCode.NOT_FOUND,
+          detail: 'Device not found',
+        },
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    const lastSession = await db.query.sessions.findFirst({
+      where: (table, { eq: eqFn }) => eqFn(table.deviceId, deviceId),
+      orderBy: (table, { desc: descFn }) => [descFn(table.lastActivityAt)],
+    });
+
+    return c.json(
+      {
+        deviceId: device.deviceId,
+        identifier: device.identifier,
+        brand: device.brand,
+        osVersion: device.osVersion,
+        platform: device.platform,
+        firstSeen: device.firstSeen.toISOString(),
+        lastActivity: lastSession
+          ? lastSession.lastActivityAt.toISOString()
+          : null,
+      },
+      HttpStatus.OK
+    );
+  } catch (error) {
+    console.error('[Device.Get] Error:', error);
+    return c.json(
+      {
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        detail: 'Failed to fetch device',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+});
+
+deviceSdkRouter.all('*', async (c, next) => {
+  const method = c.req.method;
+  const allowedMethods = ['POST'];
+
+  if (!allowedMethods.includes(method)) {
+    return methodNotAllowed(c, allowedMethods);
+  }
+
+  await next();
+});
+
+deviceWebRouter.all('*', async (c, next) => {
+  const method = c.req.method;
+  const allowedMethods = ['GET'];
+
+  if (!allowedMethods.includes(method)) {
+    return methodNotAllowed(c, allowedMethods);
+  }
+
+  await next();
+});
+
+export { deviceSdkRouter, deviceWebRouter };
