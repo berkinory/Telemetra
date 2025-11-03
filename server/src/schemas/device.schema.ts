@@ -13,6 +13,7 @@ export const deviceSchema = z
     brand: z.string().nullable().openapi({ example: 'Apple' }),
     osVersion: z.string().nullable().openapi({ example: '17.0.1' }),
     platform: z.string().nullable().openapi({ example: 'iOS' }),
+    appVersion: z.string().nullable().openapi({ example: '1.2.3' }),
     firstSeen: z
       .string()
       .datetime()
@@ -29,6 +30,7 @@ export const createDeviceRequestSchema = z
     brand: z.string().nullish().openapi({ example: 'Apple' }),
     osVersion: z.string().nullish().openapi({ example: '17.0.1' }),
     platform: z.string().nullish().openapi({ example: 'iOS' }),
+    appVersion: z.string().nullish().openapi({ example: '1.2.3' }),
   })
   .openapi('CreateDeviceRequest');
 
@@ -47,6 +49,7 @@ export const deviceDetailSchema = z
     brand: z.string().nullable().openapi({ example: 'Apple' }),
     osVersion: z.string().nullable().openapi({ example: '17.0.1' }),
     platform: z.string().nullable().openapi({ example: 'iOS' }),
+    appVersion: z.string().nullable().openapi({ example: '1.2.3' }),
     firstSeen: z
       .string()
       .datetime()

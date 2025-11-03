@@ -140,6 +140,7 @@ deviceWebRouter.all('*', async (c, next) => {
 });
 
 // biome-ignore lint/suspicious/noExplicitAny: OpenAPI handler type inference issue with union response types
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Device upsert requires branching for insert vs update logic
 deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
   try {
     const body = c.req.valid('json');
@@ -179,6 +180,7 @@ deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
           brand: body.brand ?? existingDevice.brand,
           osVersion: body.osVersion ?? existingDevice.osVersion,
           platform: body.platform ?? existingDevice.platform,
+          appVersion: body.appVersion ?? existingDevice.appVersion,
         })
         .where(eq(devices.deviceId, body.deviceId))
         .returning();
@@ -192,6 +194,7 @@ deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
           brand: body.brand ?? null,
           osVersion: body.osVersion ?? null,
           platform: body.platform ?? null,
+          appVersion: body.appVersion ?? null,
         })
         .returning();
     }
@@ -203,6 +206,7 @@ deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
         brand: device.brand,
         osVersion: device.osVersion,
         platform: device.platform,
+        appVersion: device.appVersion,
         firstSeen: device.firstSeen.toISOString(),
       },
       HttpStatus.OK
@@ -285,6 +289,7 @@ deviceWebRouter.openapi(getDevicesRoute, async (c) => {
       brand: device.brand,
       osVersion: device.osVersion,
       platform: device.platform,
+      appVersion: device.appVersion,
       firstSeen: device.firstSeen.toISOString(),
     }));
 
@@ -326,6 +331,7 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
         brand: devices.brand,
         osVersion: devices.osVersion,
         platform: devices.platform,
+        appVersion: devices.appVersion,
         firstSeen: devices.firstSeen,
         lastActivityAt: sessions.lastActivityAt,
       })
@@ -357,6 +363,7 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
         brand: deviceWithSession.brand,
         osVersion: deviceWithSession.osVersion,
         platform: deviceWithSession.platform,
+        appVersion: deviceWithSession.appVersion,
         firstSeen: deviceWithSession.firstSeen.toISOString(),
         lastActivity: deviceWithSession.lastActivityAt
           ? deviceWithSession.lastActivityAt.toISOString()
