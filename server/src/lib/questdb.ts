@@ -1,14 +1,13 @@
-import { Sender } from '@questdb/nodejs-client';
+if (!process.env.QUESTDB_HTTP_URL || !process.env.QUESTDB_USER || !process.env.QUESTDB_PASSWORD) {
+  throw new Error('QUESTDB_HTTP_URL, QUESTDB_USER, and QUESTDB_PASSWORD must be set');
+}
 
-// Environment variables
-const QUESTDB_HTTP_URL = process.env.QUESTDB_HTTP_URL || 'https://quest.db.telemetra.dev';
+const QUESTDB_HTTP_URL = process.env.QUESTDB_HTTP_URL;
 const QUESTDB_USER = process.env.QUESTDB_USER;
 const QUESTDB_PASSWORD = process.env.QUESTDB_PASSWORD;
 
-// Initialize flag to ensure tables are created only once
 let tablesInitialized = false;
 
-// Type definitions
 export type EventRecord = {
   eventId: string;
   sessionId: string;
@@ -30,55 +29,89 @@ export type ErrorRecord = {
   timestamp: Date;
 };
 
-// ILP Write Functions
 export async function writeEvent(event: EventRecord): Promise<void> {
-  const sender = Sender.fromConfig(`http::addr=${QUESTDB_HTTP_URL.replace('https://', '').replace('http://', '')};username=${QUESTDB_USER};password=${QUESTDB_PASSWORD};`);
+  const auth = Buffer.from(`${QUESTDB_USER}:${QUESTDB_PASSWORD}`).toString('base64');
+  const timestampNs = event.timestamp.getTime() * 1000000;
   
-  try {
-    await sender.connect();
-    
-    const paramsJson = event.params ? JSON.stringify(event.params) : null;
-    
-    sender
-      .table('events')
-      .symbol('event_id', event.eventId)
-      .symbol('session_id', event.sessionId)
-      .symbol('device_id', event.deviceId)
-      .symbol('api_key_id', event.apiKeyId)
-      .symbol('name', event.name)
-      .stringColumn('params', paramsJson)
-      .at(event.timestamp.getTime() * 1000000, 'ns'); // Convert to nanoseconds
-    
-    await sender.flush();
-  } finally {
-    await sender.close();
+  const escapeSymbol = (value: string) => value.replace(/[,= \n\r]/g, (match) => {
+    if (match === '\n') return '\\n';
+    if (match === '\r') return '\\r';
+    return `\\${match}`;
+  });
+  const escapeString = (value: string) => value.replace(/["\\]/g, '\\$&').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+  
+  const symbols = [
+    `event_id=${escapeSymbol(event.eventId)}`,
+    `session_id=${escapeSymbol(event.sessionId)}`,
+    `device_id=${escapeSymbol(event.deviceId)}`,
+    `api_key_id=${escapeSymbol(event.apiKeyId)}`,
+    `name=${escapeSymbol(event.name)}`,
+  ].join(',');
+  
+  let ilpLine: string;
+  if (event.params !== null) {
+    const paramsJson = JSON.stringify(event.params);
+    ilpLine = `events,${symbols} params="${escapeString(paramsJson)}" ${timestampNs}`;
+  } else {
+    ilpLine = `events,${symbols} ${timestampNs}`;
+  }
+  
+  const response = await fetch(`${QUESTDB_HTTP_URL}/write`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'text/plain',
+    },
+    body: ilpLine,
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`QuestDB write failed: ${response.status} ${response.statusText} - ${errorText}`);
   }
 }
 
 export async function writeError(error: ErrorRecord): Promise<void> {
-  const sender = Sender.fromConfig(`http::addr=${QUESTDB_HTTP_URL.replace('https://', '').replace('http://', '')};username=${QUESTDB_USER};password=${QUESTDB_PASSWORD};`);
+  const auth = Buffer.from(`${QUESTDB_USER}:${QUESTDB_PASSWORD}`).toString('base64');
+  const timestampNs = error.timestamp.getTime() * 1000000;
   
-  try {
-    await sender.connect();
-    
-    sender
-      .table('errors')
-      .symbol('error_id', error.errorId)
-      .symbol('session_id', error.sessionId)
-      .symbol('device_id', error.deviceId)
-      .symbol('api_key_id', error.apiKeyId)
-      .stringColumn('message', error.message)
-      .symbol('type', error.type)
-      .stringColumn('stack_trace', error.stackTrace)
-      .at(error.timestamp.getTime() * 1000000, 'ns'); // Convert to nanoseconds
-    
-    await sender.flush();
-  } finally {
-    await sender.close();
+  const escapeSymbol = (value: string) => value.replace(/[,= \n\r]/g, (match) => {
+    if (match === '\n') return '\\n';
+    if (match === '\r') return '\\r';
+    return `\\${match}`;
+  });
+  const escapeString = (value: string) => value.replace(/["\\]/g, '\\$&').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+  
+  const symbols = [
+    `error_id=${escapeSymbol(error.errorId)}`,
+    `session_id=${escapeSymbol(error.sessionId)}`,
+    `device_id=${escapeSymbol(error.deviceId)}`,
+    `api_key_id=${escapeSymbol(error.apiKeyId)}`,
+    `type=${escapeSymbol(error.type)}`,
+  ].join(',');
+  
+  const fields: string[] = [`message="${escapeString(error.message)}"`];
+  if (error.stackTrace !== null) {
+    fields.push(`stack_trace="${escapeString(error.stackTrace)}"`);
+  }
+  
+  const ilpLine = `errors,${symbols} ${fields.join(',')} ${timestampNs}`;
+  
+  const response = await fetch(`${QUESTDB_HTTP_URL}/write`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'text/plain',
+    },
+    body: ilpLine,
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`QuestDB write failed: ${response.status} ${response.statusText} - ${errorText}`);
   }
 }
 
-// REST Query Functions
 type QueryResponse<T> = {
   query: string;
   columns: Array<{ name: string; type: string }>;
@@ -179,7 +212,6 @@ export async function getEvents(options: GetEventsOptions): Promise<{ events: Ev
   const limit = options.limit || 20;
   const offset = options.offset || 0;
   
-  // Get events
   const eventsQuery = `
     SELECT event_id, session_id, name, params, timestamp 
     FROM events 
@@ -188,7 +220,6 @@ export async function getEvents(options: GetEventsOptions): Promise<{ events: Ev
     LIMIT ${limit} OFFSET ${offset}
   `;
   
-  // Get total count
   const countQuery = `
     SELECT COUNT(*) as count 
     FROM events 
@@ -248,7 +279,6 @@ export async function getErrors(options: GetErrorsOptions): Promise<{ errors: Er
   const limit = options.limit || 20;
   const offset = options.offset || 0;
   
-  // Get errors
   const errorsQuery = `
     SELECT error_id, session_id, message, type, stack_trace, timestamp 
     FROM errors 
@@ -257,7 +287,6 @@ export async function getErrors(options: GetErrorsOptions): Promise<{ errors: Er
     LIMIT ${limit} OFFSET ${offset}
   `;
   
-  // Get total count
   const countQuery = `
     SELECT COUNT(*) as count 
     FROM errors 
@@ -298,7 +327,6 @@ export async function getActivity(options: GetActivityOptions): Promise<{ activi
   const limit = options.limit || 20;
   const offset = options.offset || 0;
   
-  // Get activities using UNION ALL
   const activitiesQuery = `
     SELECT * FROM (
       SELECT 
@@ -323,7 +351,6 @@ export async function getActivity(options: GetActivityOptions): Promise<{ activi
     LIMIT ${limit} OFFSET ${offset}
   `;
   
-  // Get total count
   const countQuery = `
     SELECT 
       (SELECT COUNT(*) FROM events ${whereClause}) + 
@@ -341,7 +368,6 @@ export async function getActivity(options: GetActivityOptions): Promise<{ activi
   };
 }
 
-// Initialize QuestDB tables if they don't exist
 export async function initQuestDB(): Promise<void> {
   if (tablesInitialized) {
     console.log('[QuestDB] Tables already initialized, skipping...');
@@ -352,7 +378,6 @@ export async function initQuestDB(): Promise<void> {
   const auth = Buffer.from(`${QUESTDB_USER}:${QUESTDB_PASSWORD}`).toString('base64');
 
   try {
-    // Create events table
     const eventsTableQuery = `
       CREATE TABLE IF NOT EXISTS events (
         event_id SYMBOL,
@@ -380,7 +405,6 @@ export async function initQuestDB(): Promise<void> {
 
     console.log('[QuestDB] Events table created/verified');
 
-    // Create errors table
     const errorsTableQuery = `
       CREATE TABLE IF NOT EXISTS errors (
         error_id SYMBOL,

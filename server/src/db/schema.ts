@@ -2,12 +2,10 @@ import {
   boolean,
   index,
   integer,
-  jsonb,
   pgTable,
   text,
   timestamp,
 } from 'drizzle-orm/pg-core';
-import { ulid } from 'ulid';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -163,29 +161,6 @@ export const sessions = pgTable(
     ),
   })
 );
-
-// Events and Errors tables migrated to QuestDB
-// Type definitions kept for backward compatibility
-export type Event = {
-  eventId: string;
-  sessionId: string;
-  name: string;
-  params: Record<string, string | number | boolean | null> | null;
-  timestamp: Date;
-};
-
-export type NewEvent = Event;
-
-export type ErrorLog = {
-  errorId: string;
-  sessionId: string;
-  message: string;
-  type: string;
-  stackTrace: string | null;
-  timestamp: Date;
-};
-
-export type NewErrorLog = ErrorLog;
 
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;

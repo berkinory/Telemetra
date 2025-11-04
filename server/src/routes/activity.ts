@@ -93,7 +93,6 @@ activityWebRouter.openapi(getActivityRoute, async (c) => {
       return dateRangeValidation.response;
     }
 
-    // Query QuestDB for activities
     const { activities: activitiesResult, total: totalCount } = await getActivity({
       sessionId,
       startDate: query.startDate || undefined,

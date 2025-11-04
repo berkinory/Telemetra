@@ -162,7 +162,6 @@ eventSdkRouter.openapi(createEventRoute, async (c) => {
       );
     }
 
-    // Get device to retrieve apiKeyId
     const device = await db.query.devices.findFirst({
       where: eq(devices.deviceId, session.deviceId),
     });
@@ -179,7 +178,6 @@ eventSdkRouter.openapi(createEventRoute, async (c) => {
 
     const eventId = ulid();
 
-    // Write directly to QuestDB
     await writeEvent({
       eventId,
       sessionId: body.sessionId,
@@ -252,7 +250,6 @@ eventWebRouter.openapi(getEventsRoute, async (c) => {
       return dateRangeValidation.response;
     }
 
-    // Query QuestDB
     const { events: eventsList, total: totalCount } = await getEvents({
       sessionId: sessionId || undefined,
       deviceId: deviceId || undefined,

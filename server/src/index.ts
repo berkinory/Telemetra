@@ -99,7 +99,6 @@ configureOpenAPI(app);
 
 let workerHandle: { stop: () => Promise<void> } | null = null;
 
-// Initialize QuestDB tables
 initQuestDB()
   .then(() => {
     console.log('[Server] QuestDB initialized');

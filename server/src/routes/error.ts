@@ -161,7 +161,6 @@ errorSdkRouter.openapi(createErrorRoute, async (c) => {
       );
     }
 
-    // Get device to retrieve apiKeyId
     const device = await db.query.devices.findFirst({
       where: eq(devices.deviceId, session.deviceId),
     });
@@ -178,7 +177,6 @@ errorSdkRouter.openapi(createErrorRoute, async (c) => {
 
     const errorId = ulid();
 
-    // Write directly to QuestDB
     await writeError({
       errorId,
       sessionId: body.sessionId,
@@ -245,7 +243,6 @@ errorWebRouter.openapi(getErrorsRoute, async (c) => {
       return dateRangeValidation.response;
     }
 
-    // Query QuestDB
     const { errors: errorsList, total: totalCount } = await getErrors({
       sessionId: sessionId || undefined,
       apiKeyId,
