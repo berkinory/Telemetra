@@ -7,6 +7,7 @@ const QUESTDB_USER = process.env.QUESTDB_USER;
 const QUESTDB_PASSWORD = process.env.QUESTDB_PASSWORD;
 
 let tablesInitialized = false;
+let initPromise: Promise<void> | null = null;
 
 export type EventRecord = {
   eventId: string;
@@ -369,74 +370,83 @@ export async function getActivity(options: GetActivityOptions): Promise<{ activi
 }
 
 export async function initQuestDB(): Promise<void> {
+  if (initPromise) {
+    return initPromise;
+  }
+
   if (tablesInitialized) {
     console.log('[QuestDB] Tables already initialized, skipping...');
     return;
   }
 
-  const url = `${QUESTDB_HTTP_URL}/exec`;
-  const auth = Buffer.from(`${QUESTDB_USER}:${QUESTDB_PASSWORD}`).toString('base64');
+  initPromise = (async () => {
+    const url = `${QUESTDB_HTTP_URL}/exec`;
+    const auth = Buffer.from(`${QUESTDB_USER}:${QUESTDB_PASSWORD}`).toString('base64');
 
-  try {
-    const eventsTableQuery = `
-      CREATE TABLE IF NOT EXISTS events (
-        event_id SYMBOL,
-        session_id SYMBOL,
-        device_id SYMBOL,
-        api_key_id SYMBOL,
-        name SYMBOL,
-        params STRING,
-        timestamp TIMESTAMP
-      ) TIMESTAMP(timestamp) PARTITION BY WEEK
-    `;
+    try {
+      const eventsTableQuery = `
+        CREATE TABLE IF NOT EXISTS events (
+          event_id SYMBOL,
+          session_id SYMBOL,
+          device_id SYMBOL,
+          api_key_id SYMBOL,
+          name SYMBOL,
+          params STRING,
+          timestamp TIMESTAMP
+        ) TIMESTAMP(timestamp) PARTITION BY WEEK
+      `;
 
-    const eventsResponse = await fetch(`${url}?query=${encodeURIComponent(eventsTableQuery)}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-    });
+      const eventsResponse = await fetch(`${url}?query=${encodeURIComponent(eventsTableQuery)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!eventsResponse.ok) {
-      const errorText = await eventsResponse.text();
-      throw new Error(`Failed to create events table: ${eventsResponse.status} - ${errorText}`);
+      if (!eventsResponse.ok) {
+        const errorText = await eventsResponse.text();
+        throw new Error(`Failed to create events table: ${eventsResponse.status} - ${errorText}`);
+      }
+
+      console.log('[QuestDB] Events table created/verified');
+
+      const errorsTableQuery = `
+        CREATE TABLE IF NOT EXISTS errors (
+          error_id SYMBOL,
+          session_id SYMBOL,
+          device_id SYMBOL,
+          api_key_id SYMBOL,
+          message STRING,
+          type SYMBOL,
+          stack_trace STRING,
+          timestamp TIMESTAMP
+        ) TIMESTAMP(timestamp) PARTITION BY WEEK
+      `;
+
+      const errorsResponse = await fetch(`${url}?query=${encodeURIComponent(errorsTableQuery)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!errorsResponse.ok) {
+        const errorText = await errorsResponse.text();
+        throw new Error(`Failed to create errors table: ${errorsResponse.status} - ${errorText}`);
+      }
+
+      console.log('[QuestDB] Errors table created/verified');
+
+      tablesInitialized = true;
+      console.log('[QuestDB] Initialization complete');
+    } catch (error) {
+      console.error('[QuestDB] Initialization failed:', error);
+      initPromise = null;
+      throw error;
     }
+  })();
 
-    console.log('[QuestDB] Events table created/verified');
-
-    const errorsTableQuery = `
-      CREATE TABLE IF NOT EXISTS errors (
-        error_id SYMBOL,
-        session_id SYMBOL,
-        device_id SYMBOL,
-        api_key_id SYMBOL,
-        message STRING,
-        type SYMBOL,
-        stack_trace STRING,
-        timestamp TIMESTAMP
-      ) TIMESTAMP(timestamp) PARTITION BY WEEK
-    `;
-
-    const errorsResponse = await fetch(`${url}?query=${encodeURIComponent(errorsTableQuery)}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!errorsResponse.ok) {
-      const errorText = await errorsResponse.text();
-      throw new Error(`Failed to create errors table: ${errorsResponse.status} - ${errorText}`);
-    }
-
-    console.log('[QuestDB] Errors table created/verified');
-
-    tablesInitialized = true;
-    console.log('[QuestDB] Initialization complete');
-  } catch (error) {
-    console.error('[QuestDB] Initialization failed:', error);
-    throw error;
-  }
+  return initPromise;
 }
