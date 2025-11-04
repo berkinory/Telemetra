@@ -144,15 +144,19 @@ deviceWebRouter.all('*', async (c, next) => {
 deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
   try {
     const body = c.req.valid('json');
-    const apiKey = c.get('apiKey');
 
-    if (!apiKey?.id) {
+    const firstEnabledApiKey = await db.query.apikey.findFirst({
+      where: (table, { eq: eqFn }) => eqFn(table.enabled, true),
+      orderBy: (table, { asc }) => [asc(table.createdAt)],
+    });
+
+    if (!firstEnabledApiKey) {
       return c.json(
         {
-          code: ErrorCode.UNAUTHORIZED,
-          detail: 'API key is required',
+          code: ErrorCode.INTERNAL_SERVER_ERROR,
+          detail: 'No enabled API key found',
         },
-        HttpStatus.UNAUTHORIZED
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
 
@@ -163,19 +167,10 @@ deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
     let device: typeof devices.$inferSelect;
 
     if (existingDevice) {
-      if (existingDevice.apiKeyId !== apiKey.id) {
-        return c.json(
-          {
-            code: ErrorCode.FORBIDDEN,
-            detail: 'You do not have permission to update this device',
-          },
-          HttpStatus.FORBIDDEN
-        );
-      }
-
       [device] = await db
         .update(devices)
         .set({
+          apiKeyId: firstEnabledApiKey.id,
           identifier: body.identifier ?? existingDevice.identifier,
           model: body.model ?? existingDevice.model,
           osVersion: body.osVersion ?? existingDevice.osVersion,
@@ -189,7 +184,7 @@ deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
         .insert(devices)
         .values({
           deviceId: body.deviceId,
-          apiKeyId: apiKey.id,
+          apiKeyId: firstEnabledApiKey.id,
           identifier: body.identifier ?? null,
           model: body.model ?? null,
           osVersion: body.osVersion ?? null,
