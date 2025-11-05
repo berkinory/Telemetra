@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 import { pool } from '@/db';
 import { auth } from '@/lib/auth';
 import { authMiddleware } from '@/lib/middleware';
+import { runMigrations } from '@/lib/migrate';
 import { configureOpenAPI } from '@/lib/openapi';
 import { initQuestDB } from '@/lib/questdb';
 import { activityWebRouter } from '@/routes/activity';
@@ -96,8 +97,13 @@ app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));
 configureOpenAPI(app);
 
 try {
+  await runMigrations();
+  console.log('[Server] PostgreSQL migrations applied');
+
   await initQuestDB();
   console.log('[Server] QuestDB initialized');
+
+  console.log('[Server] All databases ready');
 } catch (error) {
   console.error('[Server] Failed to start:', error);
   process.exit(1);
