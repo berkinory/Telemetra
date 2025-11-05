@@ -1,6 +1,6 @@
-import { upstashCache } from 'drizzle-orm/cache/upstash';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { redisCache } from '@/lib/cache';
 import {
   account,
   apikey,
@@ -40,24 +40,17 @@ const schema = {
   sessions,
 };
 
-let cacheConfig: ReturnType<typeof upstashCache> | undefined;
+let cacheConfig: ReturnType<typeof redisCache> | undefined;
 try {
-  if (process.env.REDIS_REST_URL && process.env.REDIS_REST_TOKEN) {
-    cacheConfig = upstashCache({
-      url: process.env.REDIS_REST_URL,
-      token: process.env.REDIS_REST_TOKEN,
-      global: false,
-      config: {
-        ex: 300,
-      },
+  if (process.env.REDIS_URL) {
+    cacheConfig = redisCache(process.env.REDIS_URL, {
+      ex: 300,
     });
     console.log(
       '[Database] Redis cache enabled (TTL: 300s, Strategy: explicit)'
     );
   } else {
-    console.log(
-      '[Database] Redis cache disabled (environment variables not set)'
-    );
+    console.log('[Database] Redis cache disabled (REDIS_URL not set)');
     cacheConfig = undefined;
   }
 } catch (error) {
@@ -66,8 +59,7 @@ try {
   cacheConfig = undefined;
 }
 
-export const db = drizzle({
-  client: pool,
+export const db = drizzle(pool, {
   schema,
   ...(cacheConfig && { cache: cacheConfig }),
 });

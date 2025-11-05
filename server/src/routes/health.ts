@@ -1,4 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import Redis from 'ioredis';
 import { pool } from '@/db';
 import { methodNotAllowed } from '@/lib/response';
 import { errorResponses, HttpStatus } from '@/schemas';
@@ -20,14 +21,14 @@ const healthResponseSchema = z.object({
       error: z.string().optional(),
       message: z.string().optional(),
     }),
-    cache: z
-      .object({
-        enabled: z.boolean(),
-        strategy: z.string().optional(),
-        ttl: z.number().optional(),
-        cachedTables: z.array(z.string()).optional(),
-      })
-      .optional(),
+    cache: z.object({
+      status: z.enum(['healthy', 'unhealthy', 'unknown']),
+      latency: z.number(),
+      error: z.string().optional(),
+      enabled: z.boolean(),
+      strategy: z.string().optional(),
+      ttl: z.number().optional(),
+    }),
   }),
   responseTime: z.number().openapi({ example: 10 }),
 });
@@ -77,16 +78,16 @@ type HealthCheckData = {
   services: {
     database: ServiceStatus;
     questdb: ServiceStatus;
-    cache?: {
+    cache: ServiceStatus & {
       enabled: boolean;
       strategy?: string;
       ttl?: number;
-      cachedTables?: string[];
     };
   };
   responseTime: number;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Health check needs to test multiple services
 health.openapi(getHealthRoute, async (c) => {
   const startTime = Date.now();
   let overallStatus: 'healthy' | 'unhealthy' = 'healthy';
@@ -94,6 +95,7 @@ health.openapi(getHealthRoute, async (c) => {
   const services: HealthCheckData['services'] = {
     database: { status: 'unknown', latency: 0 },
     questdb: { status: 'unknown', latency: 0 },
+    cache: { status: 'unknown', latency: 0, enabled: false },
   };
 
   try {
@@ -149,26 +151,58 @@ health.openapi(getHealthRoute, async (c) => {
     };
   }
 
-  const totalLatency = Date.now() - startTime;
+  if (process.env.REDIS_URL) {
+    const redis = new Redis(process.env.REDIS_URL, {
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+      connectTimeout: 2000,
+    });
 
-  const cacheEnabled =
-    !!process.env.REDIS_REST_URL && !!process.env.REDIS_REST_TOKEN;
+    try {
+      const redisStart = Date.now();
+      await redis.connect();
+      await redis.ping();
+      services.cache = {
+        status: 'healthy',
+        latency: Date.now() - redisStart,
+        enabled: true,
+        strategy: 'explicit',
+        ttl: 300,
+      };
+      await redis.quit();
+    } catch (error) {
+      console.error('Redis health check failed:', error);
+      overallStatus = 'unhealthy';
+      services.cache = {
+        status: 'unhealthy',
+        latency: 0,
+        enabled: true,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown Redis connection error',
+      };
+      try {
+        await redis.quit();
+      } catch {
+        console.error('Failed to quit Redis connection:', error);
+      }
+    }
+  } else {
+    services.cache = {
+      status: 'unknown',
+      latency: 0,
+      enabled: false,
+    };
+  }
+
+  const totalLatency = Date.now() - startTime;
 
   const data: HealthCheckData = {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     status: overallStatus,
-    services: {
-      ...services,
-      cache: {
-        enabled: cacheEnabled,
-        ...(cacheEnabled && {
-          strategy: 'explicit',
-          ttl: 300,
-          cachedTables: ['sessions'],
-        }),
-      },
-    },
+    services,
     responseTime: totalLatency,
   };
 

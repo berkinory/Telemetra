@@ -36,6 +36,23 @@ services:
       retries: 5
     restart: unless-stopped
 
+  redis:
+    image: redis:8.0.5-alpine
+    container_name: telemetra-redis
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      telemetra-network:
+        aliases:
+          - redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   questdb:
     image: questdb/questdb:9.1.1
     container_name: telemetra-questdb
@@ -91,14 +108,15 @@ services:
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
       - WEB_URL=${WEB_URL}
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/telemetra
-      - REDIS_REST_URL=${REDIS_REST_URL}
-      - REDIS_REST_TOKEN=${REDIS_REST_TOKEN}
+      - REDIS_URL=redis://redis:6379
     expose:
       - "3001"
     depends_on:
       postgres:
         condition: service_healthy
       questdb:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       telemetra-network:
@@ -120,5 +138,7 @@ volumes:
   postgres-data:
     driver: local
   questdb-data:
+    driver: local
+  redis-data:
     driver: local
 
