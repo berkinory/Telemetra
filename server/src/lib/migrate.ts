@@ -3,29 +3,29 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
 
 export async function runMigrations(): Promise<void> {
-	if (!process.env.DATABASE_URL) {
-		throw new Error('DATABASE_URL is not set');
-	}
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is not set');
+  }
 
-	const migrationPool = new Pool({
-		connectionString: process.env.DATABASE_URL,
-		max: 1,
-	});
+  const migrationPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 1,
+  });
 
-	const migrationDb = drizzle({ client: migrationPool });
+  const migrationDb = drizzle({ client: migrationPool });
 
-	try {
-		console.log('[Migration] Checking pending migrations...');
+  try {
+    console.log('[Migration] Checking pending migrations...');
 
-		await migrate(migrationDb, {
-			migrationsFolder: './drizzle',
-		});
+    await migrate(migrationDb, {
+      migrationsFolder: './drizzle',
+    });
 
-		console.log('[Migration] ✅ All migrations applied successfully');
-	} catch (error) {
-		console.error('[Migration] ❌ Failed to apply migrations:', error);
-		throw error;
-	} finally {
-		await migrationPool.end();
-	}
+    console.log('[Migration] ✅ All migrations applied successfully');
+  } catch (error) {
+    console.error('[Migration] ❌ Failed to apply migrations:', error);
+    throw error;
+  } finally {
+    await migrationPool.end();
+  }
 }

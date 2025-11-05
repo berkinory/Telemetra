@@ -25,11 +25,11 @@ export const configureOpenAPI = (app: any) => {
     },
     servers: [
       {
-        url: 'https://api.telemetra.dev',
+        url: process.env.BETTER_AUTH_URL || 'https://api.telemetra.dev',
         description: 'Production server',
       },
       {
-        url: 'http://localhost:3001',
+        url: process.env.BETTER_AUTH_URL || 'http://localhost:3001',
         description: 'Development server',
       },
     ],

@@ -118,7 +118,7 @@ health.openapi(getHealthRoute, async (c) => {
 
   try {
     const questdbStart = Date.now();
-    const response = await fetch('http://questdb:9000/status', {
+    const response = await fetch('http://questdb:9000/exec?query=SELECT%201', {
       method: 'GET',
       signal: AbortSignal.timeout(5000),
     });
