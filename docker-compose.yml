@@ -118,7 +118,7 @@ services:
         aliases:
           - server
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/v1/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3
