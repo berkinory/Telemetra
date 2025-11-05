@@ -1,1 +1,7 @@
 .DS_Store
+/files
+
+# Environment variables
+.env
+.env.local
+.env.*.local

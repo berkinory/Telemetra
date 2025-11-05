@@ -13,7 +13,7 @@ async function getSender(): Promise<Sender> {
         `[QuestDB] Connecting to ILP at ${QUESTDB_ILP_HOST}:${QUESTDB_ILP_PORT}`
       );
       sender = await Sender.fromConfig(
-        `tcp::addr=${QUESTDB_ILP_HOST}:${QUESTDB_ILP_PORT};auto_flush=on;auto_flush_rows=1000;timeout=10000;`
+        `tcp::addr=${QUESTDB_ILP_HOST}:${QUESTDB_ILP_PORT};auto_flush=on;auto_flush_rows=1000;`
       );
       console.log('[QuestDB] ILP connection established');
     } catch (error) {
@@ -23,11 +23,11 @@ async function getSender(): Promise<Sender> {
       );
     }
   }
-  
+
   if (!sender) {
     throw new Error('[QuestDB] Sender is null after initialization');
   }
-  
+
   return sender;
 }
 
@@ -271,12 +271,15 @@ export async function getEvents(
   const limit = sanitizeNumeric(options.limit, 20, 1, 1000);
   const offset = sanitizeNumeric(options.offset, 0, 0, 1_000_000);
 
+  const limitClause =
+    offset > 0 ? `LIMIT ${offset}, ${limit}` : `LIMIT ${limit}`;
+
   const eventsQuery = `
-    SELECT event_id, session_id, name, params, timestamp 
-    FROM events 
-    ${whereClause} 
-    ORDER BY timestamp DESC 
-    LIMIT ${limit} OFFSET ${offset}
+    SELECT event_id, session_id, name, params, timestamp
+    FROM events
+    ${whereClause}
+    ORDER BY timestamp DESC
+    ${limitClause}
   `;
 
   const countQuery = `
@@ -347,12 +350,15 @@ export async function getErrors(
   const limit = sanitizeNumeric(options.limit, 20, 1, 1000);
   const offset = sanitizeNumeric(options.offset, 0, 0, 1_000_000);
 
+  const limitClause =
+    offset > 0 ? `LIMIT ${offset}, ${limit}` : `LIMIT ${limit}`;
+
   const errorsQuery = `
-    SELECT error_id, session_id, message, type, stack_trace, timestamp 
-    FROM errors 
-    ${whereClause} 
-    ORDER BY timestamp DESC 
-    LIMIT ${limit} OFFSET ${offset}
+    SELECT error_id, session_id, message, type, stack_trace, timestamp
+    FROM errors
+    ${whereClause}
+    ORDER BY timestamp DESC
+    ${limitClause}
   `;
 
   const countQuery = `
@@ -403,9 +409,12 @@ export async function getActivity(
   const limit = sanitizeNumeric(options.limit, 20, 1, 1000);
   const offset = sanitizeNumeric(options.offset, 0, 0, 1_000_000);
 
+  const limitClause =
+    offset > 0 ? `LIMIT ${offset}, ${limit}` : `LIMIT ${limit}`;
+
   const activitiesQuery = `
     SELECT * FROM (
-      SELECT 
+      SELECT
         'event' as type,
         event_id as id,
         session_id,
@@ -418,7 +427,7 @@ export async function getActivity(
       FROM events
       ${whereClause}
       UNION ALL
-      SELECT 
+      SELECT
         'error' as type,
         error_id as id,
         session_id,
@@ -432,7 +441,7 @@ export async function getActivity(
       ${whereClause}
     )
     ORDER BY timestamp DESC
-    LIMIT ${limit} OFFSET ${offset}
+    ${limitClause}
   `;
 
   const countQuery = `
