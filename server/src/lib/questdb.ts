@@ -1,16 +1,16 @@
 if (
   !(
-    process.env.QUESTDB_HTTP_URL &&
+    process.env.QUESTDB_HOST &&
     process.env.QUESTDB_USER &&
     process.env.QUESTDB_PASSWORD
   )
 ) {
   throw new Error(
-    'QUESTDB_HTTP_URL, QUESTDB_USER, and QUESTDB_PASSWORD must be set'
+    'QUESTDB_HOST, QUESTDB_USER, and QUESTDB_PASSWORD must be set'
   );
 }
 
-const QUESTDB_HTTP_URL = process.env.QUESTDB_HTTP_URL;
+const QUESTDB_HOST = process.env.QUESTDB_HOST;
 const QUESTDB_USER = process.env.QUESTDB_USER;
 const QUESTDB_PASSWORD = process.env.QUESTDB_PASSWORD;
 
@@ -78,7 +78,7 @@ export async function writeEvent(event: EventRecord): Promise<void> {
     ilpLine = `events,${symbols} ${timestampNs}`;
   }
 
-  const response = await fetch(`${QUESTDB_HTTP_URL}/write`, {
+  const response = await fetch(`${QUESTDB_HOST}/write`, {
     method: 'POST',
     headers: {
       Authorization: `Basic ${auth}`,
@@ -116,7 +116,7 @@ export async function writeError(error: ErrorRecord): Promise<void> {
 
   const ilpLine = `errors,${symbols} ${fields.join(',')} ${timestampNs}`;
 
-  const response = await fetch(`${QUESTDB_HTTP_URL}/write`, {
+  const response = await fetch(`${QUESTDB_HOST}/write`, {
     method: 'POST',
     headers: {
       Authorization: `Basic ${auth}`,
@@ -199,7 +199,7 @@ function sanitizeNumeric(
 }
 
 async function executeQuery<T>(query: string): Promise<T[]> {
-  const url = `${QUESTDB_HTTP_URL}/exec`;
+  const url = `${QUESTDB_HOST}/exec`;
   const auth = Buffer.from(`${QUESTDB_USER}:${QUESTDB_PASSWORD}`).toString(
     'base64'
   );
@@ -535,7 +535,7 @@ export async function initQuestDB(): Promise<void> {
   }
 
   initPromise = (async () => {
-    const url = `${QUESTDB_HTTP_URL}/exec`;
+    const url = `${QUESTDB_HOST}/exec`;
     const auth = Buffer.from(`${QUESTDB_USER}:${QUESTDB_PASSWORD}`).toString(
       'base64'
     );
