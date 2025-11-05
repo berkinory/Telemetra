@@ -7,6 +7,7 @@
     "check": "bunx ultracite fix --unsafe",
     "typecheck": "tsc --noEmit",
     "auth:generate": "bunx @better-auth/cli@latest generate",
+    "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
