@@ -73,7 +73,7 @@ pingSdkRouter.openapi(pingSessionRoute, async (c) => {
       return c.json(
         {
           code: ErrorCode.UNAUTHORIZED,
-          detail: 'API key is required',
+          detail: 'App key is required',
         },
         HttpStatus.UNAUTHORIZED
       );

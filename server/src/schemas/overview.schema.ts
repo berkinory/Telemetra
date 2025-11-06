@@ -2,7 +2,7 @@ import { z } from '@hono/zod-openapi';
 
 export const overviewQuerySchema = z
   .object({
-    appId: z.string().openapi({ example: '12345678901234' }),
+    appId: z.string().openapi({ example: '123456789012345' }),
   })
   .openapi('OverviewQuery');
 

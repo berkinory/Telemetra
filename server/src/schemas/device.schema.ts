@@ -38,7 +38,7 @@ export const listDevicesQuerySchema = paginationQuerySchema
   .merge(dateFilterQuerySchema)
   .extend({
     platform: z.string().optional().openapi({ example: 'ios' }),
-    appId: z.string().openapi({ example: '12345678901234' }),
+    appId: z.string().openapi({ example: '123456789012345' }),
   })
   .openapi('ListDevicesQuery');
 
@@ -64,7 +64,7 @@ export const deviceDetailSchema = z
 
 export const getDeviceQuerySchema = z
   .object({
-    appId: z.string().openapi({ example: '12345678901234' }),
+    appId: z.string().openapi({ example: '123456789012345' }),
   })
   .openapi('GetDeviceQuery');
 

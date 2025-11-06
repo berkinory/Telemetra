@@ -58,7 +58,7 @@ const getDevicesRoute = createRoute({
   method: 'get',
   path: '/',
   tags: ['device'],
-  description: 'List devices for a specific API key',
+  description: 'List devices for a specific app',
   security: [{ CookieAuth: [] }],
   request: {
     query: listDevicesQuerySchema,
@@ -140,7 +140,6 @@ deviceWebRouter.all('*', async (c, next) => {
 });
 
 // biome-ignore lint/suspicious/noExplicitAny: OpenAPI handler type inference issue with union response types
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Device upsert requires branching for insert vs update logic
 deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
   try {
     const body = c.req.valid('json');

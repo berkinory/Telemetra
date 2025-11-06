@@ -6,7 +6,7 @@ export const configureOpenAPI = (app: any) => {
     type: 'http',
     scheme: 'bearer',
     description:
-      'API Key for authentication. Use format: Bearer <your-api-key>',
+      'App key for authentication. Use format: Bearer <your-app-key>',
   });
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'CookieAuth', {
