@@ -12,13 +12,13 @@ services:
       postgres
       -c shared_buffers=512MB
       -c effective_cache_size=2GB
-      -c maintenance_work_mem=256MB
+      -c maintenance_work_mem=192MB
       -c checkpoint_completion_target=0.9
       -c wal_buffers=16MB
       -c default_statistics_target=100
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c work_mem=8MB
+      -c work_mem=16MB
       -c min_wal_size=1GB
       -c max_wal_size=4GB
       -c max_connections=100
@@ -39,7 +39,7 @@ services:
   redis:
     image: redis:8.0.5-alpine
     container_name: telemetra-redis
-    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory 768mb --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
     networks:
@@ -59,7 +59,7 @@ services:
     volumes:
       - questdb-data:/var/lib/questdb
     environment:
-      - QDB_JAVA_OPTS=-Xms2G -Xmx6G -XX:+UseG1GC
+      - QDB_JAVA_OPTS=-Xms2G -Xmx8G -XX:+UseG1GC
       - QDB_HTTP_ENABLED=true
       - QDB_HTTP_BIND_TO=0.0.0.0:9000
       - QDB_HTTP_NET_CONNECTION_LIMIT=32
@@ -70,8 +70,8 @@ services:
       - QDB_LINE_TCP_ENABLED=true
       - QDB_LINE_TCP_BIND_TO=0.0.0.0:9009
       - QDB_LINE_HTTP_ENABLED=true
-      - QDB_SHARED_WORKER_COUNT=2
-      - QDB_HTTP_WORKER_COUNT=2
+      - QDB_SHARED_WORKER_COUNT=4
+      - QDB_HTTP_WORKER_COUNT=4
       - QDB_CAIRO_PAGE_FRAME_COUNT=1024
       - QDB_CAIRO_PAGE_FRAME_SIZE=64k
       - QDB_CAIRO_O3_COLUMN_MEMORY_SIZE=2M
