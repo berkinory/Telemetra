@@ -9,6 +9,9 @@
   },
   "linter": {
     "rules": {
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "off"
+      },
       "suspicious": {
         "noUnknownAtRules": "off",
         "noConsole": {

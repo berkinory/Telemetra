@@ -87,7 +87,6 @@ type HealthCheckData = {
   responseTime: number;
 };
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Health check needs to test multiple services
 health.openapi(getHealthRoute, async (c) => {
   const startTime = Date.now();
   let overallStatus: 'healthy' | 'unhealthy' = 'healthy';

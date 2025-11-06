@@ -1,4 +1,5 @@
 import type { Context } from 'hono';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ErrorCode, type ErrorResponse, HttpStatus } from '@/schemas';
 
 export function success<TData>(
@@ -9,8 +10,7 @@ export function success<TData>(
   if (status === HttpStatus.NO_CONTENT) {
     return c.body(null, 204);
   }
-  // biome-ignore lint/suspicious/noExplicitAny: Hono c.json() requires ContentfulStatusCode but HttpStatus union type is incompatible
-  return c.json(data, status as any);
+  return c.json(data, status as ContentfulStatusCode);
 }
 
 export function badRequest(
@@ -130,6 +130,5 @@ export function errorResponse<
     detail: options.detail,
     ...(options.meta !== undefined ? { meta: options.meta } : {}),
   } as ErrorResponse<TMeta>;
-  // biome-ignore lint/suspicious/noExplicitAny: Hono c.json() requires ContentfulStatusCode but HttpStatus union type is incompatible
-  return c.json(response, options.status as any);
+  return c.json(response, options.status as ContentfulStatusCode);
 }

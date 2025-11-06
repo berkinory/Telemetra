@@ -80,7 +80,6 @@ export class RedisCache extends Cache {
     }
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Cache invalidation requires complex logic for cleanup
   async onMutate(params: MutationOption): Promise<void> {
     try {
       if (!params.tables) {
