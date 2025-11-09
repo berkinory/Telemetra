@@ -47,7 +47,7 @@ try {
       ex: 300,
     });
     console.log(
-      '[Database] Redis cache enabled (TTL: 300s, Strategy: explicit)'
+      '[Database] Redis cache enabled (TTL: 300s, Max: 10k sessions, Strategy: explicit)'
     );
   } else {
     console.log('[Database] Redis cache disabled (REDIS_URL not set)');

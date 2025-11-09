@@ -22,6 +22,9 @@ export class RedisCache extends Cache {
   private readonly redis: Redis;
   private readonly config: CacheConfig;
   private readonly tableKeysMap: Map<string, Set<string>> = new Map();
+  private readonly maxTableKeys = 10_000;
+  private readonly maxTables = 20;
+  private isConnected = false;
 
   constructor(redisUrl: string, config: CacheConfig = {}) {
     super();
@@ -31,8 +34,44 @@ export class RedisCache extends Cache {
         const delay = Math.min(times * 50, 2000);
         return delay;
       },
+      lazyConnect: false,
+      enableOfflineQueue: true,
+      reconnectOnError: (err) => {
+        const targetError = 'READONLY';
+        if (err.message.includes(targetError)) {
+          return true;
+        }
+        return false;
+      },
     });
     this.config = config;
+    this.setupConnectionHandlers();
+  }
+
+  private setupConnectionHandlers(): void {
+    this.redis.on('connect', () => {
+      this.isConnected = true;
+      console.log('[RedisCache] Connected to Redis');
+    });
+
+    this.redis.on('ready', () => {
+      this.isConnected = true;
+      console.log('[RedisCache] Redis is ready');
+    });
+
+    this.redis.on('error', (error) => {
+      console.error('[RedisCache] Redis connection error:', error);
+      this.isConnected = false;
+    });
+
+    this.redis.on('close', () => {
+      this.isConnected = false;
+      console.warn('[RedisCache] Redis connection closed');
+    });
+
+    this.redis.on('reconnecting', () => {
+      console.log('[RedisCache] Reconnecting to Redis...');
+    });
   }
 
   strategy(): 'explicit' | 'all' {
@@ -41,6 +80,10 @@ export class RedisCache extends Cache {
 
   // biome-ignore lint/suspicious/noExplicitAny: Drizzle cache API requires any[]
   async get(key: string): Promise<any[] | undefined> {
+    if (!this.isConnected) {
+      return;
+    }
+
     try {
       const cached = await this.redis.getBuffer(key);
       if (!cached) {
@@ -57,6 +100,10 @@ export class RedisCache extends Cache {
   }
 
   async put(key: string, value: unknown, tables: string[]): Promise<void> {
+    if (!this.isConnected) {
+      return;
+    }
+
     try {
       const data: CacheData = { value, tables };
       const serialized = serialize(data);
@@ -69,18 +116,43 @@ export class RedisCache extends Cache {
         await this.redis.set(key, serialized);
       }
 
-      for (const table of tables) {
-        if (!this.tableKeysMap.has(table)) {
-          this.tableKeysMap.set(table, new Set());
-        }
-        this.tableKeysMap.get(table)?.add(key);
-      }
+      this.trackTableKey(tables, key);
     } catch (error) {
       console.error('[RedisCache] Put error:', error);
     }
   }
 
+  private trackTableKey(tables: string[], key: string): void {
+    if (this.tableKeysMap.size >= this.maxTables) {
+      const firstTable = this.tableKeysMap.keys().next().value;
+      if (firstTable) {
+        this.tableKeysMap.delete(firstTable);
+      }
+    }
+
+    for (const table of tables) {
+      if (!this.tableKeysMap.has(table)) {
+        this.tableKeysMap.set(table, new Set());
+      }
+
+      const keys = this.tableKeysMap.get(table);
+      if (keys) {
+        if (keys.size >= this.maxTableKeys) {
+          const firstKey = keys.values().next().value;
+          if (firstKey) {
+            keys.delete(firstKey);
+          }
+        }
+        keys.add(key);
+      }
+    }
+  }
+
   async onMutate(params: MutationOption): Promise<void> {
+    if (!this.isConnected) {
+      return;
+    }
+
     try {
       if (!params.tables) {
         return;
