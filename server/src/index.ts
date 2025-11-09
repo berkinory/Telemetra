@@ -100,32 +100,23 @@ configureOpenAPI(app);
 
 try {
   await runMigrations();
-  console.log('[Server] PostgreSQL migrations applied');
-
   await initQuestDB();
-  console.log('[Server] QuestDB initialized');
-
-  console.log('[Server] All databases ready');
 } catch (error) {
   console.error('[Server] Failed to start:', error);
   process.exit(1);
 }
 
-const shutdown = async (signal: string) => {
+const shutdown = async () => {
   try {
-    console.log(`[Server] Received ${signal}, shutting down gracefully...`);
-
     await pool.end();
-    console.log('[Server] Database pool closed');
-
     process.exit(0);
   } catch (error) {
-    console.error('[Server] Error during shutdown:', error);
+    console.error('[Server] Shutdown error:', error);
     process.exit(1);
   }
 };
 
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 export default app;

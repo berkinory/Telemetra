@@ -116,10 +116,6 @@ activityWebRouter.openapi(getActivityRoute, async (c) => {
           if (row.type === 'event') {
             const validationResult = eventDataSchema.safeParse(data);
             if (!validationResult.success) {
-              console.error('[Activity.List] Invalid event data:', {
-                rowId: row.id,
-                error: validationResult.error,
-              });
               return null;
             }
 
@@ -132,10 +128,6 @@ activityWebRouter.openapi(getActivityRoute, async (c) => {
 
           const validationResult = errorDataSchema.safeParse(data);
           if (!validationResult.success) {
-            console.error('[Activity.List] Invalid error data:', {
-              rowId: row.id,
-              error: validationResult.error,
-            });
             return null;
           }
 
@@ -144,11 +136,7 @@ activityWebRouter.openapi(getActivityRoute, async (c) => {
             ...baseActivity,
             data: validationResult.data,
           };
-        } catch (error) {
-          console.error('[Activity.List] Failed to parse data:', {
-            rowId: row.id,
-            error,
-          });
+        } catch {
           return null;
         }
       })
