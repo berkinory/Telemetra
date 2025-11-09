@@ -24,10 +24,6 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   poweredByHeader: false,
   compress: true,
-  experimental: {
-    turbopackFileSystemCacheForDev: true,
-    turbopackFileSystemCacheForBuild: true,
-  },
   headers: () => [
     {
       source: '/:path*',
