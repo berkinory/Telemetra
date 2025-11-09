@@ -130,6 +130,36 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV}
+        - NEXT_TELEMETRY_DISABLED=1
+    container_name: telemetra-web
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - NEXT_TELEMETRY_DISABLED=1
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+      - WEB_URL=${WEB_URL}
+    expose:
+      - "3002"
+    depends_on:
+      server:
+        condition: service_healthy
+    networks:
+      telemetra-network:
+        aliases:
+          - web
+    healthcheck:
+      test: ["CMD", "/bin/busybox", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
 networks:
   telemetra-network:
     driver: bridge
