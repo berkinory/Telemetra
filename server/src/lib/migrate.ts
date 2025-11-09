@@ -15,15 +15,11 @@ export async function runMigrations(): Promise<void> {
   const migrationDb = drizzle({ client: migrationPool });
 
   try {
-    console.log('[Migration] Checking pending migrations...');
-
     await migrate(migrationDb, {
       migrationsFolder: './drizzle',
     });
-
-    console.log('[Migration] ✅ All migrations applied successfully');
   } catch (error) {
-    console.error('[Migration] ❌ Failed to apply migrations:', error);
+    console.error('[Migration] Failed to apply migrations:', error);
     throw error;
   } finally {
     await migrationPool.end();

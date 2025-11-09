@@ -9,13 +9,9 @@ let sender: Sender | null = null;
 async function getSender(): Promise<Sender> {
   if (!sender) {
     try {
-      console.log(
-        `[QuestDB] Connecting to ILP at ${QUESTDB_ILP_HOST}:${QUESTDB_ILP_PORT}`
-      );
       sender = await Sender.fromConfig(
         `tcp::addr=${QUESTDB_ILP_HOST}:${QUESTDB_ILP_PORT};auto_flush=on;auto_flush_rows=1000;`
       );
-      console.log('[QuestDB] ILP connection established');
     } catch (error) {
       console.error('[QuestDB] Failed to connect to ILP:', error);
       throw new Error(
@@ -506,8 +502,7 @@ export async function getActivity(
       let parsedParams: Record<string, unknown> | null = null;
       try {
         parsedParams = row.params ? JSON.parse(row.params) : null;
-      } catch (e) {
-        console.error('[QuestDB] Invalid JSON in event params:', e);
+      } catch {
         parsedParams = null;
       }
       data = JSON.stringify({
@@ -543,7 +538,6 @@ export async function initQuestDB(): Promise<void> {
   }
 
   if (tablesInitialized) {
-    console.log('[QuestDB] Tables already initialized, skipping...');
     return Promise.resolve();
   }
 
@@ -580,8 +574,6 @@ export async function initQuestDB(): Promise<void> {
         );
       }
 
-      console.log('[QuestDB] Events table created/verified');
-
       const errorsTableQuery = `
         CREATE TABLE IF NOT EXISTS errors (
           error_id SYMBOL,
@@ -612,10 +604,7 @@ export async function initQuestDB(): Promise<void> {
         );
       }
 
-      console.log('[QuestDB] Errors table created/verified');
-
       tablesInitialized = true;
-      console.log('[QuestDB] Initialization complete');
     } catch (error) {
       console.error('[QuestDB] Initialization failed:', error);
       initPromise = null;

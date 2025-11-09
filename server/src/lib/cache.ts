@@ -51,26 +51,23 @@ export class RedisCache extends Cache {
   private setupConnectionHandlers(): void {
     this.redis.on('connect', () => {
       this.isConnected = true;
-      console.log('[RedisCache] Connected to Redis');
     });
 
     this.redis.on('ready', () => {
       this.isConnected = true;
-      console.log('[RedisCache] Redis is ready');
     });
 
     this.redis.on('error', (error) => {
-      console.error('[RedisCache] Redis connection error:', error);
+      console.error('[RedisCache] Connection error:', error);
       this.isConnected = false;
     });
 
     this.redis.on('close', () => {
       this.isConnected = false;
-      console.warn('[RedisCache] Redis connection closed');
     });
 
     this.redis.on('reconnecting', () => {
-      console.log('[RedisCache] Reconnecting to Redis...');
+      this.isConnected = false;
     });
   }
 

@@ -46,16 +46,11 @@ try {
     cacheConfig = redisCache(process.env.REDIS_URL, {
       ex: 300,
     });
-    console.log(
-      '[Database] Redis cache enabled (TTL: 300s, Max: 10k sessions, Strategy: explicit)'
-    );
   } else {
-    console.log('[Database] Redis cache disabled (REDIS_URL not set)');
     cacheConfig = undefined;
   }
 } catch (error) {
   console.error('[Database] Failed to initialize Redis cache:', error);
-  console.log('[Database] Continuing without cache');
   cacheConfig = undefined;
 }
 
