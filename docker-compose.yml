@@ -153,11 +153,11 @@ services:
       - telemetra-network
       - dokploy-network
     healthcheck:
-      test: ["CMD", "/bin/busybox", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002"]
+      test: ["CMD", "/bin/busybox", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/api/health"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 15s
+      start_period: 10s
     restart: unless-stopped
 
 networks:
