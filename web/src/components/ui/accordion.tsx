@@ -1,6 +1,6 @@
-import * as RadixAccordion from "@radix-ui/react-accordion";
+import * as RadixAccordion from '@radix-ui/react-accordion';
 
-import { cn } from "@/utils/cn";
+import { cn } from '@/utils/cn';
 
 export const Accordion = RadixAccordion.Root;
 
@@ -14,11 +14,11 @@ export function AccordionItem({
 }: AccordionItemProps) {
   return (
     <RadixAccordion.Item
-      value={value}
       className={cn(
-        "mt-px w-full overflow-hidden border-border border-b last:border-none focus-within:relative focus-within:z-10",
-        className,
+        'mt-px w-full overflow-hidden border-border border-b last:border-none focus-within:relative focus-within:z-10',
+        className
       )}
+      value={value}
       {...props}
     >
       {children}
@@ -39,23 +39,23 @@ export function AccordionTrigger({
     <RadixAccordion.Header className="flex">
       <RadixAccordion.Trigger
         className={cn(
-          "group flex h-11 w-full items-center justify-between px-3.5 text-base/none text-primary outline-none",
-          "motion-safe:ease-out [&[data-state=open]>svg]:rotate-45",
-          className,
+          'group flex h-11 w-full items-center justify-between px-3.5 text-base/none text-primary outline-none',
+          'motion-safe:ease-out [&[data-state=open]>svg]:rotate-45',
+          className
         )}
         {...props}
       >
         {children}
         <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
           className="text-neutral-500 transition-transform duration-300"
           fill="none"
+          height="18"
           stroke="currentColor"
-          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="18"
         >
           <title>Trigger</title>
           <path d="M5 12h14" />
@@ -78,8 +78,8 @@ export function AccordionContent({
   return (
     <RadixAccordion.Content
       className={cn(
-        "transition-transform motion-safe:data-[state=closed]:animate-accordion-close motion-safe:data-[state=open]:animate-accordion-open",
-        className,
+        'transition-transform motion-safe:data-[state=closed]:animate-accordion-close motion-safe:data-[state=open]:animate-accordion-open',
+        className
       )}
       {...props}
     >
