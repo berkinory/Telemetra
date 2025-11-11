@@ -3,7 +3,8 @@ WORKDIR /app
 
 FROM base AS deps
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+COPY web/package.json ./web/
+RUN bun install --frozen-lockfile --filter web
 
 FROM base AS builder
 
@@ -15,7 +16,9 @@ ENV NODE_ENV=$NODE_ENV
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY web/ ./web/
+
+WORKDIR /app/web
 
 RUN bun run build
 
@@ -23,9 +26,11 @@ FROM base AS runner
 
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:bun /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:bun /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:bun /app/public ./public
+WORKDIR /app/web
+
+COPY --from=builder --chown=nextjs:bun /app/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:bun /app/web/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:bun /app/web/public ./public
 
 USER nextjs
 
