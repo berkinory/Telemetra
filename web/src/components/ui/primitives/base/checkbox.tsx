@@ -66,6 +66,7 @@ function Checkbox({
         render={
           <motion.button
             data-slot="checkbox"
+            transition={{ duration: 0.12, ease: [0.25, 0.1, 0.25, 1] }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             {...props}
@@ -104,7 +105,7 @@ function CheckboxIndicator(props: CheckboxIndicatorProps) {
               animate={{
                 pathLength: 1,
                 opacity: 1,
-                transition: { duration: 0.2 },
+                transition: { duration: 0.15 },
               }}
               initial={{ pathLength: 0, opacity: 0 }}
               strokeLinecap="round"
@@ -123,15 +124,15 @@ function CheckboxIndicator(props: CheckboxIndicatorProps) {
                   pathLength: 1,
                   opacity: 1,
                   transition: {
-                    duration: 0.2,
-                    delay: 0.2,
+                    duration: 0.15,
+                    delay: 0.1,
                   },
                 },
                 unchecked: {
                   pathLength: 0,
                   opacity: 0,
                   transition: {
-                    duration: 0.2,
+                    duration: 0.15,
                   },
                 },
               }}

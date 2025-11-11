@@ -47,7 +47,22 @@ type TooltipTriggerProps = React.ComponentProps<
 >;
 
 function TooltipTrigger(props: TooltipTriggerProps) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
+  const { isOpen, setIsOpen } = useTooltip();
+  const isMobile = typeof window !== 'undefined' && 'ontouchstart' in window;
+
+  return (
+    <TooltipPrimitive.Trigger
+      data-slot="tooltip-trigger"
+      {...props}
+      onClick={(e) => {
+        if (isMobile && setIsOpen) {
+          // @ts-expect-error - onOpenChange expects 2 args but we only need the first
+          setIsOpen(!isOpen);
+        }
+        props.onClick?.(e);
+      }}
+    />
+  );
 }
 
 type TooltipPortalProps = Omit<
