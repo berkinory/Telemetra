@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   turbopack: {
-    root: '../',
+    root: '/app',
   },
   headers: () => [
     {

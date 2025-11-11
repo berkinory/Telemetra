@@ -1,8 +1,8 @@
 'use client';
 
-import { cva, type VariantProps } from 'class-variance-authority';
 import { Copy01Icon, Tick03Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback } from 'react';
 

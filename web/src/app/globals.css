@@ -171,6 +171,46 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+
+  --animate-shine: shine 6s linear infinite;
+  --animate-brightness: brightness 2.2s linear infinite;
+  --animate-text-shake: text-shake 1s ease 1;
+
+  @keyframes shine {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: -400% 0;
+    }
+  }
+
+  @keyframes brightness {
+    0% {
+      transform: skew(-13deg) translateX(-100%);
+    }
+    100% {
+      transform: skew(-13deg) translateX(100%);
+    }
+  }
+
+  @keyframes text-shake {
+    15% {
+      transform: translateX(5px);
+    }
+    30% {
+      transform: translateX(-5px);
+    }
+    50% {
+      transform: translateX(3px);
+    }
+    80% {
+      transform: translateX(2px);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
 }
 
 @layer base {
