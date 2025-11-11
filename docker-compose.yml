@@ -98,8 +98,8 @@ services:
 
   server:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./server/Dockerfile
     container_name: telemetra-server
     environment:
       - NODE_ENV=${NODE_ENV}
@@ -131,8 +131,8 @@ services:
 
   web:
     build:
-      context: ./web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./web/Dockerfile
       args:
         - NODE_ENV=${NODE_ENV}
         - NEXT_TELEMETRY_DISABLED=1
