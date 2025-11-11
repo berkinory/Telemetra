@@ -1,4 +1,4 @@
-import { ThemeTogglerButton } from '@/components/animate-ui/components/buttons/theme-toggler';
+import { ThemeTogglerButton } from '@/components/ui/theme-toggler';
 export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center">

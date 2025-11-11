@@ -6,7 +6,7 @@ import type { CSSProperties, ReactNode, Ref } from 'react';
 import {
   Slot,
   type WithAsChild,
-} from '@/components/animate-ui/primitives/animate/slot';
+} from '@/components/ui/primitives/animate/slot';
 import { type UseIsInViewOptions, useIsInView } from '@/hooks/use-is-in-view';
 import { getStrictContext } from '@/lib/get-strict-context';
 

@@ -1,4 +1,9 @@
-import { CheckIcon, ChevronRightIcon, CircleIcon } from 'lucide-react';
+import {
+  ArrowRight01Icon,
+  CircleIcon,
+  Tick03Icon,
+} from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 import type { ReactNode } from 'react';
 import {
   MenuArrow as MenuArrowPrimitive,
@@ -37,7 +42,7 @@ import {
   type MenuSubmenuTriggerProps as MenuSubmenuTriggerPrimitiveProps,
   MenuTrigger as MenuTriggerPrimitive,
   type MenuTriggerProps as MenuTriggerPrimitiveProps,
-} from '@/components/animate-ui/primitives/base/dropdown';
+} from '@/components/ui/primitives/base/dropdown';
 import { cn } from '@/lib/utils';
 
 type MenuProps = MenuPrimitiveProps;
@@ -177,7 +182,7 @@ function MenuCheckboxItem({
             animate={{ opacity: 1, scale: 1 }}
             initial={{ opacity: 0, scale: 0.5 }}
           >
-            <CheckIcon className="size-4" />
+            <HugeiconsIcon className="size-4" icon={Tick03Icon} />
           </MenuCheckboxItemIndicatorPrimitive>
         </span>
         {children}
@@ -212,7 +217,7 @@ function MenuRadioItem({
       >
         <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
           <MenuRadioItemIndicatorPrimitive layoutId="dropdown-menu-item-indicator-radio">
-            <CircleIcon className="size-2 fill-current" />
+            <HugeiconsIcon className="size-2 fill-current" icon={CircleIcon} />
           </MenuRadioItemIndicatorPrimitive>
         </span>
         {children}
@@ -283,7 +288,11 @@ function MenuSubmenuTrigger({
         {...props}
       >
         {children}
-        <ChevronRightIcon className="ml-auto size-4" data-slot="chevron" />
+        <HugeiconsIcon
+          className="ml-auto size-4"
+          data-slot="chevron"
+          icon={ArrowRight01Icon}
+        />
       </MenuSubmenuTriggerPrimitive>
     </MenuHighlightItemPrimitive>
   );

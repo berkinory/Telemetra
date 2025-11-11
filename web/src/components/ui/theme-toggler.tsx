@@ -5,13 +5,13 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import type { VariantProps } from 'class-variance-authority';
 import { useTheme } from 'next-themes';
 import { type ComponentProps, useEffect, useState } from 'react';
-import { buttonVariants } from '@/components/animate-ui/components/buttons/icon';
+import { buttonVariants } from '@/components/ui/icon-button';
 import {
   type Resolved,
   type ThemeSelection,
   ThemeToggler as ThemeTogglerPrimitive,
   type ThemeTogglerProps as ThemeTogglerPrimitiveProps,
-} from '@/components/animate-ui/primitives/effects/theme-toggler';
+} from '@/components/ui/primitives/effects/theme-toggler';
 import { cn } from '@/lib/utils';
 
 const getIcon = (resolved: Resolved) => {
@@ -52,7 +52,6 @@ function ThemeTogglerButton({
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Prevent hydration mismatch by not rendering until mounted
   useEffect(() => {
     setMounted(true);
   }, []);

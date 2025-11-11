@@ -9,7 +9,7 @@ import {
   HighlightItem,
   type HighlightItemProps,
   type HighlightProps,
-} from '@/components/animate-ui/primitives/effects/highlight';
+} from '@/components/ui/primitives/effects/highlight';
 import { useControlledState } from '@/hooks/use-controlled-state';
 import { useDataState } from '@/hooks/use-data-state';
 import { getStrictContext } from '@/lib/get-strict-context';
