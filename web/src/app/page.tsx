@@ -1,9 +1,7 @@
-import { ThemeTogglerButton } from '@/components/ui/theme-toggler';
 export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <p className="font-semibold text-4xl">Hello World</p>
-      <ThemeTogglerButton />
+      <h1 className="font-semibold text-4xl">Hello World</h1>
     </div>
   );
 }

@@ -33,7 +33,8 @@ export function Input({
   return (
     <div
       className={cn(
-        'relative inline-flex h-11 w-64 items-center overflow-hidden rounded-xl border border-border bg-main-secondary shadow-xs transition-colors ease-out focus-within:border-primary/20 data-[filled=true]:border-border',
+        'relative inline-flex h-11 w-64 items-center overflow-hidden rounded-xl border-2 border-neutral-300 bg-white shadow-xs transition-colors ease-out focus-within:border-neutral-400 data-[filled=true]:border-neutral-300',
+        'dark:border-neutral-700 dark:bg-neutral-900 dark:data-[filled=true]:border-neutral-700 dark:focus-within:border-neutral-600',
         'has-disabled:opacity-80 has-disabled:*:cursor-not-allowed',
         className
       )}
@@ -42,8 +43,8 @@ export function Input({
       <input
         {...props}
         className={cn(
-          'peer h-full flex-1 bg-transparent px-3 py-2 caret-primary outline-none placeholder:sr-only',
-          'font-normal font-sans text-primary-foreground text-sm/5.5'
+          'peer h-full flex-1 bg-transparent px-3 py-2 caret-neutral-800 outline-none placeholder:sr-only dark:caret-neutral-200',
+          'font-normal font-sans text-neutral-900 text-sm/5.5 dark:text-neutral-100'
         )}
         onChange={(event) => {
           setFieldState(event.target.value.length > 0 ? 'filled' : 'idle');
@@ -57,7 +58,7 @@ export function Input({
             animate="show"
             className={cn(
               'pointer-events-none absolute left-3',
-              'font-normal font-sans text-primary-muted/70 text-sm/5.5'
+              'font-normal font-sans text-neutral-500 text-sm/5.5 dark:text-neutral-400'
             )}
             exit="hidden"
             initial="hidden"

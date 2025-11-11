@@ -17,7 +17,7 @@ const variants = [
       <div
         {...props}
         className={cn(
-          'relative overflow-hidden rounded-xl border border-transparent bg-neutral-900 px-3 py-1 text-neutral-200 shadow-inner transition-all duration-200',
+          'relative inline-flex items-center justify-center overflow-hidden rounded-xl border border-transparent bg-neutral-900 px-3 py-1 text-neutral-200 shadow-inner transition-all duration-200',
           'shadow-main-foreground/70 hover:bg-main-invert/90 dark:shadow-main-foreground/80 dark:hover:bg-main-foreground/56',
           className
         )}
@@ -30,8 +30,8 @@ const variants = [
       <div
         {...props}
         className={cn(
-          'relative overflow-hidden rounded-full border border-border bg-main-background px-3 py-1 transition-all duration-200',
-          'text-primary-foreground hover:bg-main-foreground/50',
+          'relative inline-flex items-center justify-center overflow-hidden rounded-full border-2 border-neutral-400 bg-transparent px-3 py-1 transition-all duration-200',
+          'text-neutral-700 hover:bg-neutral-100 dark:border-neutral-500 dark:text-neutral-300 dark:hover:bg-neutral-800',
           className
         )}
       />
@@ -43,7 +43,7 @@ const variants = [
       <div
         {...props}
         className={cn(
-          'rounded-full bg-linear-to-t from-green-700 to-green-600 px-3 py-1 text-white',
+          'inline-flex items-center justify-center rounded-full bg-linear-to-t from-green-700 to-green-600 px-3 py-1 text-white',
           className
         )}
       />
@@ -55,7 +55,7 @@ const variants = [
       <div
         {...props}
         className={cn(
-          'rounded-full bg-linear-to-t from-red-600 to-red-500 px-3 py-1 text-white',
+          'inline-flex items-center justify-center rounded-full bg-linear-to-t from-red-600 to-red-500 px-3 py-1 text-white',
           className
         )}
       />
@@ -67,9 +67,9 @@ const variants = [
       <div
         {...props}
         className={cn(
-          'animate-shine items-center justify-center rounded-full border border-border bg-size-[400%_100%]',
-          'px-3 py-1 text-primary-invert/90 transition-colors dark:text-primary-muted',
-          'bg-[linear-gradient(110deg,#000000,45%,#303030,55%,#000000)]',
+          'inline-flex animate-shine items-center justify-center rounded-full border border-border bg-size-[400%_100%]',
+          'px-3 py-1 text-neutral-800 transition-colors dark:text-neutral-200',
+          'bg-[linear-gradient(110deg,#e5e5e5,45%,#ffffff,55%,#e5e5e5)]',
           'dark:bg-[linear-gradient(110deg,#000103,45%,#303030,55%,#000103)]',
           className
         )}
@@ -82,7 +82,7 @@ const variants = [
       <div
         {...props}
         className={cn(
-          'relative rounded-full border border-primary/10 bg-main-background px-3 py-1 duration-200 hover:bg-main-foreground/40',
+          'relative inline-flex items-center justify-center rounded-full border border-primary/10 bg-main-background px-3 py-1 duration-200 hover:bg-main-foreground/40',
           className
         )}
       >

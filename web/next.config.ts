@@ -23,9 +23,11 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
   compress: true,
-  turbopack: {
-    root: '/app',
-  },
+  ...(process.cwd().startsWith('/app') && {
+    turbopack: {
+      root: '/app',
+    },
+  }),
   headers: () => [
     {
       source: '/:path*',

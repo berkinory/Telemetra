@@ -71,9 +71,9 @@ const variants = [
       <div
         {...props}
         className={cn(
-          'inline-flex animate-shine items-center justify-center rounded-xl border border-white/10 bg-size-[400%_100%]',
-          'px-4 py-5 text-sm transition-colors',
-          'bg-[linear-gradient(110deg,#000000,45%,#303030,55%,#000000)]',
+          'inline-flex animate-shine items-center justify-center rounded-xl border border-border bg-size-[400%_100%]',
+          'px-4 py-5 text-neutral-800 text-sm transition-colors dark:text-neutral-200',
+          'bg-[linear-gradient(110deg,#e5e5e5,45%,#ffffff,55%,#e5e5e5)]',
           'dark:bg-[linear-gradient(110deg,#000103,45%,#303030,55%,#000103)]',
           className
         )}

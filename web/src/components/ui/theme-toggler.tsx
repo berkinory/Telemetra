@@ -6,6 +6,7 @@ import type { VariantProps } from 'class-variance-authority';
 import { useTheme } from 'next-themes';
 import { type ComponentProps, useEffect, useState } from 'react';
 import { buttonVariants } from '@/components/ui/icon-button';
+import { Blur } from '@/components/ui/primitives/effects/blur';
 import {
   type Resolved,
   type ThemeSelection,
@@ -56,28 +57,22 @@ function ThemeTogglerButton({
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return (
-      <button
-        className={cn(buttonVariants({ variant, size, className }))}
-        data-slot="theme-toggler-button"
-        disabled
-        {...props}
-      >
-        <HugeiconsIcon icon={Sun03Icon} />
-      </button>
-    );
-  }
+  const isReady = mounted && resolvedTheme;
 
-  if (!resolvedTheme) {
+  if (!isReady) {
     return (
       <button
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          'rounded-full bg-neutral-100 text-neutral-900 shadow-md shadow-neutral-900/20 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-neutral-900/30 dark:hover:bg-neutral-800'
+        )}
         data-slot="theme-toggler-button"
         disabled
         {...props}
       >
-        <HugeiconsIcon icon={Sun03Icon} />
+        <Blur asChild blur={0} initialBlur={10} inView>
+          <HugeiconsIcon icon={Sun03Icon} />
+        </Blur>
       </button>
     );
   }
@@ -92,7 +87,10 @@ function ThemeTogglerButton({
     >
       {({ effective, resolved, toggleTheme }) => (
         <button
-          className={cn(buttonVariants({ variant, size, className }))}
+          className={cn(
+            buttonVariants({ variant, size, className }),
+            'rounded-full bg-neutral-100 text-neutral-900 shadow-md shadow-neutral-900/20 hover:bg-neutral-200 hover:shadow-lg dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-neutral-900/30 dark:hover:bg-neutral-800 dark:hover:shadow-xl'
+          )}
           data-slot="theme-toggler-button"
           onClick={(e) => {
             onClick?.(e);
@@ -100,7 +98,9 @@ function ThemeTogglerButton({
           }}
           {...props}
         >
-          {getIcon(resolved)}
+          <Blur asChild blur={0} initialBlur={0} inView>
+            {getIcon(resolved)}
+          </Blur>
         </button>
       )}
     </ThemeTogglerPrimitive>
