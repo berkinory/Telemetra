@@ -2,18 +2,46 @@
 
 import { Moon02Icon, Sun03Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import type { VariantProps } from 'class-variance-authority';
+import { type HTMLMotionProps, motion } from 'motion/react';
 import { useTheme } from 'next-themes';
-import { type ComponentProps, useEffect, useState } from 'react';
-import { buttonVariants } from '@/components/ui/icon-button';
-import { Blur } from '@/components/ui/primitives/effects/blur';
 import {
-  type Resolved,
-  type ThemeSelection,
-  ThemeToggler as ThemeTogglerPrimitive,
-  type ThemeTogglerProps as ThemeTogglerPrimitiveProps,
-} from '@/components/ui/primitives/effects/theme-toggler';
+  Fragment,
+  type ReactNode,
+  type Ref,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+import { flushSync } from 'react-dom';
 import { cn } from '@/lib/utils';
+
+type ThemeSelection = 'light' | 'dark' | 'system';
+type Resolved = 'light' | 'dark';
+type Direction = 'btt' | 'ttb' | 'ltr' | 'rtl';
+
+function getSystemEffective(): Resolved {
+  if (typeof window === 'undefined') {
+    return 'light';
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
+}
+
+function getClipKeyframes(direction: Direction): [string, string] {
+  switch (direction) {
+    case 'ltr':
+      return ['inset(0 100% 0 0)', 'inset(0 0 0 0)'];
+    case 'rtl':
+      return ['inset(0 0 0 100%)', 'inset(0 0 0 0)'];
+    case 'ttb':
+      return ['inset(0 0 100% 0)', 'inset(0 0 0 0)'];
+    case 'btt':
+      return ['inset(100% 0 0 0)', 'inset(0 0 0 0)'];
+    default:
+      return ['inset(0 100% 0 0)', 'inset(0 0 0 0)'];
+  }
+}
 
 const getIcon = (resolved: Resolved) => {
   if (resolved === 'dark') {
@@ -33,12 +61,162 @@ const getNextTheme = (
   return modes[(i + 1) % modes.length];
 };
 
-type ThemeTogglerButtonProps = ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
-    modes?: ThemeSelection[];
-    onImmediateChange?: ThemeTogglerPrimitiveProps['onImmediateChange'];
-    direction?: ThemeTogglerPrimitiveProps['direction'];
-  };
+type BlurProps = {
+  children?: ReactNode;
+  delay?: number;
+  initialBlur?: number;
+  blur?: number;
+  inView?: boolean;
+  asChild?: boolean;
+  ref?: Ref<HTMLElement>;
+} & HTMLMotionProps<'div'>;
+
+function Blur({
+  ref,
+  transition = { type: 'spring', stiffness: 200, damping: 20 },
+  delay = 0,
+  initialBlur = 10,
+  blur = 0,
+  inView = true,
+  ...props
+}: BlurProps) {
+  return (
+    <motion.div
+      animate={inView ? 'visible' : 'hidden'}
+      exit="hidden"
+      initial="hidden"
+      ref={ref as Ref<HTMLDivElement>}
+      transition={{
+        ...transition,
+        delay: (transition?.delay ?? 0) + delay / 1000,
+      }}
+      variants={{
+        hidden: { filter: `blur(${initialBlur}px)` },
+        visible: { filter: `blur(${blur}px)` },
+      }}
+      {...props}
+    />
+  );
+}
+
+type ThemeTogglerProps = {
+  theme: ThemeSelection;
+  resolvedTheme: Resolved;
+  setTheme: (theme: ThemeSelection) => void;
+  direction?: Direction;
+  onImmediateChange?: (theme: ThemeSelection) => void;
+  children?: (state: {
+    resolved: Resolved;
+    effective: ThemeSelection;
+    toggleTheme: (theme: ThemeSelection) => void;
+  }) => ReactNode;
+};
+
+function ThemeToggler({
+  theme,
+  resolvedTheme,
+  setTheme,
+  onImmediateChange,
+  direction = 'ltr',
+  children,
+  ...props
+}: ThemeTogglerProps) {
+  const [preview, setPreview] = useState<null | {
+    effective: ThemeSelection;
+    resolved: Resolved;
+  }>(null);
+  const [current, setCurrent] = useState<{
+    effective: ThemeSelection;
+    resolved: Resolved;
+  }>({
+    effective: theme,
+    resolved: resolvedTheme,
+  });
+
+  useEffect(() => {
+    if (
+      preview &&
+      theme === preview.effective &&
+      resolvedTheme === preview.resolved
+    ) {
+      setPreview(null);
+    }
+  }, [theme, resolvedTheme, preview]);
+
+  const [fromClip, toClip] = getClipKeyframes(direction);
+
+  const toggleTheme = useCallback(
+    async (newTheme: ThemeSelection) => {
+      const resolved = newTheme === 'system' ? getSystemEffective() : newTheme;
+
+      setCurrent({ effective: newTheme, resolved });
+      onImmediateChange?.(newTheme);
+
+      if (newTheme === 'system' && resolved === resolvedTheme) {
+        setTheme(newTheme);
+        return;
+      }
+
+      if (!document.startViewTransition) {
+        flushSync(() => {
+          setPreview({ effective: newTheme, resolved });
+        });
+        setTheme(newTheme);
+        return;
+      }
+
+      await document.startViewTransition(() => {
+        flushSync(() => {
+          setPreview({ effective: newTheme, resolved });
+          document.documentElement.classList.toggle(
+            'dark',
+            resolved === 'dark'
+          );
+        });
+      }).ready;
+
+      document.documentElement
+        .animate(
+          { clipPath: [fromClip, toClip] },
+          {
+            duration: 700,
+            easing: 'ease-in-out',
+            pseudoElement: '::view-transition-new(root)',
+          }
+        )
+        .finished.finally(() => {
+          setTheme(newTheme);
+        });
+    },
+    [onImmediateChange, resolvedTheme, fromClip, toClip, setTheme]
+  );
+
+  return (
+    <Fragment {...props}>
+      {typeof children === 'function'
+        ? children({
+            effective: current.effective,
+            resolved: current.resolved,
+            toggleTheme,
+          })
+        : children}
+      <style>
+        {
+          '::view-transition-old(root), ::view-transition-new(root){animation:none;mix-blend-mode:normal;}'
+        }
+      </style>
+    </Fragment>
+  );
+}
+
+type ThemeTogglerButtonProps = {
+  modes?: ThemeSelection[];
+  onImmediateChange?: (theme: ThemeSelection) => void;
+  direction?: Direction;
+  className?: string;
+  variant?: 'default' | 'outline' | 'ghost';
+  size?: 'default' | 'sm' | 'lg';
+} & Omit<React.ComponentProps<'button'>, 'children'>;
 
 function ThemeTogglerButton({
   variant = 'default',
@@ -59,18 +237,39 @@ function ThemeTogglerButton({
 
   const isReady = mounted && resolvedTheme;
 
+  const baseStyles =
+    'flex shrink-0 items-center justify-center rounded-full outline-none transition-[box-shadow,color,background-color,border-color] focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0';
+
+  const variantStyles = {
+    default:
+      'bg-neutral-100 text-neutral-900 shadow-md shadow-neutral-900/20 hover:bg-neutral-200 hover:shadow-lg dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-neutral-900/30 dark:hover:bg-neutral-800 dark:hover:shadow-xl',
+    outline:
+      'border border-neutral-200 bg-transparent hover:bg-neutral-100 dark:border-neutral-800 dark:hover:bg-neutral-900',
+    ghost: 'hover:bg-neutral-100 dark:hover:bg-neutral-900',
+  };
+
+  const sizeStyles = {
+    default: 'size-9',
+    sm: 'size-8',
+    lg: 'size-10',
+  };
+
+  const buttonClassName = cn(
+    baseStyles,
+    variantStyles[variant],
+    sizeStyles[size],
+    className
+  );
+
   if (!isReady) {
     return (
       <button
-        className={cn(
-          buttonVariants({ variant, size, className }),
-          'rounded-full bg-neutral-100 text-neutral-900 shadow-md shadow-neutral-900/20 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-neutral-900/30 dark:hover:bg-neutral-800'
-        )}
+        className={buttonClassName}
         data-slot="theme-toggler-button"
         disabled
         {...props}
       >
-        <Blur asChild blur={0} initialBlur={10} inView>
+        <Blur blur={0} initialBlur={10} inView>
           <HugeiconsIcon icon={Sun03Icon} />
         </Blur>
       </button>
@@ -78,7 +277,7 @@ function ThemeTogglerButton({
   }
 
   return (
-    <ThemeTogglerPrimitive
+    <ThemeToggler
       direction={direction}
       onImmediateChange={onImmediateChange}
       resolvedTheme={resolvedTheme as Resolved}
@@ -87,10 +286,7 @@ function ThemeTogglerButton({
     >
       {({ effective, resolved, toggleTheme }) => (
         <button
-          className={cn(
-            buttonVariants({ variant, size, className }),
-            'rounded-full bg-neutral-100 text-neutral-900 shadow-md shadow-neutral-900/20 hover:bg-neutral-200 hover:shadow-lg dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-neutral-900/30 dark:hover:bg-neutral-800 dark:hover:shadow-xl'
-          )}
+          className={buttonClassName}
           data-slot="theme-toggler-button"
           onClick={(e) => {
             onClick?.(e);
@@ -98,12 +294,12 @@ function ThemeTogglerButton({
           }}
           {...props}
         >
-          <Blur asChild blur={0} initialBlur={0} inView>
+          <Blur blur={0} initialBlur={0} inView>
             {getIcon(resolved)}
           </Blur>
         </button>
       )}
-    </ThemeTogglerPrimitive>
+    </ThemeToggler>
   );
 }
 

@@ -1,14 +1,8 @@
+import { GeistMono } from 'geist/font/mono';
+import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
-import localFont from 'next/font/local';
 import './globals.css';
 import { ThemeProvider } from '@/lib/theme-provider';
-
-const clashDisplay = localFont({
-  src: '../../public/fonts/ClashDisplay-Variable.woff2',
-  variable: '--font-clash-display',
-  weight: '200 700',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -22,7 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${clashDisplay.variable} antialiased`}>
+      <body
+        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
+      >
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
