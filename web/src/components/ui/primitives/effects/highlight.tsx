@@ -140,13 +140,13 @@ function Highlight<T extends ElementType = 'div'>({
     onValueChange,
     className,
     style,
-    transition = { type: 'spring', stiffness: 350, damping: 35 },
+    transition = { duration: 0.1, ease: [0.25, 0.1, 0.25, 1] },
     hover = false,
     click = true,
     enabled = true,
     controlledItems,
     disabled = false,
-    exitDelay = 200,
+    exitDelay = 50,
     mode = 'children',
   } = props;
 
@@ -238,20 +238,29 @@ function Highlight<T extends ElementType = 'div'>({
       return;
     }
 
+    let rafId: number | null = null;
     const onScroll = () => {
-      if (!activeValue) {
+      if (!activeValue || rafId !== null) {
         return;
       }
-      const activeEl = container.querySelector<HTMLElement>(
-        `[data-value="${activeValue}"][data-highlight="true"]`
-      );
-      if (activeEl) {
-        safeSetBounds(activeEl.getBoundingClientRect());
-      }
+      rafId = requestAnimationFrame(() => {
+        const activeEl = container.querySelector<HTMLElement>(
+          `[data-value="${activeValue}"][data-highlight="true"]`
+        );
+        if (activeEl) {
+          safeSetBounds(activeEl.getBoundingClientRect());
+        }
+        rafId = null;
+      });
     };
 
     container.addEventListener('scroll', onScroll, { passive: true });
-    return () => container.removeEventListener('scroll', onScroll);
+    return () => {
+      container.removeEventListener('scroll', onScroll);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, [mode, activeValue, safeSetBounds]);
 
   const render = useCallback(
@@ -278,10 +287,7 @@ function Highlight<T extends ElementType = 'div'>({
                   data-slot="motion-highlight"
                   exit={{
                     opacity: 0,
-                    transition: {
-                      ...transition,
-                      delay: (transition?.delay ?? 0) + (exitDelay ?? 0) / 1000,
-                    },
+                    transition,
                   }}
                   initial={{
                     top: boundsState.top,
@@ -290,7 +296,15 @@ function Highlight<T extends ElementType = 'div'>({
                     height: boundsState.height,
                     opacity: 0,
                   }}
-                  style={{ position: 'absolute', zIndex: 0, ...style }}
+                  style={{
+                    position: 'absolute',
+                    zIndex: 0,
+                    willChange: 'transform, opacity',
+                    transform: 'translateZ(0)',
+                    backfaceVisibility: 'hidden',
+                    contain: 'layout style paint',
+                    ...style,
+                  }}
                   transition={transition}
                 />
               )}
@@ -308,7 +322,6 @@ function Highlight<T extends ElementType = 'div'>({
       containerClassName,
       boundsState,
       transition,
-      exitDelay,
       style,
       className,
       activeClassNameState,
@@ -567,18 +580,17 @@ function HighlightItem<T extends ElementType>({
                 data-slot="motion-highlight"
                 exit={{
                   opacity: 0,
-                  transition: {
-                    ...itemTransition,
-                    delay:
-                      (itemTransition?.delay ?? 0) +
-                      (exitDelay ?? contextExitDelay ?? 0) / 1000,
-                  },
+                  transition: itemTransition,
                 }}
                 initial={{ opacity: 0 }}
                 layoutId={`transition-background-${contextId}`}
                 style={{
                   position: 'absolute',
                   zIndex: 0,
+                  willChange: 'transform, opacity',
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
+                  contain: 'layout style paint',
                   ...contextStyle,
                   ...style,
                 }}
@@ -641,6 +653,7 @@ function HighlightItem<T extends ElementType>({
               style={{
                 position: 'absolute',
                 zIndex: 0,
+                willChange: 'transform, opacity',
                 ...contextStyle,
                 ...style,
               }}

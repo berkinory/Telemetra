@@ -156,7 +156,7 @@ type MenuHighlightProps = Omit<
 };
 
 function MenuHighlight({
-  transition = { type: 'spring', stiffness: 350, damping: 35 },
+  transition = { duration: 0.1, ease: [0.25, 0.1, 0.25, 1] },
   ...props
 }: MenuHighlightProps) {
   const { highlightedValue } = useMenuActiveValue();

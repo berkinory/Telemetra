@@ -69,7 +69,7 @@ type DialogBackdropProps = Omit<
   HTMLMotionProps<'div'>;
 
 function DialogBackdrop({
-  transition = { duration: 0.2, ease: 'easeInOut' },
+  transition = { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
   ...props
 }: DialogBackdropProps) {
   return (
@@ -103,7 +103,7 @@ function DialogPopup({
   from = 'top',
   initialFocus,
   finalFocus,
-  transition = { type: 'spring', stiffness: 150, damping: 25 },
+  transition = { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
   ...props
 }: DialogPopupProps) {
   const initialRotation =

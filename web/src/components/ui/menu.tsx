@@ -42,7 +42,7 @@ import {
   type MenuSubmenuTriggerProps as MenuSubmenuTriggerPrimitiveProps,
   MenuTrigger as MenuTriggerPrimitive,
   type MenuTriggerProps as MenuTriggerPrimitiveProps,
-} from '@/components/ui/primitives/base/dropdown';
+} from '@/components/ui/primitives/base/menu';
 import { cn } from '@/lib/utils';
 
 type MenuProps = MenuPrimitiveProps;
