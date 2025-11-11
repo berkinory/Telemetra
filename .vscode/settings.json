@@ -31,5 +31,6 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
-  "emmet.showExpandedAbbreviation": "never"
+  "emmet.showExpandedAbbreviation": "never",
+  "biome.lspBin": "./node_modules/@biomejs/biome/bin/biome"
 }

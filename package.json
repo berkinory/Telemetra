@@ -1,0 +1,29 @@
+{
+  "name": "telemetra",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "bun run --filter server dev & bun run --filter web dev",
+    "dev:server": "bun run --filter server dev",
+    "dev:web": "bun run --filter web dev",
+    "build": "bun run --filter server build && bun run --filter web build",
+    "build:server": "bun run --filter server build",
+    "build:web": "bun run --filter web build",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "check": "bunx ultracite fix --unsafe",
+    "typecheck": "bun run --filter server typecheck && bun run --filter web typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.5",
+    "typescript": "^5",
+    "ultracite": "5.6.1"
+  },
+  "packageManager": "bun@latest"
+}

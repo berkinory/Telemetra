@@ -109,7 +109,9 @@ export const member = pgTable(
   },
   (table) => ({
     userIdIdx: index('member_user_id_idx').on(table.userId),
-    organizationIdIdx: index('member_organization_id_idx').on(table.organizationId),
+    organizationIdIdx: index('member_organization_id_idx').on(
+      table.organizationId
+    ),
   })
 );
 
@@ -130,7 +132,9 @@ export const invitation = pgTable(
   },
   (table) => ({
     emailIdx: index('invitation_email_idx').on(table.email),
-    organizationIdIdx: index('invitation_organization_id_idx').on(table.organizationId),
+    organizationIdIdx: index('invitation_organization_id_idx').on(
+      table.organizationId
+    ),
   })
 );
 
