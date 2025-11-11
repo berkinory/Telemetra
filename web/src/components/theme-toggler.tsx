@@ -44,7 +44,7 @@ function ThemeTogglerButton({
   variant = 'default',
   size = 'default',
   modes = ['light', 'dark'],
-  direction = 'ltr',
+  direction = 'rtl',
   onImmediateChange,
   onClick,
   className,
