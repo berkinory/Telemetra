@@ -140,7 +140,7 @@ function Highlight<T extends ElementType = 'div'>({
     onValueChange,
     className,
     style,
-    transition = { type: 'spring', stiffness: 350, damping: 35 },
+    transition = { type: 'spring', stiffness: 500, damping: 25 },
     hover = false,
     click = true,
     enabled = true,
@@ -467,16 +467,9 @@ function HighlightItem<T extends ElementType>({
   const isActive = activeValue === childValue;
   const isDisabled = disabled === undefined ? contextDisabled : disabled;
   const itemTransition = transition ?? contextTransition;
-  const [wasActive, setWasActive] = useState(false);
 
   const localRef = useRef<HTMLDivElement>(null);
   useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
-
-  useEffect(() => {
-    if (isActive !== wasActive) {
-      setWasActive(isActive);
-    }
-  }, [isActive, wasActive]);
 
   useEffect(() => {
     if (mode !== 'parent') {
@@ -591,10 +584,8 @@ function HighlightItem<T extends ElementType>({
         <>
           {isActive && !isDisabled && (
             <motion.div
-              animate={{ opacity: 1 }}
               className={cn(contextClassName, activeClassName)}
               data-slot="motion-highlight"
-              initial={wasActive ? false : { opacity: 0 }}
               layoutId={`highlight-${contextId}`}
               style={{
                 position: 'absolute',
@@ -649,10 +640,8 @@ function HighlightItem<T extends ElementType>({
     >
       {mode === 'children' && isActive && !isDisabled && (
         <motion.div
-          animate={{ opacity: 1 }}
           className={cn(contextClassName, activeClassName)}
           data-slot="motion-highlight"
-          initial={wasActive ? false : { opacity: 0 }}
           layoutId={`highlight-${contextId}`}
           style={{
             position: 'absolute',
