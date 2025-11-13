@@ -90,30 +90,30 @@ type AccordionContentProps = Omit<
 
 function AccordionContent({
   keepRendered = false,
-  transition = { duration: 0.35, ease: 'easeInOut' },
+  transition = {
+    duration: 0.3,
+    ease: [0.32, 0.72, 0, 1],
+  },
   ...props
 }: AccordionContentProps) {
   const { isOpen } = useAccordionItem();
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false}>
       {keepRendered ? (
         <AccordionPrimitive.Content asChild forceMount>
           <motion.div
             animate={
               isOpen
-                ? { height: 'auto', opacity: 1, '--mask-stop': '100%', y: 0 }
-                : { height: 0, opacity: 0, '--mask-stop': '0%', y: 20 }
+                ? { height: 'auto', opacity: 1, y: 0 }
+                : { height: 0, opacity: 0, y: -10 }
             }
             data-slot="accordion-content"
-            initial={{ height: 0, opacity: 0, '--mask-stop': '0%', y: 20 }}
+            initial={false}
             key="accordion-content"
             style={{
-              maskImage:
-                'linear-gradient(black var(--mask-stop), transparent var(--mask-stop))',
-              WebkitMaskImage:
-                'linear-gradient(black var(--mask-stop), transparent var(--mask-stop))',
               overflow: 'hidden',
+              willChange: isOpen ? 'height, opacity, transform' : 'auto',
             }}
             transition={transition}
             {...props}
@@ -126,19 +126,15 @@ function AccordionContent({
               animate={{
                 height: 'auto',
                 opacity: 1,
-                '--mask-stop': '100%',
                 y: 0,
               }}
               data-slot="accordion-content"
-              exit={{ height: 0, opacity: 0, '--mask-stop': '0%', y: 20 }}
-              initial={{ height: 0, opacity: 0, '--mask-stop': '0%', y: 20 }}
+              exit={{ height: 0, opacity: 0, y: -10 }}
+              initial={{ height: 0, opacity: 0, y: -10 }}
               key="accordion-content"
               style={{
-                maskImage:
-                  'linear-gradient(black var(--mask-stop), transparent var(--mask-stop))',
-                WebkitMaskImage:
-                  'linear-gradient(black var(--mask-stop), transparent var(--mask-stop))',
                 overflow: 'hidden',
+                willChange: 'height, opacity, transform',
               }}
               transition={transition}
               {...props}
