@@ -45,6 +45,7 @@ function TooltipContent({
   className,
   sideOffset,
   children,
+  onPointerDownOutside,
   ...props
 }: TooltipContentProps) {
   return (
@@ -54,6 +55,11 @@ function TooltipContent({
           'z-50 w-fit origin-(--radix-tooltip-content-transform-origin) text-balance rounded-md bg-primary px-3 py-1.5 text-primary-foreground text-xs',
           className
         )}
+        onPointerDownOutside={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onPointerDownOutside?.(e);
+        }}
         sideOffset={sideOffset}
         {...props}
       >
