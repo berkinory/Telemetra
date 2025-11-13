@@ -48,7 +48,6 @@ export function DashboardSidebar() {
   );
 
   useEffect(() => {
-    // Client-side only avatar generation
     setAvatarSrc(generatedAvatar);
   }, [generatedAvatar]);
 
@@ -62,7 +61,7 @@ export function DashboardSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size="lg" tooltip="Telemetra">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
@@ -127,7 +126,7 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size="lg" tooltip="Account">
                   <Avatar className="size-8 ring-2 ring-sidebar-border ring-offset-1 ring-offset-sidebar">

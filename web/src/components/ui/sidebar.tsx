@@ -607,6 +607,7 @@ function SidebarMenuButton({
       data-sidebar="menu-button"
       data-size={size}
       data-slot="sidebar-menu-button"
+      suppressHydrationWarning
       {...props}
     />
   );
