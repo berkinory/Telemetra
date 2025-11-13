@@ -11,7 +11,6 @@ import {
   type TooltipTriggerProps as TooltipTriggerPrimitiveProps,
 } from '@/components/ui/primitives/radix/tooltip';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 type TooltipProviderProps = TooltipProviderPrimitiveProps;
 
@@ -49,17 +48,12 @@ function TooltipContent({
   onPointerDownOutside,
   ...props
 }: TooltipContentProps) {
-  const isMobile = useIsMobile();
-
-  if (isMobile) {
-    return null;
-  }
-
   return (
     <TooltipPortalPrimitive>
       <TooltipContentPrimitive
         className={cn(
           'z-50 w-fit origin-(--radix-tooltip-content-transform-origin) text-balance rounded-md bg-primary px-3 py-1.5 text-primary-foreground text-xs',
+          'max-md:hidden',
           className
         )}
         onPointerDownOutside={(e) => {
