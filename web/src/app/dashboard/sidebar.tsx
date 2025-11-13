@@ -1,9 +1,12 @@
 'use client';
 
 import {
+  AddSquareIcon,
   Analytics01Icon,
+  ArrowRight01Icon,
   ArtboardIcon,
   Logout01Icon,
+  UnfoldMoreIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -39,17 +42,48 @@ export function DashboardSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="Telemetra">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <HugeiconsIcon className="size-4" icon={ArtboardIcon} />
-              </div>
-              <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold">Telemetra</span>
-                <span className="text-sidebar-foreground/70 text-xs">
-                  Analytics Platform
-                </span>
-              </div>
-            </SidebarMenuButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton size="lg" tooltip="Telemetra">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                    <HugeiconsIcon className="size-4" icon={ArtboardIcon} />
+                  </div>
+                  <div className="flex flex-col gap-0.5 leading-none">
+                    <span className="font-semibold">Telemetra</span>
+                    <span className="text-sidebar-foreground/70 text-xs">
+                      Analytics Platform
+                    </span>
+                  </div>
+                  <HugeiconsIcon
+                    className="ml-auto size-4"
+                    icon={UnfoldMoreIcon}
+                  />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56" side="bottom">
+                <DropdownMenuLabel>Switch App</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  Artover
+                  <HugeiconsIcon
+                    className="ml-auto size-4"
+                    icon={ArrowRight01Icon}
+                  />
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Telemetra
+                  <HugeiconsIcon
+                    className="ml-auto size-4"
+                    icon={ArrowRight01Icon}
+                  />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="success">
+                  <HugeiconsIcon className="mr-2 size-4" icon={AddSquareIcon} />
+                  Create New App
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
@@ -87,6 +121,10 @@ export function DashboardSidebar() {
                       berk@example.com
                     </span>
                   </div>
+                  <HugeiconsIcon
+                    className="ml-auto size-4"
+                    icon={UnfoldMoreIcon}
+                  />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56" side="top">
