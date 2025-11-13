@@ -129,7 +129,7 @@ export function DashboardSidebar() {
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size="lg" tooltip="Account">
-                  <Avatar className="size-8 ring-2 ring-sidebar-border ring-offset-1 ring-offset-sidebar">
+                  <Avatar className="size-8">
                     {avatarSrc && (
                       <AvatarImage
                         alt={username}
