@@ -16,7 +16,7 @@ type ButtonProps = WithAsChild<
 
 function Button({
   hoverScale = 1.05,
-  tapScale = 0.95,
+  tapScale = 0.98,
   asChild = false,
   ...props
 }: ButtonProps) {
@@ -25,7 +25,7 @@ function Button({
   return (
     <Component
       whileHover={{ scale: hoverScale }}
-      whileTap={{ scale: tapScale }}
+      whileTap={{ scale: tapScale, transition: { duration: 0.1 } }}
       {...props}
     />
   );
