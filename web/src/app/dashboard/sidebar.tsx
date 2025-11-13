@@ -42,7 +42,7 @@ export function DashboardSidebar() {
   const generatedAvatar = useMemo(
     () =>
       `data:image/svg+xml;utf8,${encodeURIComponent(
-        minidenticon(username, 60, 50)
+        minidenticon(username, 55, 45)
       )}`,
     []
   );
