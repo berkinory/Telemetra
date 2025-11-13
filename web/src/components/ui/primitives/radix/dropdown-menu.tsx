@@ -244,7 +244,7 @@ type DropdownMenuHighlightProps = Omit<
 };
 
 function DropdownMenuHighlight({
-  transition = { type: 'spring', stiffness: 350, damping: 35 },
+  transition = { type: 'spring', stiffness: 500, damping: 35 },
   ...props
 }: DropdownMenuHighlightProps) {
   const { highlightedValue } = useDropdownMenu();

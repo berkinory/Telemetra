@@ -207,8 +207,8 @@ function TabsContents({
   children,
   transition = {
     type: 'spring',
-    stiffness: 300,
-    damping: 30,
+    stiffness: 500,
+    damping: 35,
     bounce: 0,
     restDelta: 0.01,
   },

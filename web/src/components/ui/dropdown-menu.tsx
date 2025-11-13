@@ -74,7 +74,10 @@ function DropdownMenuContent({
       sideOffset={sideOffset}
       {...props}
     >
-      <DropdownMenuHighlightPrimitive className="absolute inset-0 z-0 rounded-sm bg-accent">
+      <DropdownMenuHighlightPrimitive
+        className="absolute inset-0 z-0 rounded-sm bg-accent"
+        transition={{ duration: 0 }}
+      >
         {children}
       </DropdownMenuHighlightPrimitive>
     </DropdownMenuContentPrimitive>

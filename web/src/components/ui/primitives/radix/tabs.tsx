@@ -132,8 +132,8 @@ type TabsContentsProps = TabsContentsAutoProps | TabsContentsLayoutProps;
 
 const defaultTransition: Transition = {
   type: 'spring',
-  stiffness: 200,
-  damping: 30,
+  stiffness: 500,
+  damping: 35,
 };
 
 function isAutoMode(props: TabsContentsProps): props is TabsContentsAutoProps {

@@ -174,7 +174,7 @@ function Sidebar({
   children,
   animateOnHover = true,
   containerClassName,
-  transition = { type: 'spring', stiffness: 350, damping: 35 },
+  transition = { type: 'spring', stiffness: 500, damping: 35 },
   ...props
 }: SidebarProps) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
