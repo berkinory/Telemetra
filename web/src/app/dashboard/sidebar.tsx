@@ -9,7 +9,9 @@ import {
   UnfoldMoreIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { generateIdenteapot } from '@teapotlabs/identeapots';
+import { useEffect, useState } from 'react';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +34,20 @@ import {
 } from '@/components/ui/sidebar';
 
 export function DashboardSidebar() {
+  const [avatarSrc, setAvatarSrc] = useState<string>('');
+
+  useEffect(() => {
+    generateIdenteapot('berk@example.com', {
+      size: 384,
+      gridSize: 11,
+      patternSize: 7,
+      overlap: 1,
+      paletteSize: 8,
+      coloredCellLightness: 60,
+      emptyCellLightness: 90,
+    }).then(setAvatarSrc);
+  }, []);
+
   return (
     <Sidebar
       animateOnHover={false}
@@ -111,9 +127,7 @@ export function DashboardSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size="lg" tooltip="Account">
                   <Avatar className="size-8">
-                    <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
-                      BK
-                    </AvatarFallback>
+                    <AvatarImage alt="User avatar" src={avatarSrc} />
                   </Avatar>
                   <div className="flex flex-col gap-0.5 leading-none">
                     <span className="font-semibold text-sm">Berk</span>
