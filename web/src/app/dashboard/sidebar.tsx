@@ -46,6 +46,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from '@/components/ui/sidebar';
 
 type App = {
@@ -144,6 +145,7 @@ export function DashboardSidebar() {
   const [avatarSrc, setAvatarSrc] = useState<string>('');
   const [isAvatarLoaded, setIsAvatarLoaded] = useState(false);
   const [appId, setAppId] = useQueryState('app');
+  const { isMobile, setOpenMobile } = useSidebar();
 
   const username = 'berk@example.com';
 
@@ -249,7 +251,14 @@ export function DashboardSidebar() {
                       isActive={pathname.includes(item.path)}
                       tooltip={item.tooltip}
                     >
-                      <Link href={`${item.path}?app=${appId}`}>
+                      <Link
+                        href={`${item.path}?app=${appId}`}
+                        onClick={() => {
+                          if (isMobile) {
+                            setOpenMobile(false);
+                          }
+                        }}
+                      >
                         <HugeiconsIcon icon={item.icon} />
                         <span>{item.label}</span>
                       </Link>
@@ -278,7 +287,14 @@ export function DashboardSidebar() {
                       isActive={pathname.includes(item.path)}
                       tooltip={item.tooltip}
                     >
-                      <Link href={`${item.path}?app=${appId}`}>
+                      <Link
+                        href={`${item.path}?app=${appId}`}
+                        onClick={() => {
+                          if (isMobile) {
+                            setOpenMobile(false);
+                          }
+                        }}
+                      >
                         <HugeiconsIcon icon={item.icon} />
                         <span>{item.label}</span>
                       </Link>
@@ -307,7 +323,14 @@ export function DashboardSidebar() {
                       isActive={pathname.includes(item.path)}
                       tooltip={item.tooltip}
                     >
-                      <Link href={`${item.path}?app=${appId}`}>
+                      <Link
+                        href={`${item.path}?app=${appId}`}
+                        onClick={() => {
+                          if (isMobile) {
+                            setOpenMobile(false);
+                          }
+                        }}
+                      >
                         <HugeiconsIcon icon={item.icon} />
                         <span>{item.label}</span>
                       </Link>
