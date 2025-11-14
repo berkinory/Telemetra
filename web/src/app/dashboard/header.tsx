@@ -1,79 +1,167 @@
 'use client';
 
 import {
-  DashboardSquare01Icon,
-  Home01Icon,
-  Settings01Icon,
+  Analytics01Icon,
+  Blockchain05Icon,
+  ChatEditIcon,
+  ComputerPhoneSyncIcon,
+  CreditCardIcon,
+  File02Icon,
+  GithubIcon,
+  Key01Icon,
+  PlaySquareIcon,
+  QuestionIcon,
+  Setting07Icon,
+  UserGroupIcon,
 } from '@hugeicons/core-free-icons';
-import { type ReactNode, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import type { CommandItem } from '@/components/command-menu';
 import { CommandMenu, CommandMenuTrigger } from '@/components/command-menu';
 import { ThemeTogglerButton } from '@/components/theme-toggler';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const COMMAND_ITEMS: CommandItem[] = [
-  {
-    id: '1',
-    name: 'Home',
-    icon: Home01Icon,
-    keywords: ['home', 'dashboard', 'main'],
-    path: '/dashboard',
-  },
-  {
-    id: '2',
-    name: 'Dashboard',
-    icon: DashboardSquare01Icon,
-    keywords: ['dashboard', 'overview', 'stats'],
-    path: '/dashboard',
-  },
-  {
-    id: '3',
-    name: 'Settings',
-    icon: Settings01Icon,
-    keywords: ['settings', 'preferences', 'config'],
-    path: '/dashboard/settings',
-  },
-  {
-    id: '4',
-    name: 'Logout',
-    icon: Settings01Icon,
-    keywords: ['logout', 'exit', 'sign out'],
-    path: '/logout',
-  },
-  {
-    id: '5',
-    name: 'Help',
-    icon: Settings01Icon,
-    keywords: ['help', 'support', 'faq'],
-    path: '/dashboard/help',
-  },
-  {
-    id: '6',
-    name: 'About',
-    icon: Settings01Icon,
-    keywords: ['about', 'information', 'version'],
-    path: '/dashboard/about',
-  },
-  {
-    id: '7',
-    name: 'Feedback',
-    icon: Settings01Icon,
-    keywords: ['feedback', 'suggestions', 'report'],
-    path: '/dashboard/feedback',
-  },
-  {
-    id: '8',
-    name: 'Contact',
-    icon: Settings01Icon,
-    keywords: ['contact', 'support', 'email'],
-    path: '/dashboard/contact',
-  },
-];
-
 export function DashboardHeader({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
+  const pathname = usePathname();
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
+
+  // Extract app ID from current pathname
+  const appId = useMemo(() => {
+    const pathParts = pathname.split('/');
+    const lastPart = pathParts.at(-1);
+    // Check if last part looks like an app ID (simple validation)
+    return lastPart && /^[0-9]+$/.test(lastPart) ? lastPart : null;
+  }, [pathname]);
+
+  const commandItems = useMemo<CommandItem[]>(() => {
+    if (!appId) {
+      // Return only global commands when no app is selected
+      return [
+        {
+          id: 'docs',
+          name: 'Documentation',
+          icon: File02Icon,
+          keywords: ['docs', 'documentation', 'help', 'guide'],
+          path: '/docs',
+        },
+        {
+          id: 'support',
+          name: 'Support',
+          icon: QuestionIcon,
+          keywords: ['support', 'help', 'contact'],
+          path: '/support',
+        },
+        {
+          id: 'github',
+          name: 'Github',
+          icon: GithubIcon,
+          keywords: ['github', 'source', 'code', 'repository'],
+          path: 'https://github.com',
+        },
+        {
+          id: 'billing',
+          name: 'Billing',
+          icon: CreditCardIcon,
+          keywords: ['billing', 'payment', 'subscription', 'invoice'],
+          path: '/billing',
+        },
+      ];
+    }
+
+    // Return app-specific commands when app is selected
+    return [
+      // Analytics
+      {
+        id: 'overview',
+        name: 'Overview',
+        icon: Analytics01Icon,
+        keywords: ['overview', 'analytics', 'dashboard', 'stats'],
+        path: `/dashboard/analytics/overview/${appId}`,
+      },
+      {
+        id: 'users',
+        name: 'Users',
+        icon: ComputerPhoneSyncIcon,
+        keywords: ['users', 'people', 'accounts', 'analytics'],
+        path: `/dashboard/analytics/users/${appId}`,
+      },
+      {
+        id: 'sessions',
+        name: 'Sessions',
+        icon: PlaySquareIcon,
+        keywords: ['sessions', 'activity', 'analytics'],
+        path: `/dashboard/analytics/sessions/${appId}`,
+      },
+      {
+        id: 'events',
+        name: 'Events',
+        icon: Blockchain05Icon,
+        keywords: ['events', 'tracking', 'analytics'],
+        path: `/dashboard/analytics/events/${appId}`,
+      },
+      // Reports
+      {
+        id: 'feedbacks',
+        name: 'Feedbacks',
+        icon: ChatEditIcon,
+        keywords: ['feedbacks', 'reports', 'comments', 'reviews'],
+        path: `/dashboard/reports/feedbacks/${appId}`,
+      },
+      // Application
+      {
+        id: 'settings',
+        name: 'Settings',
+        icon: Setting07Icon,
+        keywords: ['settings', 'configuration', 'preferences', 'app'],
+        path: `/dashboard/application/settings/${appId}`,
+      },
+      {
+        id: 'api-keys',
+        name: 'API Keys',
+        icon: Key01Icon,
+        keywords: ['api', 'keys', 'tokens', 'credentials', 'authentication'],
+        path: `/dashboard/application/api-keys/${appId}`,
+      },
+      {
+        id: 'team',
+        name: 'Team',
+        icon: UserGroupIcon,
+        keywords: ['team', 'members', 'users', 'collaboration'],
+        path: `/dashboard/application/team/${appId}`,
+      },
+      // Global
+      {
+        id: 'docs',
+        name: 'Documentation',
+        icon: File02Icon,
+        keywords: ['docs', 'documentation', 'help', 'guide'],
+        path: '/docs',
+      },
+      {
+        id: 'support',
+        name: 'Support',
+        icon: QuestionIcon,
+        keywords: ['support', 'help', 'contact'],
+        path: '/support',
+      },
+      {
+        id: 'github',
+        name: 'Github',
+        icon: GithubIcon,
+        keywords: ['github', 'source', 'code', 'repository'],
+        path: 'https://github.com',
+      },
+      {
+        id: 'billing',
+        name: 'Billing',
+        icon: CreditCardIcon,
+        keywords: ['billing', 'payment', 'subscription', 'invoice'],
+        path: '/billing',
+      },
+    ];
+  }, [appId]);
 
   useEffect(() => {
     if (isMobile) {
@@ -107,7 +195,7 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
       </header>
       {!isMobile && (
         <CommandMenu
-          items={COMMAND_ITEMS}
+          items={commandItems}
           onOpenChange={setCommandMenuOpen}
           open={commandMenuOpen}
         />
