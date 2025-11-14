@@ -52,6 +52,7 @@ function Input({
           onChange?.(event);
         }}
         placeholder={placeholder}
+        spellCheck={false}
         type={type}
       />
       <AnimatePresence initial={false} mode="popLayout">
