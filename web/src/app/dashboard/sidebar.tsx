@@ -144,7 +144,6 @@ export function DashboardSidebar() {
   const [avatarSrc, setAvatarSrc] = useState<string>('');
   const [isAvatarLoaded, setIsAvatarLoaded] = useState(false);
   const [appId, setAppId] = useQueryState('app');
-  const [appDropdownOpen, setAppDropdownOpen] = useState(false);
 
   const username = 'berk@example.com';
 
@@ -170,18 +169,6 @@ export function DashboardSidebar() {
     setAvatarSrc(generatedAvatar);
   }, [generatedAvatar]);
 
-  useEffect(() => {
-    if (!appId) {
-      const hasLastApp =
-        typeof window !== 'undefined' &&
-        localStorage.getItem('lastSelectedApp');
-
-      if (!hasLastApp) {
-        setAppDropdownOpen(true);
-      }
-    }
-  }, [appId]);
-
   return (
     <Sidebar
       animateOnHover={false}
@@ -192,11 +179,7 @@ export function DashboardSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu
-              modal={false}
-              onOpenChange={setAppDropdownOpen}
-              open={appDropdownOpen}
-            >
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
@@ -230,7 +213,9 @@ export function DashboardSidebar() {
                       if (typeof window !== 'undefined') {
                         localStorage.setItem('lastSelectedApp', app.id);
                       }
-                      router.push(`/dashboard?app=${app.id}`);
+                      router.push(
+                        `/dashboard/analytics/overview?app=${app.id}`
+                      );
                     }}
                   >
                     {app.name}
