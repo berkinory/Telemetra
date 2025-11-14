@@ -2,17 +2,17 @@
 
 import { Moon02Icon, Sun03Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { type HTMLMotionProps, motion } from 'motion/react';
+import type { HTMLMotionProps } from 'motion/react';
 import { useTheme } from 'next-themes';
 import {
   Fragment,
   type ReactNode,
-  type Ref,
   useCallback,
   useEffect,
   useState,
 } from 'react';
 import { flushSync } from 'react-dom';
+import { Blur } from '@/components/ui/blur';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -61,44 +61,6 @@ const getNextTheme = (
   }
   return modes[(i + 1) % modes.length];
 };
-
-type BlurProps = {
-  children?: ReactNode;
-  delay?: number;
-  initialBlur?: number;
-  blur?: number;
-  inView?: boolean;
-  asChild?: boolean;
-  ref?: Ref<HTMLElement>;
-} & HTMLMotionProps<'div'>;
-
-function Blur({
-  ref,
-  transition = { type: 'spring', stiffness: 200, damping: 20 },
-  delay = 0,
-  initialBlur = 10,
-  blur = 0,
-  inView = true,
-  ...props
-}: BlurProps) {
-  return (
-    <motion.div
-      animate={inView ? 'visible' : 'hidden'}
-      exit="hidden"
-      initial="hidden"
-      ref={ref as Ref<HTMLDivElement>}
-      transition={{
-        ...transition,
-        delay: (transition?.delay ?? 0) + delay / 1000,
-      }}
-      variants={{
-        hidden: { filter: `blur(${initialBlur}px)` },
-        visible: { filter: `blur(${blur}px)` },
-      }}
-      {...props}
-    />
-  );
-}
 
 type ThemeTogglerProps = {
   theme: ThemeSelection;
