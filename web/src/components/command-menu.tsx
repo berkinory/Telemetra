@@ -5,7 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import Fuse from 'fuse.js';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Blur } from '@/components/ui/blur';
 import {
   Dialog,
@@ -46,17 +46,29 @@ function CommandMenuItem({
   onClick: () => void;
   onMouseEnter: () => void;
 }) {
+  const ref = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isSelected && ref.current) {
+      ref.current.scrollIntoView({
+        block: 'nearest',
+        behavior: 'smooth',
+      });
+    }
+  }, [isSelected]);
+
   return (
     <motion.button
       animate={{ opacity: 1, scale: 1 }}
       className={cn(
-        'flex w-full items-center gap-3 rounded-md px-3 py-3 text-left transition-colors duration-100 hover:bg-accent/50',
-        isSelected && 'bg-accent text-accent-foreground hover:bg-accent'
+        'flex w-full items-center gap-3 rounded-md px-3 py-3 text-left transition-colors duration-100',
+        isSelected && 'bg-accent text-accent-foreground'
       )}
       exit={{ opacity: 0, scale: 0.95 }}
       initial={{ opacity: 0, scale: 0.95 }}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
+      ref={ref}
       transition={{ duration: 0.15, ease: 'easeOut' }}
       type="button"
     >
