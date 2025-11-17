@@ -91,6 +91,7 @@ function TooltipContent({
   sticky,
   hideWhenDetached,
   transition = { type: 'spring', stiffness: 300, damping: 25 },
+  children,
   ...props
 }: TooltipContentProps) {
   return (
@@ -118,7 +119,9 @@ function TooltipContent({
         key="popover-content"
         transition={transition}
         {...props}
-      />
+      >
+        {children}
+      </motion.div>
     </TooltipPrimitive.Content>
   );
 }

@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
   TooltipArrow as TooltipArrowPrimitive,
   TooltipContent as TooltipContentPrimitive,
@@ -12,8 +11,6 @@ import {
   type TooltipTriggerProps as TooltipTriggerPrimitiveProps,
 } from '@/components/ui/primitives/radix/tooltip';
 import { cn } from '@/lib/utils';
-
-const MOBILE_BREAKPOINT = 768;
 
 type TooltipProviderProps = TooltipProviderPrimitiveProps;
 
@@ -51,30 +48,12 @@ function TooltipContent({
   onPointerDownOutside,
   ...props
 }: TooltipContentProps) {
-  const [isMounted, setIsMounted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  if (!isMounted || isMobile) {
-    return null;
-  }
-
   return (
     <TooltipPortalPrimitive>
       <TooltipContentPrimitive
         className={cn(
           'z-50 w-fit origin-(--radix-tooltip-content-transform-origin) text-balance rounded-md bg-primary px-3 py-1.5 text-primary-foreground text-xs',
+          'max-md:hidden',
           className
         )}
         onPointerDownOutside={(e) => {
