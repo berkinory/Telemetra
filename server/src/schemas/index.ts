@@ -99,12 +99,6 @@ export {
   topEventsResponseSchema,
 } from './event.schema';
 export {
-  type OverviewQuery,
-  type OverviewResponse,
-  overviewQuerySchema,
-  overviewResponseSchema,
-} from './overview.schema';
-export {
   type PingSessionRequest,
   type PingSessionResponse,
   pingSessionRequestSchema,
