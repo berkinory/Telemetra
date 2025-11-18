@@ -30,13 +30,14 @@ export async function fetchApi<T>(
 ): Promise<T> {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
 
+  const { headers: optionHeaders, ...restOptions } = options || {};
   const response = await fetch(url, {
     credentials: 'include',
+    ...restOptions,
     headers: {
       'Content-Type': 'application/json',
-      ...options?.headers,
+      ...optionHeaders,
     },
-    ...options,
   });
 
   if (!response.ok) {
