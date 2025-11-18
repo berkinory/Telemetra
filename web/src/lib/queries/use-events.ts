@@ -26,7 +26,7 @@ export function useEvents(appId: string, filters?: EventFilters) {
     queryKey: queryKeys.events.list(appId, filters),
     queryFn: () =>
       fetchApi<EventsListResponse>(
-        `/web/events${buildQueryString({ appId, ...filters })}`
+        `/web/events${buildQueryString({ ...filters, appId })}`
       ),
     ...cacheConfig.list,
     enabled: Boolean(appId && hasRequiredFilter),
@@ -37,9 +37,7 @@ export function useEvent(eventId: string, appId: string) {
   return useQuery({
     queryKey: queryKeys.events.detail(eventId, appId),
     queryFn: () =>
-      fetchApi<EventDetail>(
-        `/web/events/${eventId}${buildQueryString({ appId })}`
-      ),
+      fetchApi<EventDetail>(`/web/events/${eventId}?appId=${appId}`),
     ...cacheConfig.detail,
     enabled: Boolean(eventId && appId),
   });
@@ -49,9 +47,7 @@ export function useEventOverview(appId: string) {
   return useQuery({
     queryKey: queryKeys.events.overview(appId),
     queryFn: () =>
-      fetchApi<EventOverview>(
-        `/web/events/overview${buildQueryString({ appId })}`
-      ),
+      fetchApi<EventOverview>(`/web/events/overview?appId=${appId}`),
     ...cacheConfig.overview,
     enabled: Boolean(appId),
   });
@@ -62,7 +58,7 @@ export function useTopEvents(appId: string, dateRange?: DateRangeParams) {
     queryKey: queryKeys.events.top(appId, dateRange),
     queryFn: () =>
       fetchApi<TopEventsResponse>(
-        `/web/events/top${buildQueryString({ appId, ...dateRange })}`
+        `/web/events/top${buildQueryString({ ...dateRange, appId })}`
       ),
     ...cacheConfig.overview,
     enabled: Boolean(appId),

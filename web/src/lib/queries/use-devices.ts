@@ -21,7 +21,7 @@ export function useDevices(appId: string, filters?: DeviceFilters) {
     queryKey: queryKeys.devices.list(appId, filters),
     queryFn: () =>
       fetchApi<DevicesListResponse>(
-        `/web/devices${buildQueryString({ appId, ...filters })}`
+        `/web/devices${buildQueryString({ ...filters, appId })}`
       ),
     ...cacheConfig.list,
     enabled: Boolean(appId),
@@ -32,9 +32,7 @@ export function useDevice(deviceId: string, appId: string) {
   return useQuery({
     queryKey: queryKeys.devices.detail(deviceId, appId),
     queryFn: () =>
-      fetchApi<DeviceDetail>(
-        `/web/devices/${deviceId}${buildQueryString({ appId })}`
-      ),
+      fetchApi<DeviceDetail>(`/web/devices/${deviceId}?appId=${appId}`),
     ...cacheConfig.detail,
     enabled: Boolean(deviceId && appId),
   });
@@ -44,9 +42,7 @@ export function useDeviceOverview(appId: string) {
   return useQuery({
     queryKey: queryKeys.devices.overview(appId),
     queryFn: () =>
-      fetchApi<DeviceOverview>(
-        `/web/devices/overview${buildQueryString({ appId })}`
-      ),
+      fetchApi<DeviceOverview>(`/web/devices/overview?appId=${appId}`),
     ...cacheConfig.overview,
     enabled: Boolean(appId),
   });
@@ -55,8 +51,7 @@ export function useDeviceOverview(appId: string) {
 export function useDeviceLive(appId: string) {
   return useQuery({
     queryKey: queryKeys.devices.live(appId),
-    queryFn: () =>
-      fetchApi<DeviceLive>(`/web/devices/live${buildQueryString({ appId })}`),
+    queryFn: () => fetchApi<DeviceLive>(`/web/devices/live?appId=${appId}`),
     ...cacheConfig.realtime,
     enabled: Boolean(appId),
   });

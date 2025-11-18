@@ -22,7 +22,7 @@ export function useSessions(
     queryKey: queryKeys.sessions.list(appId, deviceId, filters),
     queryFn: () =>
       fetchApi<SessionsListResponse>(
-        `/web/sessions${buildQueryString({ deviceId, appId, ...filters })}`
+        `/web/sessions${buildQueryString({ ...filters, deviceId, appId })}`
       ),
     ...cacheConfig.list,
     enabled: Boolean(deviceId && appId),
@@ -33,9 +33,7 @@ export function useSessionOverview(appId: string) {
   return useQuery({
     queryKey: queryKeys.sessions.overview(appId),
     queryFn: () =>
-      fetchApi<SessionOverview>(
-        `/web/sessions/overview${buildQueryString({ appId })}`
-      ),
+      fetchApi<SessionOverview>(`/web/sessions/overview?appId=${appId}`),
     ...cacheConfig.overview,
     enabled: Boolean(appId),
   });
