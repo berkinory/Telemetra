@@ -53,8 +53,18 @@ export type DateRangeParams = {
   endDate?: string;
 };
 
-export type ListResponse<T> = {
-  data: T[];
+export type DevicesListResponse = {
+  devices: Device[];
+  pagination: PaginationResponse;
+};
+
+export type SessionsListResponse = {
+  sessions: Session[];
+  pagination: PaginationResponse;
+};
+
+export type EventsListResponse = {
+  events: EventListItem[];
   pagination: PaginationResponse;
 };
 

@@ -9,8 +9,8 @@ export const queryKeys = {
       filters?: PaginationParams & DateRangeParams & { platform?: string }
     ) => [...queryKeys.devices.lists(), appId, filters] as const,
     details: () => [...queryKeys.devices.all, 'detail'] as const,
-    detail: (appId: string, deviceId: string) =>
-      [...queryKeys.devices.details(), appId, deviceId] as const,
+    detail: (deviceId: string, appId: string) =>
+      [...queryKeys.devices.details(), deviceId, appId] as const,
     overview: (appId: string) =>
       [...queryKeys.devices.all, 'overview', appId] as const,
     live: (appId: string) => [...queryKeys.devices.all, 'live', appId] as const,
@@ -41,8 +41,8 @@ export const queryKeys = {
         }
     ) => [...queryKeys.events.lists(), appId, filters] as const,
     details: () => [...queryKeys.events.all, 'detail'] as const,
-    detail: (appId: string, eventId: string) =>
-      [...queryKeys.events.details(), appId, eventId] as const,
+    detail: (eventId: string, appId: string) =>
+      [...queryKeys.events.details(), eventId, appId] as const,
     overview: (appId: string) =>
       [...queryKeys.events.all, 'overview', appId] as const,
     top: (appId: string, filters?: DateRangeParams) =>
