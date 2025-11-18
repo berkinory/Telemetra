@@ -89,6 +89,7 @@ export const apps = pgTable(
     name: text('name').notNull(),
     image: text('image'),
     key: text('key').notNull().unique(),
+    memberIds: text('member_ids').array().notNull().default([]),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({

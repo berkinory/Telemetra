@@ -15,6 +15,13 @@
       "when": 1762884230638,
       "tag": "0001_lucky_cardiac",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763468098328,
+      "tag": "0002_curvy_vector",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "apps" ADD COLUMN "member_ids" text[] DEFAULT '{}' NOT NULL;

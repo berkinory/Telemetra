@@ -1,6 +1,16 @@
 import type { DateRangeParams, PaginationParams } from '@/lib/api/types';
 
 export const queryKeys = {
+  apps: {
+    all: ['apps'] as const,
+    lists: () => [...queryKeys.apps.all, 'list'] as const,
+    list: () => [...queryKeys.apps.lists()] as const,
+    details: () => [...queryKeys.apps.all, 'detail'] as const,
+    detail: (appId: string) => [...queryKeys.apps.details(), appId] as const,
+    keys: (appId: string) => [...queryKeys.apps.all, 'keys', appId] as const,
+    team: (appId: string) => [...queryKeys.apps.all, 'team', appId] as const,
+  },
+
   devices: {
     all: ['devices'] as const,
     lists: () => [...queryKeys.devices.all, 'list'] as const,

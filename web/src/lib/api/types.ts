@@ -142,3 +142,38 @@ export type TopEventsResponse = {
   startDate: string | null;
   endDate: string | null;
 };
+
+export type App = {
+  id: string;
+  name: string;
+};
+
+export type AppCreated = {
+  id: string;
+  name: string;
+  image: string | null;
+  createdAt: string;
+};
+
+export type AppsListResponse = {
+  apps: App[];
+};
+
+export type AppKeysResponse = {
+  key: string;
+};
+
+export type AppTeamMember = {
+  userId: string;
+  email: string;
+};
+
+export type AppTeamResponse = {
+  owner: AppTeamMember;
+  members: AppTeamMember[];
+};
+
+export type CreateAppRequest = {
+  name: string;
+  image?: string;
+};
