@@ -71,6 +71,12 @@ export const sessionOverviewResponseSchema = z
       .int()
       .min(0)
       .openapi({ example: 180, description: 'Sessions started in last 24h' }),
+    totalSessionsChange24h: z
+      .number()
+      .openapi({ example: 3.1, description: 'Percentage change in last 24h' }),
+    activeSessions24hChange: z
+      .number()
+      .openapi({ example: 2.8, description: 'Percentage change vs yesterday' }),
   })
   .openapi('SessionOverviewResponse');
 

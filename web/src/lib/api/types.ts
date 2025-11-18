@@ -87,6 +87,17 @@ export type DeviceOverview = {
   totalDevices: number;
   activeDevices24h: number;
   platformStats: Record<string, number>;
+  totalDevicesChange24h: number;
+  activeDevicesChange24h: number;
+};
+
+export type DeviceTimeseriesDataPoint = {
+  date: string;
+  activeUsers: number;
+};
+
+export type DeviceTimeseriesResponse = {
+  data: DeviceTimeseriesDataPoint[];
 };
 
 export type DeviceLive = {
@@ -110,6 +121,8 @@ export type SessionOverview = {
   totalSessions: number;
   averageSessionDuration: number | null;
   activeSessions24h: number;
+  totalSessionsChange24h: number;
+  activeSessions24hChange: number;
 };
 
 export type EventListItem = {
@@ -129,6 +142,8 @@ export type EventDetail = {
 export type EventOverview = {
   totalEvents: number;
   events24h: number;
+  totalEventsChange24h: number;
+  events24hChange: number;
 };
 
 export type TopEvent = {

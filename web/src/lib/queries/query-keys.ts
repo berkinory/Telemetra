@@ -24,6 +24,8 @@ export const queryKeys = {
     overview: (appId: string) =>
       [...queryKeys.devices.all, 'overview', appId] as const,
     live: (appId: string) => [...queryKeys.devices.all, 'live', appId] as const,
+    timeseries: (appId: string, range?: DateRangeParams) =>
+      [...queryKeys.devices.all, 'timeseries', appId, range] as const,
   },
 
   sessions: {

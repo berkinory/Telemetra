@@ -103,6 +103,13 @@ export const eventOverviewResponseSchema = z
   .object({
     totalEvents: z.number().int().min(0).openapi({ example: 15_420 }),
     events24h: z.number().int().min(0).openapi({ example: 842 }),
+    totalEventsChange24h: z
+      .number()
+      .openapi({ example: 5.2, description: 'Percentage change in last 24h' }),
+    events24hChange: z.number().openapi({
+      example: 3.8,
+      description: 'Percentage change vs day before yesterday',
+    }),
   })
   .openapi('EventOverviewResponse');
 
