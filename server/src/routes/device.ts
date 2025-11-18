@@ -284,13 +284,11 @@ deviceWebRouter.openapi(getDeviceOverviewRoute, async (c: any) => {
       activeDevices24hResult,
       platformStatsResult,
     ] = await Promise.all([
-      // Total devices count
       db
         .select({ count: count() })
         .from(devices)
         .where(eq(devices.appId, appId)),
 
-      // Active devices in last 24h (DISTINCT device_id from sessions)
       db
         .selectDistinct({ deviceId: sessions.deviceId })
         .from(sessions)
@@ -302,7 +300,6 @@ deviceWebRouter.openapi(getDeviceOverviewRoute, async (c: any) => {
           )
         ),
 
-      // Platform stats (group by platform)
       db
         .select({
           platform: sql<string>`COALESCE(${devices.platform}, 'unknown')`,
