@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { buildQueryString, fetchApi } from '@/lib/api/client';
 import type {
+  DateRangeParams,
   DeviceDetail,
   DeviceLive,
   DeviceOverview,
   DevicesListResponse,
+  DeviceTimeseriesResponse,
   PaginationParams,
 } from '../api/types';
 import { cacheConfig } from './query-client';
@@ -53,6 +55,19 @@ export function useDeviceLive(appId: string) {
     queryKey: queryKeys.devices.live(appId),
     queryFn: () => fetchApi<DeviceLive>(`/web/devices/live?appId=${appId}`),
     ...cacheConfig.realtime,
+    enabled: Boolean(appId),
+  });
+}
+
+export function useDeviceTimeseries(appId: string, range?: DateRangeParams) {
+  return useQuery({
+    queryKey: queryKeys.devices.timeseries(appId, range),
+    queryFn: () =>
+      fetchApi<DeviceTimeseriesResponse>(
+        `/web/devices/timeseries${buildQueryString({ appId, ...range })}`
+      ),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     enabled: Boolean(appId),
   });
 }

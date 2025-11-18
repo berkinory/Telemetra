@@ -97,8 +97,43 @@ export const deviceOverviewResponseSchema = z
     platformStats: z.record(z.string(), z.number()).openapi({
       example: { ios: 650, android: 480, web: 120 },
     }),
+    totalDevicesChange24h: z
+      .number()
+      .openapi({ example: 0.4, description: 'Percentage change in last 24h' }),
+    activeDevicesChange24h: z
+      .number()
+      .openapi({ example: 4.2, description: 'Percentage change in last 24h' }),
   })
   .openapi('DeviceOverviewResponse');
+
+export const deviceTimeseriesQuerySchema = z
+  .object({
+    appId: z.string().openapi({ example: '123456789012345' }),
+    startDate: z
+      .string()
+      .datetime()
+      .optional()
+      .openapi({ example: '2024-01-01T00:00:00Z' }),
+    endDate: z
+      .string()
+      .datetime()
+      .optional()
+      .openapi({ example: '2024-01-31T23:59:59Z' }),
+  })
+  .openapi('DeviceTimeseriesQuery');
+
+export const deviceTimeseriesDataPointSchema = z
+  .object({
+    date: z.string().openapi({ example: '2024-01-01' }),
+    activeUsers: z.number().int().min(0).openapi({ example: 342 }),
+  })
+  .openapi('DeviceTimeseriesDataPoint');
+
+export const deviceTimeseriesResponseSchema = z
+  .object({
+    data: z.array(deviceTimeseriesDataPointSchema),
+  })
+  .openapi('DeviceTimeseriesResponse');
 
 export const deviceLiveQuerySchema = z
   .object({
@@ -141,3 +176,10 @@ export type DeviceOverviewResponse = z.infer<
 >;
 export type DeviceLiveQuery = z.infer<typeof deviceLiveQuerySchema>;
 export type DeviceLiveResponse = z.infer<typeof deviceLiveResponseSchema>;
+export type DeviceTimeseriesQuery = z.infer<typeof deviceTimeseriesQuerySchema>;
+export type DeviceTimeseriesDataPoint = z.infer<
+  typeof deviceTimeseriesDataPointSchema
+>;
+export type DeviceTimeseriesResponse = z.infer<
+  typeof deviceTimeseriesResponseSchema
+>;
