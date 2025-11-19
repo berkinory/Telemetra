@@ -24,8 +24,7 @@ export const auth = betterAuth({
       enabled: true,
     },
     defaultCookieAttributes: {
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'none',
       domain:
         process.env.NODE_ENV === 'production' ? '.telemetra.dev' : undefined,
     },
