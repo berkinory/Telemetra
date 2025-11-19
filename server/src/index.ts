@@ -51,9 +51,16 @@ const apiApp = new OpenAPIHono<{
   },
 }).basePath('/v1');
 
-const corsOrigins = [process.env.WEB_URL || 'http://localhost:3002'].filter(
-  Boolean
-);
+const corsOrigins = (() => {
+  const webUrl = process.env.WEB_URL || 'http://localhost:3002';
+  const origins = [webUrl];
+
+  if (process.env.NODE_ENV !== 'production') {
+    origins.push('http://localhost:3002', 'http://127.0.0.1:3002');
+  }
+
+  return [...new Set(origins.filter(Boolean))];
+})();
 
 rootApp.use('*', compress());
 

@@ -102,7 +102,7 @@ services:
       dockerfile: ./server/Dockerfile
     container_name: telemetra-server
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=3001
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - SERVER_URL=${SERVER_URL}
