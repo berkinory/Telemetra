@@ -1,5 +1,6 @@
 import { compress } from '@hono/bun-compress';
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { pool } from '@/db';
 import { auth } from '@/lib/auth';
@@ -15,7 +16,14 @@ import { pingSdkRouter } from '@/routes/ping';
 import { sessionSdkRouter, sessionWebRouter } from '@/routes/session';
 import { ErrorCode, HttpStatus } from '@/schemas';
 
-const app = new OpenAPIHono<{
+const rootApp = new Hono<{
+  Variables: {
+    user: typeof auth.$Infer.Session.user | null;
+    session: typeof auth.$Infer.Session.session | null;
+  };
+}>();
+
+const apiApp = new OpenAPIHono<{
   Variables: {
     user: typeof auth.$Infer.Session.user | null;
     session: typeof auth.$Infer.Session.session | null;
@@ -47,9 +55,9 @@ const corsOrigins = [process.env.WEB_URL || 'http://localhost:3002'].filter(
   Boolean
 );
 
-app.use('*', compress());
+rootApp.use('*', compress());
 
-app.use(
+rootApp.use(
   '/api/auth/*',
   cors({
     origin: corsOrigins,
@@ -61,8 +69,8 @@ app.use(
   })
 );
 
-app.use(
-  '/v1/sdk/*',
+apiApp.use(
+  '/sdk/*',
   cors({
     origin: '*',
     allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
@@ -77,8 +85,8 @@ app.use(
   })
 );
 
-app.use(
-  '/v1/web/*',
+apiApp.use(
+  '/web/*',
   cors({
     origin: corsOrigins,
     allowHeaders: ['Content-Type', 'Authorization'],
@@ -89,9 +97,9 @@ app.use(
   })
 );
 
-app.use('/web/*', authMiddleware);
+apiApp.use('/web/*', authMiddleware);
 
-app.onError((err, c) => {
+apiApp.onError((err, c) => {
   console.error('[Server] Unhandled error:', err);
 
   return c.json(
@@ -103,22 +111,24 @@ app.onError((err, c) => {
   );
 });
 
-app.route('/health', health);
+apiApp.route('/health', health);
 
-app.route('/sdk/devices', deviceSdkRouter);
-app.route('/sdk/sessions', sessionSdkRouter);
-app.route('/sdk/events', eventSdkRouter);
-app.route('/sdk/ping', pingSdkRouter);
+apiApp.route('/sdk/devices', deviceSdkRouter);
+apiApp.route('/sdk/sessions', sessionSdkRouter);
+apiApp.route('/sdk/events', eventSdkRouter);
+apiApp.route('/sdk/ping', pingSdkRouter);
 
-app.route('/web/apps', appWebRouter);
-app.route('/web/devices', deviceWebRouter);
-app.route('/web/events', eventWebRouter);
-app.route('/web/sessions', sessionWebRouter);
+apiApp.route('/web/apps', appWebRouter);
+apiApp.route('/web/devices', deviceWebRouter);
+apiApp.route('/web/events', eventWebRouter);
+apiApp.route('/web/sessions', sessionWebRouter);
 
-app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));
+rootApp.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));
+
+rootApp.route('/', apiApp);
 
 if (process.env.NODE_ENV !== 'production') {
-  configureOpenAPI(app);
+  configureOpenAPI(apiApp);
 }
 
 try {
@@ -142,4 +152,4 @@ const shutdown = async () => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-export default app;
+export default rootApp;
