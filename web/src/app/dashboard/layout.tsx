@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { DashboardHeader } from '@/app/dashboard/header';
 import { DashboardSidebar } from '@/app/dashboard/sidebar';
+import { AuthRedirect } from '@/components/auth-redirect';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { QueryProvider } from '@/lib/queries/query-provider';
 
@@ -16,14 +17,16 @@ export default async function DashboardLayout({
 
   return (
     <QueryProvider>
-      <NuqsAdapter>
-        <SidebarProvider defaultOpen={defaultOpen}>
-          <DashboardSidebar />
-          <SidebarInset>
-            <DashboardHeader>{children}</DashboardHeader>
-          </SidebarInset>
-        </SidebarProvider>
-      </NuqsAdapter>
+      <AuthRedirect requireAuth>
+        <NuqsAdapter>
+          <SidebarProvider defaultOpen={defaultOpen}>
+            <DashboardSidebar />
+            <SidebarInset>
+              <DashboardHeader>{children}</DashboardHeader>
+            </SidebarInset>
+          </SidebarProvider>
+        </NuqsAdapter>
+      </AuthRedirect>
     </QueryProvider>
   );
 }

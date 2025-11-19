@@ -10,9 +10,10 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { authClient } from '@/lib/auth';
+import { authClient, useSession } from '@/lib/auth';
 
 export default function AuthPage() {
+  const { data: session, isPending } = useSession();
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [registerName, setRegisterName] = useState('');
@@ -34,9 +35,6 @@ export default function AuthPage() {
     }
 
     console.log('✅ Login success:', data);
-
-    // Debug: Check cookies
-    console.log('🍪 All cookies:', document.cookie);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -58,9 +56,6 @@ export default function AuthPage() {
     }
 
     console.log('✅ Register success:', data);
-
-    // Debug: Check cookies
-    console.log('🍪 All cookies:', document.cookie);
   };
 
   return (
@@ -180,10 +175,24 @@ export default function AuthPage() {
           </TabsContents>
         </Tabs>
 
-        <div className="mt-6 rounded-lg border border-border bg-muted/50 p-4">
+        <div className="mt-6 space-y-2 rounded-lg border border-border bg-muted/50 p-4">
           <p className="text-muted-foreground text-xs">
             💡 Check console for auth responses
           </p>
+          {isPending ? (
+            <p className="text-muted-foreground text-xs">
+              ⏳ Checking session...
+            </p>
+          ) : (
+            session && (
+              <p className="text-green-600 text-xs">
+                ✅ Logged in as: {session.user.email} (redirecting...)
+              </p>
+            )
+          )}
+          {session && (
+            <p className="text-muted-foreground text-xs">❌ Not logged in</p>
+          )}
         </div>
       </div>
     </div>

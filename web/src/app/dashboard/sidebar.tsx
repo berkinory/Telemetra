@@ -45,6 +45,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { authClient } from '@/lib/auth';
 
 type NavItem = {
   label: string;
@@ -139,6 +140,10 @@ export function DashboardSidebar() {
   const { isMobile, setOpenMobile } = useSidebar();
 
   const username = 'berk@example.com';
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+  };
 
   const generatedAvatar = useMemo(
     () =>
@@ -336,7 +341,7 @@ export function DashboardSidebar() {
                   Billing
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive">
+                <DropdownMenuItem onClick={handleLogout} variant="destructive">
                   <HugeiconsIcon className="mr-2 size-4" icon={Logout01Icon} />
                   Log out
                 </DropdownMenuItem>
