@@ -45,7 +45,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { authClient } from '@/lib/auth';
+import { authClient, useSession } from '@/lib/auth';
 
 type NavItem = {
   label: string;
@@ -134,28 +134,32 @@ const footerNavItems: NavItem[] = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const [avatarSrc, setAvatarSrc] = useState<string>('');
-  const [isAvatarLoaded, setIsAvatarLoaded] = useState(false);
+  const { data: session, isPending } = useSession();
+  const [isUserLoaded, setIsUserLoaded] = useState(false);
   const [appId] = useQueryState('app');
   const { isMobile, setOpenMobile } = useSidebar();
 
-  const username = 'berk@example.com';
+  const user = session?.user;
+  const username = user?.email || 'User';
+  const displayName = user?.name || username.split('@')[0];
 
-  const handleLogout = async () => {
-    await authClient.signOut();
-  };
-
-  const generatedAvatar = useMemo(
+  const avatarSrc = useMemo(
     () =>
       `data:image/svg+xml;utf8,${encodeURIComponent(
         minidenticon(username, 55, 45)
       )}`,
-    []
+    [username]
   );
 
   useEffect(() => {
-    setAvatarSrc(generatedAvatar);
-  }, [generatedAvatar]);
+    if (!isPending && session) {
+      setIsUserLoaded(true);
+    }
+  }, [isPending, session]);
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+  };
 
   return (
     <Sidebar
@@ -304,22 +308,19 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size="lg" tooltip="Account">
+                <SidebarMenuButton
+                  className={`transition-opacity duration-300 ${
+                    isUserLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  size="lg"
+                  tooltip="Account"
+                >
                   <Avatar className="size-8">
-                    {avatarSrc && (
-                      <AvatarImage
-                        alt={username}
-                        className={`transition-opacity duration-300 ${
-                          isAvatarLoaded ? 'opacity-100' : 'opacity-0'
-                        }`}
-                        onLoad={() => setIsAvatarLoaded(true)}
-                        src={avatarSrc}
-                      />
-                    )}
+                    <AvatarImage alt={username} src={avatarSrc} />
                     <AvatarFallback className="bg-transparent" />
                   </Avatar>
                   <div className="flex flex-col gap-0.5 leading-none">
-                    <span className="font-semibold text-sm">Berk</span>
+                    <span className="font-semibold text-sm">{displayName}</span>
                     <span className="text-sidebar-foreground/70 text-xs">
                       {username}
                     </span>
