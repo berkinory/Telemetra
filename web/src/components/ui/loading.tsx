@@ -47,11 +47,12 @@ type LoadingProps = {
   dotClassName?: string;
   activeDotClassName?: string;
   size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'button';
 } & Omit<ComponentProps<'div'>, 'children'>;
 
 const sizeConfig = {
   sm: {
-    dot: 'h-1 w-1',
+    dot: 'h-0.5 w-0.5',
     gap: 'gap-0.5',
   },
   md: {
@@ -69,19 +70,31 @@ export const Loading = ({
   activeDotClassName,
   className,
   size = 'md',
+  variant = 'default',
   ...props
 }: LoadingProps) => {
   const config = sizeConfig[size];
 
+  const buttonVariantClasses =
+    variant === 'button'
+      ? cn(
+          'bg-current/30',
+          '[&.active]:bg-current',
+          'opacity-70 [&.active]:opacity-100'
+        )
+      : cn(
+          'bg-muted-foreground/20 dark:bg-muted-foreground/30',
+          '[&.active]:bg-foreground dark:[&.active]:bg-foreground'
+        );
+
   return (
     <DotLoader
       {...props}
-      className={cn(config.gap, className)}
+      className={cn(config.gap, 'shrink-0', className)}
       dotClassName={cn(
         config.dot,
         'rounded-sm transition-colors duration-150',
-        'bg-muted-foreground/20 dark:bg-muted-foreground/30',
-        '[&.active]:bg-foreground dark:[&.active]:bg-foreground',
+        buttonVariantClasses,
         dotClassName,
         activeDotClassName && `[&.active]:${activeDotClassName}`
       )}

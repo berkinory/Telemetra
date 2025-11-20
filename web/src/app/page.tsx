@@ -116,6 +116,20 @@ export default function Page() {
             <Button size="lg">Large</Button>
             <Button disabled>Disabled</Button>
           </div>
+          <div className="flex flex-wrap gap-3">
+            <Button disabled>
+              <Loading size="sm" variant="button" />
+              Creating...
+            </Button>
+            <Button disabled variant="outline">
+              <Loading size="sm" variant="button" />
+              Loading...
+            </Button>
+            <Button disabled variant="success">
+              <Loading size="sm" variant="button" />
+              Processing...
+            </Button>
+          </div>
           <div className="flex flex-wrap items-center gap-3">
             <Tooltip>
               <TooltipTrigger asChild>
