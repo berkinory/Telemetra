@@ -168,9 +168,7 @@ export default function TeamPage() {
                                   </Button>
                                 </span>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                Only owners can perform this action
-                              </TooltipContent>
+                              <TooltipContent>Owner only</TooltipContent>
                             </Tooltip>
                           )}
                         </div>

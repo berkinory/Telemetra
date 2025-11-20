@@ -157,11 +157,7 @@ export default function ApiKeysPage() {
                           </RotateKeyDialog>
                         </span>
                       </TooltipTrigger>
-                      {!isOwner && (
-                        <TooltipContent>
-                          Only owners can perform this action
-                        </TooltipContent>
-                      )}
+                      {!isOwner && <TooltipContent>Owner only</TooltipContent>}
                     </Tooltip>
                   </div>
                 </div>
