@@ -419,6 +419,7 @@ appWebRouter.openapi(getAppKeysRoute, async (c: any) => {
     return c.json(
       {
         key: app.key,
+        keyRotatedAt: app.keyRotatedAt?.toISOString() ?? null,
       },
       HttpStatus.OK
     );
@@ -693,11 +694,15 @@ appWebRouter.openapi(rotateAppKeyRoute, async (c: any) => {
 
     const newKey = generateAppKey();
 
-    await db.update(apps).set({ key: newKey }).where(eq(apps.id, id));
+    await db
+      .update(apps)
+      .set({ key: newKey, keyRotatedAt: new Date() })
+      .where(eq(apps.id, id));
 
     return c.json(
       {
         key: newKey,
+        keyRotatedAt: new Date().toISOString(),
       },
       HttpStatus.OK
     );

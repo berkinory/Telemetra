@@ -90,6 +90,7 @@ export const apps = pgTable(
     name: text('name').notNull(),
     image: text('image'),
     key: text('key').notNull().unique(),
+    keyRotatedAt: timestamp('key_rotated_at'),
     memberIds: text('member_ids').array().notNull().default(sql`'{}'::text[]`),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },

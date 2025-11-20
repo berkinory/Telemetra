@@ -1,0 +1,1 @@
+ALTER TABLE "apps" ADD COLUMN "key_rotated_at" timestamp;

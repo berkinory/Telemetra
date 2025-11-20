@@ -31,6 +31,11 @@ export const appKeysResponseSchema = z
       example: 'telemetra_R3aLLy5eCur3R4nd0mK3y123',
       description: 'The app key for SDK authentication',
     }),
+    keyRotatedAt: z
+      .string()
+      .datetime()
+      .nullable()
+      .openapi({ example: '2024-01-01T00:00:00Z' }),
   })
   .openapi('AppKeysResponse');
 
