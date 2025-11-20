@@ -36,19 +36,19 @@ export function CreateAppDialog({ children, onSuccess }: CreateAppDialogProps) {
     const trimmedName = name.trim();
 
     if (trimmedName.length === 0) {
-      return 'App name is required';
+      return 'Application name is required';
     }
 
     if (trimmedName.length < APP_NAME_MIN_LENGTH) {
-      return `App name must be at least ${APP_NAME_MIN_LENGTH} characters`;
+      return `Application name must be at least ${APP_NAME_MIN_LENGTH} characters`;
     }
 
     if (trimmedName.length > APP_NAME_MAX_LENGTH) {
-      return `App name must be at most ${APP_NAME_MAX_LENGTH} characters`;
+      return `Application name must be at most ${APP_NAME_MAX_LENGTH} characters`;
     }
 
     if (!APP_NAME_REGEX.test(trimmedName)) {
-      return 'App name can only contain letters, numbers, spaces, and hyphens';
+      return 'Application name can only contain letters, numbers, spaces, and hyphens';
     }
 
     return null;
@@ -103,16 +103,16 @@ export function CreateAppDialog({ children, onSuccess }: CreateAppDialogProps) {
         {children || (
           <Button type="button" variant="success">
             <HugeiconsIcon className="mr-2 size-4" icon={AddSquareIcon} />
-            Create New App
+            Create New
           </Button>
         )}
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create New App</DialogTitle>
+            <DialogTitle>Create New Application</DialogTitle>
             <DialogDescription>
-              Give your app a name to get started with analytics.
+              Give your application a name to get started with analytics.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-4">
@@ -139,7 +139,7 @@ export function CreateAppDialog({ children, onSuccess }: CreateAppDialogProps) {
             </Button>
             <Button disabled={!isValid || createApp.isPending} type="submit">
               {createApp.isPending && <Spinner className="mr-2 size-4" />}
-              {createApp.isPending ? 'Creating' : 'Create App'}
+              {createApp.isPending ? 'Creating' : 'Create'}
             </Button>
           </DialogFooter>
         </form>

@@ -67,10 +67,10 @@ export function useCreateApp() {
       }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.all });
-      toast.success(`App "${data.name}" created successfully!`);
+      toast.success(`Application  "${data.name}" created successfully!`);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to create app');
+      toast.error(error.message || 'Failed to create application');
     },
   });
 }

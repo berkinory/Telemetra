@@ -38,19 +38,19 @@ export default function SettingsPage() {
     const trimmedName = name.trim();
 
     if (trimmedName.length === 0) {
-      return 'App name is required';
+      return 'Application name is required';
     }
 
     if (trimmedName.length < APP_NAME_MIN_LENGTH) {
-      return `App name must be at least ${APP_NAME_MIN_LENGTH} characters`;
+      return `Application name must be at least ${APP_NAME_MIN_LENGTH} characters`;
     }
 
     if (trimmedName.length > APP_NAME_MAX_LENGTH) {
-      return `App name must be at most ${APP_NAME_MAX_LENGTH} characters`;
+      return `Application name must be at most ${APP_NAME_MAX_LENGTH} characters`;
     }
 
     if (!APP_NAME_REGEX.test(trimmedName)) {
-      return 'App name can only contain letters, numbers, spaces, and hyphens';
+      return 'Application name can only contain letters, numbers, spaces, and hyphens';
     }
 
     return null;
@@ -188,7 +188,12 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <Card className="py-0">
             <CardContent className="space-y-4 p-4">
-              <h2 className="font-semibold text-lg">Application Details</h2>
+              <div>
+                <h2 className="font-semibold text-lg">Application Details</h2>
+                <p className="text-muted-foreground text-sm">
+                  View and manage your application information
+                </p>
+              </div>
 
               {renderAppNameSection()}
             </CardContent>

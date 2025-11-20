@@ -48,7 +48,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
         <DropdownMenuTrigger asChild>
           <SidebarMenuButton
             size="lg"
-            tooltip={selectedApp ? selectedApp.name : 'Select App'}
+            tooltip={selectedApp ? selectedApp.name : 'Select Application'}
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <HugeiconsIcon className="size-4" icon={ArtboardIcon} />
@@ -58,14 +58,14 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
                 <Skeleton className="h-4 w-20" />
               ) : (
                 <span className="font-semibold">
-                  {selectedApp ? selectedApp.name : 'Select App'}
+                  {selectedApp ? selectedApp.name : 'Select Application'}
                 </span>
               )}
               {isPending ? (
                 <Skeleton className="h-3 w-16" />
               ) : (
                 <span className="text-sidebar-foreground/70 text-xs">
-                  {selectedApp ? 'Analytics' : 'Choose an app'}
+                  {selectedApp ? 'Analytics' : 'Choose an application'}
                 </span>
               )}
             </div>
@@ -73,10 +73,12 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
           </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56" side="bottom">
-          <DropdownMenuLabel>Switch App</DropdownMenuLabel>
+          <DropdownMenuLabel>Switch Application</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {isPending && (
-            <DropdownMenuItem disabled>Loading apps...</DropdownMenuItem>
+            <DropdownMenuItem disabled>
+              Loading applications...
+            </DropdownMenuItem>
           )}
           {!isPending && apps.length === 0 && (
             <DropdownMenuItem disabled>No apps available</DropdownMenuItem>
@@ -106,7 +108,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
               variant="success"
             >
               <HugeiconsIcon className="mr-2 size-4" icon={AddSquareIcon} />
-              Create New App
+              Create New
             </DropdownMenuItem>
           </CreateAppDialog>
         </DropdownMenuContent>
@@ -128,7 +130,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
             {isPending ? (
               <Skeleton className="h-4 w-24" />
             ) : (
-              <span className="font-semibold text-sm">Select App</span>
+              <span className="font-semibold text-sm">Select Application</span>
             )}
             <span className="text-muted-foreground text-xs">
               Choose from your applications
@@ -138,10 +140,10 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56" side="bottom">
-        <DropdownMenuLabel>Switch App</DropdownMenuLabel>
+        <DropdownMenuLabel>Switch Application</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {isPending && (
-          <DropdownMenuItem disabled>Loading apps...</DropdownMenuItem>
+          <DropdownMenuItem disabled>Loading applications...</DropdownMenuItem>
         )}
         {!isPending && apps.length === 0 && (
           <DropdownMenuItem disabled>No apps available</DropdownMenuItem>
@@ -171,7 +173,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
             variant="success"
           >
             <HugeiconsIcon className="mr-2 size-4" icon={AddSquareIcon} />
-            Create New App
+            Create New
           </DropdownMenuItem>
         </CreateAppDialog>
       </DropdownMenuContent>
