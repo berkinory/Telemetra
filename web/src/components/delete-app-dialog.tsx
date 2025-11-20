@@ -77,7 +77,7 @@ export function DeleteAppDialog({
             and remove all associated data.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-2 pt-4 pb-2">
+        <div className="space-y-2 pb-2">
           <label className="font-medium text-sm" htmlFor="confirm-name">
             Please type your application name{' '}
             <span className="font-semibold text-foreground">"{appName}"</span>{' '}

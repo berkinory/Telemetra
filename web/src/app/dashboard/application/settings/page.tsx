@@ -4,7 +4,7 @@ import {
   ArrowRight01Icon,
   CheckmarkSquare01Icon,
   Key01Icon,
-  PencilEdit01Icon,
+  PencilEdit02Icon,
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -175,15 +175,16 @@ export default function SettingsPage() {
                 type="button"
                 variant="outline"
               >
-                <HugeiconsIcon className="mr-1.5 size-3" icon={PencilEdit01Icon} />
+                <HugeiconsIcon
+                  className="mr-1.5 size-3"
+                  icon={PencilEdit02Icon}
+                />
                 Edit
               </Button>
             </span>
           </TooltipTrigger>
           {!isOwner && (
-            <TooltipContent>
-              Only owners can perform this action
-            </TooltipContent>
+            <TooltipContent>Only owners can perform this action</TooltipContent>
           )}
         </Tooltip>
       </div>
