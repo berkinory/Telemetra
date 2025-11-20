@@ -97,6 +97,22 @@ export const updateAppRequestSchema = z
   })
   .openapi('UpdateAppRequest');
 
+export const addTeamMemberRequestSchema = z
+  .object({
+    email: z.string().email('Invalid email address').openapi({
+      example: 'member@example.com',
+      description: 'Email of the user to add as team member',
+    }),
+  })
+  .openapi('AddTeamMemberRequest');
+
+export const addTeamMemberResponseSchema = z
+  .object({
+    userId: z.string().openapi({ example: 'user_123' }),
+    email: z.string().email().openapi({ example: 'member@example.com' }),
+  })
+  .openapi('AddTeamMemberResponse');
+
 export const appDetailResponseSchema = z
   .object({
     id: z.string().openapi({ example: '87654321098765' }),
@@ -114,6 +130,8 @@ export const appDetailResponseSchema = z
 
 export type CreateAppRequest = z.infer<typeof createAppRequestSchema>;
 export type UpdateAppRequest = z.infer<typeof updateAppRequestSchema>;
+export type AddTeamMemberRequest = z.infer<typeof addTeamMemberRequestSchema>;
+export type AddTeamMemberResponse = z.infer<typeof addTeamMemberResponseSchema>;
 export type AppListItemSchema = z.infer<typeof appListItemSchema>;
 export type AppCreatedSchema = z.infer<typeof appCreatedSchema>;
 export type AppsListResponse = z.infer<typeof appsListResponseSchema>;

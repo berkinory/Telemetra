@@ -1,4 +1,6 @@
 export {
+  type AddTeamMemberRequest,
+  type AddTeamMemberResponse,
   type AppCreatedSchema,
   type AppDetailResponse,
   type AppKeysResponse,
@@ -6,6 +8,8 @@ export {
   type AppsListResponse,
   type AppTeamMember,
   type AppTeamResponse,
+  addTeamMemberRequestSchema,
+  addTeamMemberResponseSchema,
   appCreatedSchema,
   appDetailResponseSchema,
   appKeysResponseSchema,

@@ -6,6 +6,8 @@ import { generateAppId, generateAppKey } from '@/lib/keys';
 import { requireAuth } from '@/lib/middleware';
 import { methodNotAllowed } from '@/lib/response';
 import {
+  addTeamMemberRequestSchema,
+  addTeamMemberResponseSchema,
   appCreatedSchema,
   appDetailResponseSchema,
   appKeysResponseSchema,
@@ -178,6 +180,48 @@ const rotateAppKeyRoute = createRoute({
           schema: appKeysResponseSchema,
         },
       },
+    },
+    ...errorResponses,
+  },
+});
+
+const addTeamMemberRoute = createRoute({
+  method: 'post',
+  path: '/:id/team/members',
+  tags: ['app'],
+  description: 'Add team member by email (owner only)',
+  security: [{ CookieAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: addTeamMemberRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Team member added successfully',
+      content: {
+        'application/json': {
+          schema: addTeamMemberResponseSchema,
+        },
+      },
+    },
+    ...errorResponses,
+  },
+});
+
+const removeTeamMemberRoute = createRoute({
+  method: 'delete',
+  path: '/:id/team/members/:userId',
+  tags: ['app'],
+  description: 'Remove team member (owner only)',
+  security: [{ CookieAuth: [] }],
+  responses: {
+    204: {
+      description: 'Team member removed successfully',
     },
     ...errorResponses,
   },
@@ -712,6 +756,181 @@ appWebRouter.openapi(rotateAppKeyRoute, async (c: any) => {
       {
         code: ErrorCode.INTERNAL_SERVER_ERROR,
         detail: 'Failed to rotate app key',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+});
+
+// biome-ignore lint/suspicious/noExplicitAny: OpenAPI handler type inference issue with union response types
+appWebRouter.openapi(addTeamMemberRoute, async (c: any) => {
+  try {
+    const { id } = c.req.param();
+    const body = c.req.valid('json');
+    const user = c.get('user');
+
+    if (!user?.id) {
+      return c.json(
+        {
+          code: ErrorCode.UNAUTHORIZED,
+          detail: 'User authentication required',
+        },
+        HttpStatus.UNAUTHORIZED
+      );
+    }
+
+    const app = await db.query.apps.findFirst({
+      where: (table, { eq: eqFn }) => eqFn(table.id, id),
+    });
+
+    if (!app) {
+      return c.json(
+        {
+          code: ErrorCode.NOT_FOUND,
+          detail: 'App not found',
+        },
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    if (app.userId !== user.id) {
+      return c.json(
+        {
+          code: ErrorCode.FORBIDDEN,
+          detail: 'Only the app owner can add team members',
+        },
+        HttpStatus.FORBIDDEN
+      );
+    }
+
+    const targetUser = await db.query.user.findFirst({
+      where: (table, { eq: eqFn }) => eqFn(table.email, body.email),
+      columns: {
+        id: true,
+        email: true,
+      },
+    });
+
+    if (!targetUser) {
+      return c.json(
+        {
+          code: ErrorCode.NOT_FOUND,
+          detail: 'User not found',
+        },
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    if (targetUser.id === app.userId) {
+      return c.json(
+        {
+          code: ErrorCode.BAD_REQUEST,
+          detail: 'User is already the app owner',
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    if (app.memberIds?.includes(targetUser.id)) {
+      return c.json(
+        {
+          code: ErrorCode.BAD_REQUEST,
+          detail: 'User is already a team member',
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const updatedMemberIds = [...(app.memberIds || []), targetUser.id];
+
+    await db
+      .update(apps)
+      .set({ memberIds: updatedMemberIds })
+      .where(eq(apps.id, id));
+
+    return c.json(
+      {
+        userId: targetUser.id,
+        email: targetUser.email,
+      },
+      HttpStatus.OK
+    );
+  } catch (error) {
+    console.error('[App.AddTeamMember] Error:', error);
+    return c.json(
+      {
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        detail: 'Failed to add team member',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+});
+
+// biome-ignore lint/suspicious/noExplicitAny: OpenAPI handler type inference issue with union response types
+appWebRouter.openapi(removeTeamMemberRoute, async (c: any) => {
+  try {
+    const { id, userId } = c.req.param();
+    const user = c.get('user');
+
+    if (!user?.id) {
+      return c.json(
+        {
+          code: ErrorCode.UNAUTHORIZED,
+          detail: 'User authentication required',
+        },
+        HttpStatus.UNAUTHORIZED
+      );
+    }
+
+    const app = await db.query.apps.findFirst({
+      where: (table, { eq: eqFn }) => eqFn(table.id, id),
+    });
+
+    if (!app) {
+      return c.json(
+        {
+          code: ErrorCode.NOT_FOUND,
+          detail: 'App not found',
+        },
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    if (app.userId !== user.id) {
+      return c.json(
+        {
+          code: ErrorCode.FORBIDDEN,
+          detail: 'Only the app owner can remove team members',
+        },
+        HttpStatus.FORBIDDEN
+      );
+    }
+
+    if (!app.memberIds?.includes(userId)) {
+      return c.json(
+        {
+          code: ErrorCode.NOT_FOUND,
+          detail: 'User is not a team member',
+        },
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    const updatedMemberIds = app.memberIds.filter((id) => id !== userId);
+
+    await db
+      .update(apps)
+      .set({ memberIds: updatedMemberIds })
+      .where(eq(apps.id, id));
+
+    return c.body(null, HttpStatus.NO_CONTENT);
+  } catch (error) {
+    console.error('[App.RemoveTeamMember] Error:', error);
+    return c.json(
+      {
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        detail: 'Failed to remove team member',
       },
       HttpStatus.INTERNAL_SERVER_ERROR
     );
