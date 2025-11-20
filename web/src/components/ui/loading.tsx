@@ -46,24 +46,47 @@ const FLOW_FRAMES = [
 type LoadingProps = {
   dotClassName?: string;
   activeDotClassName?: string;
+  size?: 'sm' | 'md' | 'lg';
 } & Omit<ComponentProps<'div'>, 'children'>;
+
+const sizeConfig = {
+  sm: {
+    dot: 'h-1 w-1',
+    gap: 'gap-0.5',
+  },
+  md: {
+    dot: 'h-1.5 w-1.5',
+    gap: 'gap-1',
+  },
+  lg: {
+    dot: 'h-2 w-2',
+    gap: 'gap-1.5',
+  },
+};
 
 export const Loading = ({
   dotClassName,
   activeDotClassName,
   className,
+  size = 'md',
   ...props
-}: LoadingProps) => (
-  <DotLoader
-    {...props}
-    className={cn('gap-1', className)}
-    dotClassName={cn(
-      'h-1.5 w-1.5 rounded-sm bg-muted transition-colors duration-150',
-      '[&.active]:bg-primary',
-      dotClassName,
-      activeDotClassName && `[&.active]:${activeDotClassName}`
-    )}
-    duration={135}
-    frames={FLOW_FRAMES}
-  />
-);
+}: LoadingProps) => {
+  const config = sizeConfig[size];
+
+  return (
+    <DotLoader
+      {...props}
+      className={cn(config.gap, className)}
+      dotClassName={cn(
+        config.dot,
+        'rounded-sm transition-colors duration-150',
+        'bg-muted-foreground/20 dark:bg-muted-foreground/30',
+        '[&.active]:bg-foreground dark:[&.active]:bg-foreground',
+        dotClassName,
+        activeDotClassName && `[&.active]:${activeDotClassName}`
+      )}
+      duration={135}
+      frames={FLOW_FRAMES}
+    />
+  );
+};
