@@ -61,6 +61,7 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onCloseAutoFocus,
   ...props
 }: DialogContentProps) {
   return (
@@ -71,6 +72,9 @@ function DialogContent({
           'fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-[var(--shadow-elevated),var(--highlight)] sm:max-w-lg',
           className
         )}
+        onCloseAutoFocus={
+          onCloseAutoFocus || ((event) => event.preventDefault())
+        }
         {...props}
       >
         {children}
