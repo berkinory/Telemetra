@@ -31,7 +31,7 @@ type AppSwitcherProps = {
 export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
   const router = useRouter();
   const [appId, setAppId] = useQueryState('app');
-  const { data: appsData, isLoading } = useApps();
+  const { data: appsData, isPending } = useApps();
 
   const apps = appsData?.apps || [];
   const selectedApp = apps.find((app) => app.id === appId);
@@ -54,16 +54,18 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
               <HugeiconsIcon className="size-4" icon={ArtboardIcon} />
             </div>
             <div className="flex flex-col gap-0.5 leading-none">
-              {isLoading || !selectedApp ? (
+              {isPending ? (
                 <Skeleton className="h-4 w-20" />
               ) : (
-                <span className="font-semibold">{selectedApp.name}</span>
+                <span className="font-semibold">
+                  {selectedApp ? selectedApp.name : 'Select App'}
+                </span>
               )}
-              {isLoading || !selectedApp ? (
+              {isPending ? (
                 <Skeleton className="h-3 w-16" />
               ) : (
                 <span className="text-sidebar-foreground/70 text-xs">
-                  Analytics
+                  {selectedApp ? 'Analytics' : 'Choose an app'}
                 </span>
               )}
             </div>
@@ -73,13 +75,13 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
         <DropdownMenuContent align="start" className="w-56" side="bottom">
           <DropdownMenuLabel>Switch App</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {isLoading && (
+          {isPending && (
             <DropdownMenuItem disabled>Loading apps...</DropdownMenuItem>
           )}
-          {!isLoading && apps.length === 0 && (
+          {!isPending && apps.length === 0 && (
             <DropdownMenuItem disabled>No apps available</DropdownMenuItem>
           )}
-          {!isLoading &&
+          {!isPending &&
             apps.length > 0 &&
             apps.map((app) => {
               const isSelected = app.id === appId;
@@ -123,7 +125,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
             <HugeiconsIcon className="size-5" icon={ArtboardIcon} />
           </div>
           <div className="flex flex-col items-start gap-0.5 leading-none">
-            {isLoading ? (
+            {isPending ? (
               <Skeleton className="h-4 w-24" />
             ) : (
               <span className="font-semibold text-sm">Select App</span>
@@ -138,13 +140,13 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
       <DropdownMenuContent align="start" className="w-56" side="bottom">
         <DropdownMenuLabel>Switch App</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {isLoading && (
+        {isPending && (
           <DropdownMenuItem disabled>Loading apps...</DropdownMenuItem>
         )}
-        {!isLoading && apps.length === 0 && (
+        {!isPending && apps.length === 0 && (
           <DropdownMenuItem disabled>No apps available</DropdownMenuItem>
         )}
-        {!isLoading &&
+        {!isPending &&
           apps.length > 0 &&
           apps.map((app) => {
             const isSelected = app.id === appId;
