@@ -271,6 +271,11 @@
     }
   }
 
+  html {
+    overscroll-behavior: none;
+    height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
     overscroll-behavior: none;
