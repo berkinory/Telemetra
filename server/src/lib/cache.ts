@@ -1,4 +1,3 @@
-import { deserialize, serialize } from 'node:v8';
 import type { Table } from 'drizzle-orm';
 import { Cache } from 'drizzle-orm/cache/core';
 import Redis from 'ioredis';
@@ -75,6 +74,22 @@ export class RedisCache extends Cache {
     return 'explicit';
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: JSON replacer requires any
+  private dateReplacer(_key: string, value: any): any {
+    if (value instanceof Date) {
+      return { __type: 'Date', value: value.toISOString() };
+    }
+    return value;
+  }
+
+  // biome-ignore lint/suspicious/noExplicitAny: JSON reviver requires any
+  private dateReviver(_key: string, value: any): any {
+    if (value && typeof value === 'object' && value.__type === 'Date') {
+      return new Date(value.value);
+    }
+    return value;
+  }
+
   // biome-ignore lint/suspicious/noExplicitAny: Drizzle cache API requires any[]
   async get(key: string): Promise<any[] | undefined> {
     if (!this.isConnected) {
@@ -82,12 +97,12 @@ export class RedisCache extends Cache {
     }
 
     try {
-      const cached = await this.redis.getBuffer(key);
+      const cached = await this.redis.get(key);
       if (!cached) {
         return;
       }
 
-      const data = deserialize(cached) as CacheData;
+      const data = JSON.parse(cached, this.dateReviver) as CacheData;
       // biome-ignore lint/suspicious/noExplicitAny: Drizzle cache API requires any[]
       return data.value as any[];
     } catch (error) {
@@ -103,7 +118,7 @@ export class RedisCache extends Cache {
 
     try {
       const data: CacheData = { value, tables };
-      const serialized = serialize(data);
+      const serialized = JSON.stringify(data, this.dateReplacer);
 
       if (this.config.ex) {
         await this.redis.setex(key, this.config.ex, serialized);
