@@ -46,6 +46,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { authClient, useSession } from '@/lib/auth';
+import { queryClient } from '@/lib/queries/query-client';
 
 type NavItem = {
   label: string;
@@ -157,8 +158,24 @@ export function DashboardSidebar() {
     }
   }, [isPending, session]);
 
+  useEffect(() => {
+    const userId = session?.user?.id;
+    const prevUserId = sessionStorage.getItem('prevUserId');
+
+    if (userId && prevUserId && userId !== prevUserId) {
+      queryClient.clear();
+    }
+
+    if (userId) {
+      sessionStorage.setItem('prevUserId', userId);
+    } else {
+      sessionStorage.removeItem('prevUserId');
+    }
+  }, [session?.user?.id]);
+
   const handleLogout = async () => {
     await authClient.signOut();
+    queryClient.clear();
   };
 
   return (
