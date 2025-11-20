@@ -304,7 +304,10 @@ export default function SettingsPage() {
                   </div>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="w-full sm:w-auto" tabIndex={isOwner ? undefined : 0}>
+                      <span
+                        className="w-full sm:w-auto"
+                        tabIndex={isOwner ? undefined : 0}
+                      >
                         <DeleteAppDialog
                           appId={appId || ''}
                           appName={app?.name || ''}
