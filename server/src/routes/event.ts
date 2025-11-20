@@ -300,9 +300,7 @@ eventWebRouter.openapi(getEventsRoute, async (c) => {
       if (!sessionValidation.success) {
         return sessionValidation.response;
       }
-    }
-
-    if (deviceId) {
+    } else if (deviceId) {
       const deviceValidation = await validateDevice(c, deviceId, appId);
       if (!deviceValidation.success) {
         return deviceValidation.response;

@@ -184,9 +184,7 @@ export async function getEvents(
   if (options.sessionId) {
     validateIdentifier(options.sessionId, 'sessionId');
     conditions.push(`session_id = '${escapeSqlString(options.sessionId)}'`);
-  }
-
-  if (options.deviceId) {
+  } else if (options.deviceId) {
     validateIdentifier(options.deviceId, 'deviceId');
     conditions.push(`device_id = '${escapeSqlString(options.deviceId)}'`);
   }

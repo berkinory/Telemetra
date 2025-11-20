@@ -20,8 +20,6 @@ type EventFilters = PaginationParams & {
 };
 
 export function useEvents(appId: string, filters?: EventFilters) {
-  const hasRequiredFilter = Boolean(filters?.sessionId || filters?.deviceId);
-
   return useQuery({
     queryKey: queryKeys.events.list(appId, filters),
     queryFn: () =>
@@ -29,7 +27,7 @@ export function useEvents(appId: string, filters?: EventFilters) {
         `/web/events${buildQueryString({ ...filters, appId })}`
       ),
     ...cacheConfig.list,
-    enabled: Boolean(appId && hasRequiredFilter),
+    enabled: Boolean(appId),
   });
 }
 

@@ -53,31 +53,22 @@ export const createEventRequestSchema = z
 export const listEventsQuerySchema = paginationQuerySchema
   .merge(dateFilterQuerySchema)
   .extend({
-    sessionId: z.string().optional().openapi({ example: 'session_xyz123' }),
-    deviceId: z.string().optional().openapi({ example: 'device_abc123' }),
-    appId: z.string().openapi({ example: '123456789012345' }),
+    sessionId: z.string().optional().openapi({
+      example: 'session_xyz123',
+      description:
+        'Filter by session ID. If provided, deviceId is ignored (priority: sessionId > deviceId > appId)',
+    }),
+    deviceId: z.string().optional().openapi({
+      example: 'device_abc123',
+      description:
+        'Filter by device ID. Ignored if sessionId is provided (priority: sessionId > deviceId > appId)',
+    }),
+    appId: z.string().openapi({
+      example: '123456789012345',
+      description: 'Required. Filter by app ID',
+    }),
     eventName: z.string().optional().openapi({ example: 'button_clicked' }),
   })
-  .refine(
-    (data) => {
-      const hasSession = !!data.sessionId;
-      const hasDevice = !!data.deviceId;
-      return hasSession || hasDevice;
-    },
-    {
-      message: 'Either sessionId or deviceId is required',
-    }
-  )
-  .refine(
-    (data) => {
-      const hasSession = !!data.sessionId;
-      const hasDevice = !!data.deviceId;
-      return !(hasSession && hasDevice);
-    },
-    {
-      message: 'Provide either sessionId or deviceId, not both',
-    }
-  )
   .openapi('ListEventsQuery');
 
 export const eventsListResponseSchema = z
