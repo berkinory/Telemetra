@@ -2,7 +2,15 @@ import { z } from '@hono/zod-openapi';
 
 export const createAppRequestSchema = z
   .object({
-    name: z.string().min(1).max(255).openapi({ example: 'My Awesome App' }),
+    name: z
+      .string()
+      .min(3, 'App name must be at least 3 characters')
+      .max(14, 'App name must be at most 14 characters')
+      .regex(
+        /^[a-zA-Z0-9\s-]+$/,
+        'App name can only contain letters, numbers, spaces, and hyphens'
+      )
+      .openapi({ example: 'My Awesome App' }),
     image: z.string().url().optional().openapi({
       example: 'https://example.com/logo.png',
     }),
