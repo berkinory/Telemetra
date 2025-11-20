@@ -88,18 +88,36 @@ export default function ApiKeysPage() {
                     <div className="flex-1 rounded-lg border bg-muted/50 px-3 py-2 font-mono text-sm">
                       {displayKey}
                     </div>
-                    <Button
-                      onClick={() => setIsKeyVisible(!isKeyVisible)}
-                      size="icon-sm"
-                      type="button"
-                      variant="outline"
-                    >
-                      <HugeiconsIcon
-                        className="size-4"
-                        icon={isKeyVisible ? ViewOffIcon : ViewIcon}
-                      />
-                    </Button>
-                    <CopyButton content={apiKey} size="sm" variant="outline" />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => setIsKeyVisible(!isKeyVisible)}
+                          size="icon-sm"
+                          type="button"
+                          variant="outline"
+                        >
+                          <HugeiconsIcon
+                            className="size-4"
+                            icon={isKeyVisible ? ViewOffIcon : ViewIcon}
+                          />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {isKeyVisible ? 'Hide API key' : 'Show API key'}
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <CopyButton
+                            content={apiKey}
+                            size="sm"
+                            variant="outline"
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>Copy API key</TooltipContent>
+                    </Tooltip>
                   </div>
 
                   <p className="text-muted-foreground text-sm">
