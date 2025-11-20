@@ -917,7 +917,9 @@ appWebRouter.openapi(removeTeamMemberRoute, async (c: any) => {
       );
     }
 
-    const updatedMemberIds = app.memberIds.filter((id) => id !== userId);
+    const updatedMemberIds = app.memberIds.filter(
+      (memberId) => memberId !== userId
+    );
 
     await db
       .update(apps)
