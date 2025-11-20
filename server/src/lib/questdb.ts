@@ -60,7 +60,7 @@ export async function writeEvent(event: EventRecord): Promise<void> {
     client.stringColumn('params', paramsJson);
   }
 
-  client.at(event.timestamp.getTime() * 1_000_000, 'ns');
+  client.at(BigInt(event.timestamp.getTime() * 1_000_000), 'ns');
 }
 
 type QueryResponse<T> = {
