@@ -29,18 +29,17 @@ type SessionFilters = PaginationParams & {
 };
 
 export function useSessions(
-  deviceId: string,
   appId: string,
-  filters?: SessionFilters
+  filters?: SessionFilters & { deviceId?: string }
 ) {
   return useQuery({
-    queryKey: queryKeys.sessions.list(appId, deviceId, filters),
+    queryKey: queryKeys.sessions.list(appId, filters?.deviceId || '', filters),
     queryFn: () =>
       fetchApi<SessionsListResponse>(
-        `/web/sessions${buildQueryString({ ...filters, deviceId, appId })}`
+        `/web/sessions${buildQueryString({ ...filters, appId })}`
       ),
     ...cacheConfig.list,
-    enabled: Boolean(deviceId && appId),
+    enabled: Boolean(appId),
   });
 }
 

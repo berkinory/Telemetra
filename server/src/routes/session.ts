@@ -360,9 +360,11 @@ sessionWebRouter.openapi(getSessionsRoute, async (c) => {
     const query = c.req.valid('query');
     const { deviceId, appId } = query;
 
-    const deviceValidation = await validateDevice(c, deviceId, appId);
-    if (!deviceValidation.success) {
-      return deviceValidation.response;
+    if (deviceId) {
+      const deviceValidation = await validateDevice(c, deviceId, appId);
+      if (!deviceValidation.success) {
+        return deviceValidation.response;
+      }
     }
 
     const paginationValidation = validatePagination(
@@ -385,7 +387,13 @@ sessionWebRouter.openapi(getSessionsRoute, async (c) => {
       return dateRangeValidation.response;
     }
 
-    const filters: SQL[] = [eq(sessions.deviceId, deviceId)];
+    const filters: SQL[] = [];
+
+    if (deviceId) {
+      filters.push(eq(sessions.deviceId, deviceId));
+    } else {
+      filters.push(eq(devices.appId, appId));
+    }
 
     const whereClause = buildFilters({
       filters,
@@ -395,15 +403,29 @@ sessionWebRouter.openapi(getSessionsRoute, async (c) => {
       endDateValue: query.endDate,
     });
 
+    const baseQuery = db
+      .select({
+        sessionId: sessions.sessionId,
+        deviceId: sessions.deviceId,
+        startedAt: sessions.startedAt,
+        lastActivityAt: sessions.lastActivityAt,
+      })
+      .from(sessions);
+
+    const countQuery = db.select({ count: count() }).from(sessions);
+
+    if (!deviceId) {
+      baseQuery.innerJoin(devices, eq(sessions.deviceId, devices.deviceId));
+      countQuery.innerJoin(devices, eq(sessions.deviceId, devices.deviceId));
+    }
+
     const [sessionsList, [{ count: totalCount }]] = await Promise.all([
-      db
-        .select()
-        .from(sessions)
+      baseQuery
         .where(whereClause)
         .orderBy(desc(sessions.startedAt))
         .limit(pageSize)
         .offset(offset),
-      db.select({ count: count() }).from(sessions).where(whereClause),
+      countQuery.where(whereClause),
     ]);
 
     const formattedSessions = sessionsList.map((session) => ({
