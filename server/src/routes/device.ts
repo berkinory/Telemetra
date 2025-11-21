@@ -330,7 +330,8 @@ deviceWebRouter.openapi(getDeviceOverviewRoute, async (c: any) => {
         .where(
           and(
             eq(devices.appId, appId),
-            sql`${sessions.lastActivityAt} >= ${twentyFourHoursAgo}`
+            sql`${sessions.lastActivityAt} >= ${twentyFourHoursAgo}`,
+            sql`${sessions.lastActivityAt} <= ${now}`
           )
         ),
 
@@ -407,7 +408,8 @@ deviceWebRouter.openapi(getDeviceLiveRoute, async (c: any) => {
     const query = c.req.valid('query');
     const { appId } = query;
 
-    const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+    const now = new Date();
+    const oneMinuteAgo = new Date(now.getTime() - 60 * 1000);
 
     const activeDevicesResult = await db
       .select({
@@ -421,7 +423,8 @@ deviceWebRouter.openapi(getDeviceLiveRoute, async (c: any) => {
       .where(
         and(
           eq(devices.appId, appId),
-          sql`${sessions.lastActivityAt} >= ${oneMinuteAgo}`
+          sql`${sessions.lastActivityAt} >= ${oneMinuteAgo}`,
+          sql`${sessions.lastActivityAt} <= ${now}`
         )
       )
       .orderBy(desc(sessions.lastActivityAt));

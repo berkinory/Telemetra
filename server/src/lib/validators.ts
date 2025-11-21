@@ -6,7 +6,8 @@ import { ErrorCode, HttpStatus } from '@/schemas';
 
 const MIN_PAGE_SIZE = 5;
 const MAX_PAGE_SIZE = 25;
-const MAX_TIMESTAMP_AGE_MS = 30 * 60 * 1000;
+const MAX_TIMESTAMP_AGE_MS = 24 * 60 * 60 * 1000;
+const MAX_TIMESTAMP_FUTURE_MS = 5 * 60 * 1000;
 
 export type ValidationResult<T = void> =
   | (T extends void ? { success: true } : { success: true; data: T })
@@ -97,13 +98,26 @@ export function validateTimestamp(
   const serverTimestamp = new Date();
   const timeDiffMs = serverTimestamp.getTime() - clientTimestamp.getTime();
 
+  if (timeDiffMs < -MAX_TIMESTAMP_FUTURE_MS) {
+    return {
+      success: false,
+      response: c.json(
+        {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: `${fieldName} cannot be in the future`,
+        },
+        HttpStatus.BAD_REQUEST
+      ),
+    };
+  }
+
   if (timeDiffMs > MAX_TIMESTAMP_AGE_MS) {
     return {
       success: false,
       response: c.json(
         {
           code: ErrorCode.VALIDATION_ERROR,
-          detail: `${fieldName} is too old (max 30 minutes old)`,
+          detail: `${fieldName} is too old (max 24 hours old)`,
         },
         HttpStatus.BAD_REQUEST
       ),

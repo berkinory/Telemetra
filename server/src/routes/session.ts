@@ -254,7 +254,8 @@ sessionWebRouter.openapi(getSessionOverviewRoute, async (c: any) => {
         .where(
           and(
             eq(devices.appId, appId),
-            sql`${sessions.startedAt} >= ${twentyFourHoursAgo}`
+            sql`${sessions.startedAt} >= ${twentyFourHoursAgo}`,
+            sql`${sessions.startedAt} <= ${now}`
           )
         ),
 
