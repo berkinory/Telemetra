@@ -505,7 +505,7 @@ deviceWebRouter.openapi(getDevicesRoute, async (c) => {
     }
 
     if (query.identifier) {
-      filters.push(sql`${devices.identifier} ILIKE ${`%${query.identifier}%`}`);
+      filters.push(eq(devices.identifier, query.identifier));
     }
 
     const whereClause = buildFilters({
