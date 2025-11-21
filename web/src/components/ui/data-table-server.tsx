@@ -296,7 +296,7 @@ export function DataTableServer<TData, TValue>({
           type="button"
           variant="outline"
         >
-          <HugeiconsIcon className="md:hidden" icon={ArrowLeft01Icon} />
+          <HugeiconsIcon icon={ArrowLeft01Icon} />
           <span className="hidden md:inline">Previous</span>
         </Button>
 
@@ -354,8 +354,8 @@ export function DataTableServer<TData, TValue>({
           type="button"
           variant="outline"
         >
-          <HugeiconsIcon className="md:hidden" icon={ArrowRight01Icon} />
           <span className="hidden md:inline">Next</span>
+          <HugeiconsIcon icon={ArrowRight01Icon} />
         </Button>
       </div>
     </div>

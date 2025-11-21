@@ -2,6 +2,8 @@
 
 import {
   ArrowDown01Icon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
   ArrowUp01Icon,
   ArrowUpDownIcon,
   FolderSearchIcon,
@@ -187,6 +189,7 @@ export function DataTable<TData, TValue>({
             type="button"
             variant="outline"
           >
+            <HugeiconsIcon icon={ArrowLeft01Icon} />
             <span className="hidden sm:inline">Previous</span>
             <span className="sm:hidden">Prev</span>
           </Button>
@@ -197,7 +200,8 @@ export function DataTable<TData, TValue>({
             type="button"
             variant="outline"
           >
-            Next
+            <span className="hidden sm:inline">Next</span>
+            <HugeiconsIcon icon={ArrowRight01Icon} />
           </Button>
         </div>
       </div>
