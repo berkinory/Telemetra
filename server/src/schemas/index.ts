@@ -65,6 +65,8 @@ export {
   getDeviceQuerySchema,
   type ListDevicesQuery,
   listDevicesQuerySchema,
+  type Platform,
+  platformEnum,
 } from './device.schema';
 export {
   type CreateEventRequest,

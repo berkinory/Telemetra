@@ -6,13 +6,15 @@ import {
   paginationSchema,
 } from './common.schema';
 
+export const platformEnum = z.enum(['ios', 'android', 'web', 'unknown']);
+
 export const deviceSchema = z
   .object({
     deviceId: z.string().openapi({ example: 'device_abc123' }),
     identifier: z.string().nullable().openapi({ example: 'user@example.com' }),
     model: z.string().nullable().openapi({ example: 'iPhone 15 Pro' }),
     osVersion: z.string().nullable().openapi({ example: '17.0.1' }),
-    platform: z.string().nullable().openapi({ example: 'ios' }),
+    platform: platformEnum.nullable().openapi({ example: 'ios' }),
     appVersion: z.string().nullable().openapi({ example: '1.2.3' }),
     firstSeen: z
       .string()
@@ -29,7 +31,7 @@ export const createDeviceRequestSchema = z
     identifier: z.string().nullish().openapi({ example: 'user@example.com' }),
     model: z.string().nullish().openapi({ example: 'iPhone 15 Pro' }),
     osVersion: z.string().nullish().openapi({ example: '17.0.1' }),
-    platform: z.string().nullish().openapi({ example: 'ios' }),
+    platform: platformEnum.nullish().openapi({ example: 'ios' }),
     appVersion: z.string().nullish().openapi({ example: '1.2.3' }),
   })
   .openapi('CreateDeviceRequest');
@@ -37,7 +39,7 @@ export const createDeviceRequestSchema = z
 export const listDevicesQuerySchema = paginationQuerySchema
   .merge(dateFilterQuerySchema)
   .extend({
-    platform: z.string().optional().openapi({ example: 'ios' }),
+    platform: platformEnum.optional().openapi({ example: 'ios' }),
     identifier: z.string().optional().openapi({ example: 'user@example.com' }),
     appId: z.string().openapi({ example: '123456789012345' }),
   })
@@ -47,7 +49,7 @@ export const deviceListItemSchema = z
   .object({
     deviceId: z.string().openapi({ example: 'device_abc123' }),
     identifier: z.string().nullable().openapi({ example: 'user@example.com' }),
-    platform: z.string().nullable().openapi({ example: 'ios' }),
+    platform: platformEnum.nullable().openapi({ example: 'ios' }),
   })
   .openapi('DeviceListItem');
 
@@ -57,7 +59,7 @@ export const deviceDetailSchema = z
     identifier: z.string().nullable().openapi({ example: 'user@example.com' }),
     model: z.string().nullable().openapi({ example: 'iPhone 15 Pro' }),
     osVersion: z.string().nullable().openapi({ example: '17.0.1' }),
-    platform: z.string().nullable().openapi({ example: 'ios' }),
+    platform: platformEnum.nullable().openapi({ example: 'ios' }),
     appVersion: z.string().nullable().openapi({ example: '1.2.3' }),
     firstSeen: z
       .string()
@@ -153,7 +155,7 @@ export const deviceLiveResponseSchema = z
             .string()
             .nullable()
             .openapi({ example: 'user@example.com' }),
-          platform: z.string().nullable().openapi({ example: 'ios' }),
+          platform: platformEnum.nullable().openapi({ example: 'ios' }),
           lastActivityAt: z
             .string()
             .datetime()
@@ -164,6 +166,7 @@ export const deviceLiveResponseSchema = z
   })
   .openapi('DeviceLiveResponse');
 
+export type Platform = z.infer<typeof platformEnum>;
 export type DeviceSchema = z.infer<typeof deviceSchema>;
 export type DeviceListItemSchema = z.infer<typeof deviceListItemSchema>;
 export type DeviceDetailSchema = z.infer<typeof deviceDetailSchema>;

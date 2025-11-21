@@ -53,6 +53,8 @@ export type DateRangeParams = {
   endDate?: string;
 };
 
+export type Platform = 'ios' | 'android' | 'web' | 'unknown';
+
 export type DevicesListResponse = {
   devices: Device[];
   pagination: PaginationResponse;
@@ -71,7 +73,7 @@ export type EventsListResponse = {
 export type Device = {
   deviceId: string;
   identifier: string | null;
-  platform: string | null;
+  platform: Platform | null;
 };
 
 export interface DeviceDetail extends Device {
@@ -109,7 +111,7 @@ export type DeviceLive = {
   devices: Array<{
     deviceId: string;
     identifier: string | null;
-    platform: string | null;
+    platform: Platform | null;
     lastActivityAt: string;
   }>;
 };
