@@ -258,6 +258,124 @@ export default function UsersPage() {
           </Card>
         </div>
 
+        {/* Platform Distribution */}
+        <Card className="py-0">
+          <CardContent className="space-y-4 p-4">
+            <div>
+              <h2 className="font-semibold text-lg">Platform Distribution</h2>
+              <p className="text-muted-foreground text-sm">
+                User distribution across platforms
+              </p>
+            </div>
+
+            {overviewLoading && (
+              <div className="space-y-3">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            )}
+
+            {!overviewLoading &&
+              overview?.platformStats &&
+              Object.keys(overview.platformStats).length > 0 && (
+                <div className="space-y-3">
+                  {Object.entries(overview.platformStats)
+                    .filter(([, count]) => count > 0)
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([platform, count]) => {
+                      const percentage = overview.totalDevices
+                        ? (count / overview.totalDevices) * 100
+                        : 0;
+
+                      const getPlatformIcon = (p: string) => {
+                        switch (p) {
+                          case 'android':
+                            return AndroidIcon;
+                          case 'ios':
+                            return AppleIcon;
+                          case 'web':
+                            return BrowserIcon;
+                          default:
+                            return AnonymousIcon;
+                        }
+                      };
+
+                      const getPlatformLabel = (p: string) => {
+                        switch (p) {
+                          case 'android':
+                            return 'Android';
+                          case 'ios':
+                            return 'iOS';
+                          case 'web':
+                            return 'Web';
+                          default:
+                            return 'Unknown';
+                        }
+                      };
+
+                      const getPlatformColor = (p: string) => {
+                        switch (p) {
+                          case 'android':
+                            return 'bg-green-500';
+                          case 'ios':
+                            return 'bg-blue-500';
+                          case 'web':
+                            return 'bg-purple-500';
+                          default:
+                            return 'bg-gray-500';
+                        }
+                      };
+
+                      return (
+                        <div className="space-y-1.5" key={platform}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <HugeiconsIcon
+                                className="size-4 text-muted-foreground"
+                                icon={getPlatformIcon(platform)}
+                              />
+                              <span className="font-medium text-sm">
+                                {getPlatformLabel(platform)}
+                              </span>
+                            </div>
+                            <div className="flex items-baseline gap-2">
+                              <span className="font-semibold text-sm">
+                                {count.toLocaleString()}
+                              </span>
+                              <span className="text-muted-foreground text-xs">
+                                ({percentage.toFixed(1)}%)
+                              </span>
+                            </div>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                            <div
+                              className={`h-full transition-all ${getPlatformColor(platform)}`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+
+            {!overviewLoading &&
+              (!overview?.platformStats ||
+                Object.keys(overview.platformStats).length === 0 ||
+                Object.values(overview.platformStats).every(
+                  (v) => v === 0
+                )) && (
+                <div className="rounded-lg border border-dashed p-8 text-center">
+                  <p className="text-muted-foreground">
+                    No platform data available yet. Data will appear here once
+                    users start using your application.
+                  </p>
+                </div>
+              )}
+          </CardContent>
+        </Card>
+
         {/* All Users List */}
         <Card className="py-0">
           <CardContent className="space-y-4 p-4">
@@ -272,7 +390,6 @@ export default function UsersPage() {
               columns={columns}
               data={devicesData?.devices || []}
               filterAllIcon={ComputerPhoneSyncIcon}
-              filterIcon={ComputerPhoneSyncIcon}
               filterKey="platform"
               filterOptions={[
                 { label: 'Android', value: 'android', icon: AndroidIcon },
@@ -291,7 +408,7 @@ export default function UsersPage() {
                 }
               }
               searchKey="identifier"
-              searchPlaceholder="Search users by ID or identifier..."
+              searchPlaceholder="Search UserID / Identifier"
             />
           </CardContent>
         </Card>

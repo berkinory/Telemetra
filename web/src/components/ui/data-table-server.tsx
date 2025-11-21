@@ -7,7 +7,9 @@ import {
   ArrowUp01Icon,
   ArrowUpDownIcon,
   CheckmarkSquare01Icon,
+  FilterIcon,
   FolderSearchIcon,
+  Search01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
@@ -55,7 +57,6 @@ type DataTableServerProps<TData, TValue> = {
   filterKey?: string;
   filterOptions?: FilterOption[];
   filterPlaceholder?: string;
-  filterIcon?: typeof CheckmarkSquare01Icon;
   filterAllIcon?: typeof CheckmarkSquare01Icon;
 };
 
@@ -69,7 +70,6 @@ export function DataTableServer<TData, TValue>({
   filterKey,
   filterOptions = [],
   filterPlaceholder = 'All',
-  filterIcon,
   filterAllIcon,
 }: DataTableServerProps<TData, TValue>) {
   const { pageSize, setPageSize } = usePaginationStore();
@@ -142,16 +142,15 @@ export function DataTableServer<TData, TValue>({
     ? filterOptions.find((opt) => opt.value === params.filter)
     : null;
 
-  const currentFilterIcon = currentFilterOption?.icon || filterIcon;
   const currentFilterLabel = currentFilterOption?.label || filterPlaceholder;
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         {searchKey && (
-          <>
+          <div className="flex w-full items-center gap-2 sm:w-auto">
             <Input
-              className="max-w-sm"
+              className="flex-1 sm:w-56 sm:flex-none"
               disabled={isLoading}
               onChange={(event) => setSearchValue(event.target.value)}
               onKeyDown={handleKeyDown}
@@ -160,48 +159,50 @@ export function DataTableServer<TData, TValue>({
               value={searchValue}
             />
             <Button
+              className="flex-shrink-0"
               disabled={isLoading}
               onClick={handleSearchSubmit}
               size="sm"
               type="button"
               variant="secondary"
             >
-              Search
+              <HugeiconsIcon icon={Search01Icon} />
+              <span className="hidden sm:inline">Search</span>
             </Button>
-          </>
+          </div>
         )}
 
         {filterKey && filterOptions.length > 0 && isMounted && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className="ml-auto"
-                disabled={isLoading}
-                size="sm"
-                variant="outline"
-              >
-                {currentFilterIcon && (
-                  <HugeiconsIcon icon={currentFilterIcon} />
-                )}
-                {currentFilterLabel}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleFilterChange('')}>
-                {filterAllIcon && <HugeiconsIcon icon={filterAllIcon} />}
-                All
-              </DropdownMenuItem>
-              {filterOptions.map((option) => (
-                <DropdownMenuItem
-                  key={option.value}
-                  onClick={() => handleFilterChange(option.value)}
+          <div className="flex w-full gap-2 sm:ml-auto sm:w-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className={`w-full flex-shrink-0 sm:w-auto ${params.filter ? 'shadow-[0_0_0_2px] shadow-primary/30' : ''}`}
+                  disabled={isLoading}
+                  size="sm"
+                  variant={params.filter ? 'default' : 'outline'}
                 >
-                  {option.icon && <HugeiconsIcon icon={option.icon} />}
-                  {option.label}
+                  <HugeiconsIcon icon={FilterIcon} />
+                  {currentFilterLabel}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleFilterChange('')}>
+                  {filterAllIcon && <HugeiconsIcon icon={filterAllIcon} />}
+                  All
                 </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {filterOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => handleFilterChange(option.value)}
+                  >
+                    {option.icon && <HugeiconsIcon icon={option.icon} />}
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
 

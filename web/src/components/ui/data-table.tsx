@@ -5,6 +5,7 @@ import {
   ArrowUp01Icon,
   ArrowUpDownIcon,
   FolderSearchIcon,
+  Search01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -72,9 +73,9 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full space-y-4">
       {searchKey && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Input
-            className="max-w-sm"
+            className="w-48 flex-shrink-0 sm:w-56"
             onChange={(event) =>
               table.getColumn(searchKey)?.setFilterValue(event.target.value)
             }
@@ -84,10 +85,24 @@ export function DataTable<TData, TValue>({
               (table.getColumn(searchKey)?.getFilterValue() as string) ?? ''
             }
           />
+          <Button
+            className="flex-shrink-0"
+            disabled={
+              !table.getColumn(searchKey)?.getFilterValue() ||
+              (table.getColumn(searchKey)?.getFilterValue() as string) === ''
+            }
+            onClick={() => table.getColumn(searchKey)?.setFilterValue('')}
+            size="sm"
+            type="button"
+            variant="secondary"
+          >
+            <HugeiconsIcon icon={Search01Icon} />
+            <span className="hidden sm:inline">Clear</span>
+          </Button>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -146,13 +161,19 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="text-muted-foreground text-sm">
           {table.getFilteredRowModel().rows.length > 0 ? (
             <>
-              Page {table.getState().pagination.pageIndex + 1} of{' '}
-              {table.getPageCount()} ({table.getFilteredRowModel().rows.length}{' '}
-              total)
+              <span className="hidden sm:inline">
+                Page {table.getState().pagination.pageIndex + 1} of{' '}
+                {table.getPageCount()} (
+                {table.getFilteredRowModel().rows.length} total)
+              </span>
+              <span className="sm:hidden">
+                {table.getState().pagination.pageIndex + 1}/
+                {table.getPageCount()}
+              </span>
             </>
           ) : (
             'No results'
@@ -166,7 +187,8 @@ export function DataTable<TData, TValue>({
             type="button"
             variant="outline"
           >
-            Previous
+            <span className="hidden sm:inline">Previous</span>
+            <span className="sm:hidden">Prev</span>
           </Button>
           <Button
             disabled={!table.getCanNextPage()}
