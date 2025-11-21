@@ -362,19 +362,17 @@ deviceWebRouter.openapi(getDeviceOverviewRoute, async (c: any) => {
     const totalDevicesNum = Number(totalDevices);
     const totalDevicesYesterdayNum = Number(totalDevicesYesterday);
 
+    const totalDevicesYesterdayForCalc = Math.max(totalDevicesYesterdayNum, 1);
     const totalDevicesChange24h =
-      totalDevicesYesterdayNum > 0
-        ? ((totalDevicesNum - totalDevicesYesterdayNum) /
-            totalDevicesYesterdayNum) *
-          100
-        : 0;
+      ((totalDevicesNum - totalDevicesYesterdayNum) /
+        totalDevicesYesterdayForCalc) *
+      100;
 
+    const activeDevicesYesterdayForCalc = Math.max(activeDevicesYesterday, 1);
     const activeDevicesChange24h =
-      activeDevicesYesterday > 0
-        ? ((activeDevices24h - activeDevicesYesterday) /
-            activeDevicesYesterday) *
-          100
-        : 0;
+      ((activeDevices24h - activeDevicesYesterday) /
+        activeDevicesYesterdayForCalc) *
+      100;
 
     const platformStats: Record<string, number> = {};
     for (const row of platformStatsResult) {
