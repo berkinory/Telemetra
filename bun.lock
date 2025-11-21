@@ -44,6 +44,7 @@
         "@radix-ui/react-separator": "^1.1.8",
         "@radix-ui/react-slot": "^1.2.4",
         "@tanstack/react-query": "^5.90.7",
+        "@tanstack/react-table": "^8.21.3",
         "better-auth": "^1.3.33",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -498,6 +499,10 @@
     "@tanstack/react-query": ["@tanstack/react-query@5.90.7", "", { "dependencies": { "@tanstack/query-core": "5.90.7" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-wAHc/cgKzW7LZNFloThyHnV/AX9gTg3w5yAv0gvQHPZoCnepwqCMtzbuPbb2UvfvO32XZ46e8bPOYbfZhzVnnQ=="],
 
     "@tanstack/react-query-devtools": ["@tanstack/react-query-devtools@5.90.2", "", { "dependencies": { "@tanstack/query-devtools": "5.90.1" }, "peerDependencies": { "@tanstack/react-query": "^5.90.2", "react": "^18 || ^19" } }, "sha512-vAXJzZuBXtCQtrY3F/yUNJCV4obT/A/n81kb3+YqLbro5Z2+phdAbceO+deU3ywPw8B42oyJlp4FhO0SoivDFQ=="],
+
+    "@tanstack/react-table": ["@tanstack/react-table@8.21.3", "", { "dependencies": { "@tanstack/table-core": "8.21.3" }, "peerDependencies": { "react": ">=16.8", "react-dom": ">=16.8" } }, "sha512-5nNMTSETP4ykGegmVkhjcS8tTLW6Vl4axfEGQN3v0zdHYbK4UfoqfPChclTrJ4EoK9QynqAu9oUf8VEmrpZ5Ww=="],
+
+    "@tanstack/table-core": ["@tanstack/table-core@8.21.3", "", {}, "sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg=="],
 
     "@trpc/server": ["@trpc/server@11.7.1", "", { "peerDependencies": { "typescript": ">=5.7.2" } }, "sha512-N3U8LNLIP4g9C7LJ/sLkjuPHwqlvE3bnspzC4DEFVdvx2+usbn70P80E3wj5cjOTLhmhRiwJCSXhlB+MHfGeCw=="],
 
