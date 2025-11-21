@@ -136,6 +136,22 @@ export type SessionOverview = {
   activeSessions24hChange: number;
 };
 
+export type SessionMetric = 'daily_sessions' | 'avg_duration';
+
+export type SessionTimeseriesDataPoint = {
+  date: string;
+  dailySessions?: number;
+  avgDuration?: number;
+};
+
+export type SessionTimeseriesResponse = {
+  data: SessionTimeseriesDataPoint[];
+  period: {
+    startDate: string;
+    endDate: string;
+  };
+};
+
 export type EventListItem = {
   eventId: string;
   name: string;

@@ -38,6 +38,10 @@ export const queryKeys = {
     ) => [...queryKeys.sessions.lists(), appId, deviceId, filters] as const,
     overview: (appId: string) =>
       [...queryKeys.sessions.all, 'overview', appId] as const,
+    timeseries: (
+      appId: string,
+      range?: DateRangeParams & { metric?: string }
+    ) => [...queryKeys.sessions.all, 'timeseries', appId, range] as const,
   },
 
   events: {
