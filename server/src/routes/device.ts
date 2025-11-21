@@ -504,6 +504,10 @@ deviceWebRouter.openapi(getDevicesRoute, async (c) => {
       filters.push(eq(devices.platform, query.platform));
     }
 
+    if (query.identifier) {
+      filters.push(eq(devices.identifier, query.identifier));
+    }
+
     const whereClause = buildFilters({
       filters,
       startDateColumn: devices.firstSeen,
