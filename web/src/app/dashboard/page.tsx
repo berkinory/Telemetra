@@ -16,7 +16,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (mounted && appId) {
-      router.replace(`/dashboard/analytics/overview?app=${appId}`);
+      router.replace(`/dashboard/analytics/users?app=${appId}`);
     }
   }, [appId, router, mounted]);
 
