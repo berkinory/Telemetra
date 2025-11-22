@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Analytics01Icon,
   Blockchain05Icon,
   ChatEditIcon,
   ComputerPhoneSyncIcon,
@@ -72,15 +71,6 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
     }
 
     return [
-      {
-        id: 'overview',
-        name: 'Overview',
-        description: 'View analytics dashboard',
-        category: 'Analytics',
-        icon: Analytics01Icon,
-        keywords: ['overview', 'analytics', 'dashboard', 'stats'],
-        path: `/dashboard/analytics/overview?app=${appId}`,
-      },
       {
         id: 'users',
         name: 'Users',
