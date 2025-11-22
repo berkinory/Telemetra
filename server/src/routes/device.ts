@@ -14,6 +14,7 @@ import {
 } from 'drizzle-orm';
 import { db, devices, sessions } from '@/db';
 import type { App, Session, User } from '@/db/schema';
+import { getCountryFromIP } from '@/lib/geolocation';
 import { requireAppKey, requireAuth, verifyAppAccess } from '@/lib/middleware';
 import { methodNotAllowed } from '@/lib/response';
 import {
@@ -236,6 +237,14 @@ deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
       );
     }
 
+    const ip =
+      c.req.header('cf-connecting-ip') ??
+      c.req.header('x-forwarded-for')?.split(',')[0].trim() ??
+      c.req.header('x-real-ip') ??
+      '';
+
+    let country: string | null = null;
+
     const existingDevice = await db.query.devices.findFirst({
       where: (table, { eq: eqFn }) => eqFn(table.deviceId, body.deviceId),
     });
@@ -265,6 +274,10 @@ deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
         .where(eq(devices.deviceId, body.deviceId))
         .returning();
     } else {
+      if (ip) {
+        country = await getCountryFromIP(ip);
+      }
+
       [device] = await db
         .insert(devices)
         .values({
@@ -275,6 +288,7 @@ deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
           osVersion: body.osVersion ?? null,
           platform: body.platform ?? null,
           appVersion: body.appVersion ?? null,
+          country: country ?? null,
         })
         .returning();
     }
@@ -287,6 +301,7 @@ deviceSdkRouter.openapi(createDeviceRoute, async (c: any) => {
         osVersion: device.osVersion,
         platform: device.platform,
         appVersion: device.appVersion,
+        country: device.country,
         firstSeen: device.firstSeen.toISOString(),
       },
       HttpStatus.OK
@@ -520,6 +535,7 @@ deviceWebRouter.openapi(getDevicesRoute, async (c) => {
           deviceId: devices.deviceId,
           identifier: devices.identifier,
           platform: devices.platform,
+          country: devices.country,
         })
         .from(devices)
         .where(whereClause)
@@ -671,6 +687,7 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
         osVersion: devices.osVersion,
         platform: devices.platform,
         appVersion: devices.appVersion,
+        country: devices.country,
         firstSeen: devices.firstSeen,
         lastActivityAt: sessions.lastActivityAt,
       })
@@ -705,6 +722,7 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
         osVersion: deviceWithSession.osVersion,
         platform: deviceWithSession.platform,
         appVersion: deviceWithSession.appVersion,
+        country: deviceWithSession.country,
         firstSeen: deviceWithSession.firstSeen.toISOString(),
         lastActivityAt: deviceWithSession.lastActivityAt
           ? deviceWithSession.lastActivityAt.toISOString()

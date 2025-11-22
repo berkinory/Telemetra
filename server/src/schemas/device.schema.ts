@@ -16,6 +16,7 @@ export const deviceSchema = z
     osVersion: z.string().nullable().openapi({ example: '17.0.1' }),
     platform: platformEnum.nullable().openapi({ example: 'ios' }),
     appVersion: z.string().nullable().openapi({ example: '1.2.3' }),
+    country: z.string().nullable().openapi({ example: 'US' }),
     firstSeen: z
       .string()
       .datetime()
@@ -50,6 +51,7 @@ export const deviceListItemSchema = z
     deviceId: z.string().openapi({ example: 'device_abc123' }),
     identifier: z.string().nullable().openapi({ example: 'user@example.com' }),
     platform: platformEnum.nullable().openapi({ example: 'ios' }),
+    country: z.string().nullable().openapi({ example: 'US' }),
   })
   .openapi('DeviceListItem');
 
@@ -61,6 +63,7 @@ export const deviceDetailSchema = z
     osVersion: z.string().nullable().openapi({ example: '17.0.1' }),
     platform: platformEnum.nullable().openapi({ example: 'ios' }),
     appVersion: z.string().nullable().openapi({ example: '1.2.3' }),
+    country: z.string().nullable().openapi({ example: 'US' }),
     firstSeen: z
       .string()
       .datetime()
