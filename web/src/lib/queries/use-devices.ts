@@ -79,24 +79,29 @@ export function useDeviceTimeseries(
   metric?: DeviceMetric,
   enabled = true
 ) {
-  const dateParams =
-    range && typeof range === 'string'
-      ? getTimeRangeDates(range)
-      : (range as DateRangeParams | undefined);
-
-  const queryParams = {
-    ...dateParams,
+  const queryKeyParams = {
+    range,
     ...(metric && { metric }),
   };
 
   return useQuery({
-    queryKey: queryKeys.devices.timeseries(appId, queryParams),
-    queryFn: () =>
-      fetchApi<DeviceTimeseriesResponse>(
+    queryKey: queryKeys.devices.timeseries(appId, queryKeyParams),
+    queryFn: () => {
+      const dateParams =
+        range && typeof range === 'string'
+          ? getTimeRangeDates(range)
+          : (range as DateRangeParams | undefined);
+
+      const queryParams = {
+        ...dateParams,
+        ...(metric && { metric }),
+      };
+
+      return fetchApi<DeviceTimeseriesResponse>(
         `/web/devices/timeseries${buildQueryString({ appId, ...queryParams })}`
-      ),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+      );
+    },
+    ...cacheConfig.timeseries,
     enabled: Boolean(appId) && enabled,
   });
 }

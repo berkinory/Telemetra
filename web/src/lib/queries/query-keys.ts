@@ -24,8 +24,8 @@ export const queryKeys = {
     overview: (appId: string) =>
       [...queryKeys.devices.all, 'overview', appId] as const,
     live: (appId: string) => [...queryKeys.devices.all, 'live', appId] as const,
-    timeseries: (appId: string, range?: DateRangeParams) =>
-      [...queryKeys.devices.all, 'timeseries', appId, range] as const,
+    timeseries: (appId: string, params?: Record<string, unknown>) =>
+      [...queryKeys.devices.all, 'timeseries', appId, params] as const,
   },
 
   sessions: {
@@ -38,10 +38,8 @@ export const queryKeys = {
     ) => [...queryKeys.sessions.lists(), appId, deviceId, filters] as const,
     overview: (appId: string) =>
       [...queryKeys.sessions.all, 'overview', appId] as const,
-    timeseries: (
-      appId: string,
-      range?: DateRangeParams & { metric?: string }
-    ) => [...queryKeys.sessions.all, 'timeseries', appId, range] as const,
+    timeseries: (appId: string, params?: Record<string, unknown>) =>
+      [...queryKeys.sessions.all, 'timeseries', appId, params] as const,
   },
 
   events: {
