@@ -155,22 +155,6 @@ export const deviceLiveQuerySchema = z
 export const deviceLiveResponseSchema = z
   .object({
     activeNow: z.number().int().min(0).openapi({ example: 23 }),
-    devices: z
-      .array(
-        z.object({
-          deviceId: z.string().openapi({ example: 'device_abc123' }),
-          identifier: z
-            .string()
-            .nullable()
-            .openapi({ example: 'user@example.com' }),
-          platform: platformEnum.nullable().openapi({ example: 'ios' }),
-          lastActivityAt: z
-            .string()
-            .datetime()
-            .openapi({ example: '2024-01-01T12:30:00Z' }),
-        })
-      )
-      .openapi({ example: [] }),
   })
   .openapi('DeviceLiveResponse');
 

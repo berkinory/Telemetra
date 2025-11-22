@@ -207,10 +207,10 @@ export default function UsersPage() {
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card className="py-0">
             <CardContent className="p-4">
-              {overviewLoading || liveLoading ? (
+              {overviewLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-8 w-20" />
@@ -218,18 +218,7 @@ export default function UsersPage() {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center justify-between">
-                    <p className="text-muted-foreground text-sm">Total Users</p>
-                    <div className="flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-0.5 dark:border-green-900/50 dark:bg-green-950/50">
-                      <div className="relative flex size-1.5">
-                        <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-400 opacity-75" />
-                        <span className="relative inline-flex size-1.5 rounded-full bg-green-500" />
-                      </div>
-                      <span className="font-medium text-[10px] text-green-700 dark:text-green-400">
-                        {liveData?.activeNow.toLocaleString() || 0} online
-                      </span>
-                    </div>
-                  </div>
+                  <p className="text-muted-foreground text-sm">Total Users</p>
                   <p className="font-bold text-3xl">
                     {overview?.totalDevices.toLocaleString() || 0}
                   </p>
@@ -306,6 +295,34 @@ export default function UsersPage() {
                       from yesterday
                     </span>
                   </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="py-0">
+            <CardContent className="p-4">
+              {liveLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex size-2">
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-400 opacity-75" />
+                      <span className="relative inline-flex size-2 rounded-full bg-green-500" />
+                    </div>
+                    <p className="text-muted-foreground text-sm">Online Users</p>
+                  </div>
+                  <p className="font-bold text-3xl">
+                    {liveData?.activeNow.toLocaleString() || 0}
+                  </p>
+                  <p className="mt-1 text-muted-foreground text-xs">
+                    Users currently online
+                  </p>
                 </>
               )}
             </CardContent>

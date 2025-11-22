@@ -113,12 +113,6 @@ export type DeviceTimeseriesResponse = {
 
 export type DeviceLive = {
   activeNow: number;
-  devices: Array<{
-    deviceId: string;
-    identifier: string | null;
-    platform: Platform | null;
-    lastActivityAt: string;
-  }>;
 };
 
 export type Session = {

@@ -423,54 +423,20 @@ deviceWebRouter.openapi(getDeviceLiveRoute, async (c: any) => {
     const oneMinuteAgo = new Date(now.getTime() - 60 * 1000);
 
     const activeDevicesResult = await db
-      .select({
-        deviceId: devices.deviceId,
-        identifier: devices.identifier,
-        platform: devices.platform,
-        lastActivityAt: sessions.lastActivityAt,
-      })
-      .from(devices)
-      .innerJoin(sessions, eq(devices.deviceId, sessions.deviceId))
+      .selectDistinct({ deviceId: sessions.deviceId })
+      .from(sessions)
+      .innerJoin(devices, eq(sessions.deviceId, devices.deviceId))
       .where(
         and(
           eq(devices.appId, appId),
           sql`${sessions.lastActivityAt} >= ${oneMinuteAgo}`,
           sql`${sessions.lastActivityAt} <= ${now}`
         )
-      )
-      .orderBy(desc(sessions.lastActivityAt));
-
-    const uniqueDevices = new Map<
-      string,
-      {
-        deviceId: string;
-        identifier: string | null;
-        platform: string | null;
-        lastActivityAt: string;
-      }
-    >();
-
-    for (const device of activeDevicesResult) {
-      const existing = uniqueDevices.get(device.deviceId);
-      if (
-        !existing ||
-        new Date(device.lastActivityAt) > new Date(existing.lastActivityAt)
-      ) {
-        uniqueDevices.set(device.deviceId, {
-          deviceId: device.deviceId,
-          identifier: device.identifier,
-          platform: device.platform,
-          lastActivityAt: device.lastActivityAt.toISOString(),
-        });
-      }
-    }
-
-    const activeDevices = Array.from(uniqueDevices.values());
+      );
 
     return c.json(
       {
-        activeNow: activeDevices.length,
-        devices: activeDevices,
+        activeNow: activeDevicesResult.length,
       },
       HttpStatus.OK
     );
