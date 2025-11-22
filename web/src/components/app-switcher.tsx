@@ -38,7 +38,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
 
   const handleAppSelect = (id: string) => {
     setAppId(id);
-    router.push(`/dashboard/analytics/overview?app=${id}`);
+    router.push(`/dashboard/analytics/users?app=${id}`);
     onMobileClose?.();
   };
 

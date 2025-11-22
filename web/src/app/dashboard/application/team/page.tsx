@@ -76,10 +76,16 @@ export default function TeamPage() {
                     <AvatarFallback className="bg-transparent" />
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-sm">
+                    {teamData?.owner.name && (
+                      <p className="truncate font-medium text-sm">
+                        {teamData.owner.name}
+                      </p>
+                    )}
+                    <p
+                      className={`truncate text-xs ${teamData?.owner.name ? 'text-muted-foreground' : 'font-medium text-sm'}`}
+                    >
                       {teamData?.owner.email}
                     </p>
-                    <p className="text-muted-foreground text-xs">Owner</p>
                   </div>
                 </div>
               )}
@@ -154,11 +160,15 @@ export default function TeamPage() {
                               <AvatarFallback className="bg-transparent" />
                             </Avatar>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate font-medium text-sm">
+                              {member.name && (
+                                <p className="truncate font-medium text-sm">
+                                  {member.name}
+                                </p>
+                              )}
+                              <p
+                                className={`truncate text-xs ${member.name ? 'text-muted-foreground' : 'font-medium text-sm'}`}
+                              >
                                 {member.email}
-                              </p>
-                              <p className="text-muted-foreground text-xs">
-                                Member
                               </p>
                             </div>
                           </div>

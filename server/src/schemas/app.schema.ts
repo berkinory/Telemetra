@@ -43,6 +43,7 @@ export const appTeamMemberSchema = z
   .object({
     userId: z.string().openapi({ example: 'user_123' }),
     email: z.string().email().openapi({ example: 'member@example.com' }),
+    name: z.string().nullable().openapi({ example: 'John Doe' }),
   })
   .openapi('AppTeamMember');
 
@@ -52,12 +53,19 @@ export const appTeamResponseSchema = z
       .object({
         userId: z.string().openapi({ example: 'user_123' }),
         email: z.string().email().openapi({ example: 'owner@example.com' }),
+        name: z.string().nullable().openapi({ example: 'John Doe' }),
       })
-      .openapi({ example: { userId: 'user_123', email: 'owner@example.com' } }),
+      .openapi({
+        example: {
+          userId: 'user_123',
+          email: 'owner@example.com',
+          name: 'John Doe',
+        },
+      }),
     members: z.array(appTeamMemberSchema).openapi({
       example: [
-        { userId: 'user_456', email: 'member1@example.com' },
-        { userId: 'user_789', email: 'member2@example.com' },
+        { userId: 'user_456', email: 'member1@example.com', name: 'Jane Smith' },
+        { userId: 'user_789', email: 'member2@example.com', name: 'Bob Wilson' },
       ],
     }),
   })

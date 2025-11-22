@@ -527,6 +527,7 @@ appWebRouter.openapi(getAppTeamRoute, async (c: any) => {
       columns: {
         id: true,
         email: true,
+        name: true,
       },
     });
 
@@ -545,6 +546,7 @@ appWebRouter.openapi(getAppTeamRoute, async (c: any) => {
       columns: {
         id: true,
         email: true,
+        name: true,
       },
     });
 
@@ -553,10 +555,12 @@ appWebRouter.openapi(getAppTeamRoute, async (c: any) => {
         owner: {
           userId: owner.id,
           email: owner.email,
+          name: owner.name,
         },
         members: memberUsers.map((member) => ({
           userId: member.id,
           email: member.email,
+          name: member.name,
         })),
       },
       HttpStatus.OK

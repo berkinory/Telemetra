@@ -204,6 +204,7 @@ export type AppKeysResponse = {
 export type AppTeamMember = {
   userId: string;
   email: string;
+  name: string | null;
 };
 
 export type AppTeamResponse = {

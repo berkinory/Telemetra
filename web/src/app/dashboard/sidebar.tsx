@@ -1,15 +1,15 @@
 'use client';
 
 import {
-  Analytics01Icon,
-  Blockchain05Icon,
-  BubbleChatIcon,
+  Activity03Icon,
   ChatEditIcon,
   ComputerPhoneSyncIcon,
   CreditCardIcon,
   File02Icon,
   GithubIcon,
+  HelpSquareIcon,
   Key01Icon,
+  ListViewIcon,
   Logout01Icon,
   PlaySquareIcon,
   Setting07Icon,
@@ -50,18 +50,12 @@ import { queryClient } from '@/lib/queries/query-client';
 
 type NavItem = {
   label: string;
-  icon: typeof Analytics01Icon;
+  icon: typeof ComputerPhoneSyncIcon;
   path: string;
   tooltip: string;
 };
 
 const analyticsNavItems: NavItem[] = [
-  {
-    label: 'Overview',
-    icon: Analytics01Icon,
-    path: '/dashboard/analytics/overview',
-    tooltip: 'Overview',
-  },
   {
     label: 'Users',
     icon: ComputerPhoneSyncIcon,
@@ -76,7 +70,7 @@ const analyticsNavItems: NavItem[] = [
   },
   {
     label: 'Events',
-    icon: Blockchain05Icon,
+    icon: ListViewIcon,
     path: '/dashboard/analytics/events',
     tooltip: 'Events',
   },
@@ -121,9 +115,15 @@ const footerNavItems: NavItem[] = [
   },
   {
     label: 'Support',
-    icon: BubbleChatIcon,
+    icon: HelpSquareIcon,
     path: '/support',
     tooltip: 'Support',
+  },
+  {
+    label: 'Status',
+    icon: Activity03Icon,
+    path: 'https://status.telemetra.dev',
+    tooltip: 'Status',
   },
   {
     label: 'Github',
@@ -314,7 +314,7 @@ export function DashboardSidebar() {
         <SidebarMenu>
           {footerNavItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton tooltip={item.tooltip}>
+              <SidebarMenuButton size="sm" tooltip={item.tooltip}>
                 <HugeiconsIcon icon={item.icon} />
                 <span>{item.label}</span>
               </SidebarMenuButton>
