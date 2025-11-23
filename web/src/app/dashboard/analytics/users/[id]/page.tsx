@@ -4,6 +4,7 @@ import {
   AndroidIcon,
   AnonymousIcon,
   AppleIcon,
+  ArrowTurnBackwardIcon,
   BrowserIcon,
   Calendar03Icon,
   ComputerPhoneSyncIcon,
@@ -13,9 +14,11 @@ import {
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import { useRouter } from 'next/navigation';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { use } from 'react';
 import { RequireApp } from '@/components/require-app';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CopyButton } from '@/components/ui/copy-button';
 import { DataTableServer } from '@/components/ui/data-table-server';
@@ -94,6 +97,7 @@ type UserPageProps = {
 
 export default function UserPage({ params }: UserPageProps) {
   const { id } = use(params);
+  const router = useRouter();
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
   const [pageSize] = useQueryState('pageSize', parseAsInteger.withDefault(10));
@@ -171,14 +175,18 @@ export default function UserPage({ params }: UserPageProps) {
 
         {!deviceLoading && device && (
           <>
-            {/* User Information Card */}
+            <Button
+              className="w-fit"
+              onClick={() => router.back()}
+              variant="default"
+            >
+              <HugeiconsIcon icon={ArrowTurnBackwardIcon} />
+              Back
+            </Button>
+
             <Card className="py-0">
               <CardContent className="space-y-4 p-4">
                 <div className="flex items-center gap-2">
-                  <HugeiconsIcon
-                    className="size-5 text-primary"
-                    icon={UserSquareIcon}
-                  />
                   <h2 className="font-semibold text-lg">User Information</h2>
                 </div>
 
@@ -247,30 +255,13 @@ export default function UserPage({ params }: UserPageProps) {
               </CardContent>
             </Card>
 
-            {/* Device Information Card */}
             <Card className="py-0">
               <CardContent className="space-y-4 p-4">
                 <div className="flex items-center gap-2">
-                  <HugeiconsIcon
-                    className="size-5 text-primary"
-                    icon={ComputerPhoneSyncIcon}
-                  />
                   <h2 className="font-semibold text-lg">Device Information</h2>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <p className="text-muted-foreground text-sm">Model</p>
-                    <div className="mt-1 flex items-center gap-2">
-                      <HugeiconsIcon
-                        className="size-4"
-                        icon={ComputerPhoneSyncIcon}
-                      />
-                      <p className="font-medium text-sm">
-                        {device.model || 'Unknown'}
-                      </p>
-                    </div>
-                  </div>
                   <div>
                     <p className="text-muted-foreground text-sm">Platform</p>
                     <div className="mt-1 flex items-center gap-2">
@@ -292,6 +283,18 @@ export default function UserPage({ params }: UserPageProps) {
                       />
                       <p className="font-medium text-sm">
                         {device.osVersion || 'Unknown'}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-sm">Model</p>
+                    <div className="mt-1 flex items-center gap-2">
+                      <HugeiconsIcon
+                        className="size-4"
+                        icon={ComputerPhoneSyncIcon}
+                      />
+                      <p className="font-medium text-sm">
+                        {device.model || 'Unknown'}
                       </p>
                     </div>
                   </div>
@@ -334,7 +337,6 @@ export default function UserPage({ params }: UserPageProps) {
           </Card>
         )}
 
-        {/* Sessions Table */}
         <Card className="py-0">
           <CardContent className="space-y-4 p-4">
             <div>
