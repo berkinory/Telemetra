@@ -31,6 +31,7 @@ export default function ApiKeysPage() {
   const { data: app, isPending: appLoading } = useApp(appId || '');
   const { data: keysData, isPending: keysLoading } = useAppKeys(appId || '');
   const [isKeyVisible, setIsKeyVisible] = useState(false);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
   const isFirstRender = useRef(true);
 
   const isOwner = app?.role === 'owner';
@@ -45,7 +46,7 @@ export default function ApiKeysPage() {
   }
 
   const { ref } = useScramble({
-    text: displayText,
+    text: shouldAnimate ? displayText : '',
     speed: 0.5,
     tick: 1,
     step: 3,
@@ -57,9 +58,18 @@ export default function ApiKeysPage() {
     overdrive: false,
   });
 
+  const staticRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     isFirstRender.current = false;
   }, []);
+
+  const handleToggleVisibility = () => {
+    if (!isFirstRender.current) {
+      setShouldAnimate(true);
+    }
+    setIsKeyVisible(!isKeyVisible);
+  };
 
   return (
     <RequireApp>
@@ -113,14 +123,16 @@ export default function ApiKeysPage() {
                     <div className="flex-1 overflow-hidden rounded-lg border bg-muted/50 px-3 py-2 font-mono text-sm">
                       <div
                         className="overflow-x-auto whitespace-nowrap"
-                        ref={ref}
-                      />
+                        ref={shouldAnimate ? ref : staticRef}
+                      >
+                        {!shouldAnimate && displayText}
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            onClick={() => setIsKeyVisible(!isKeyVisible)}
+                            onClick={handleToggleVisibility}
                             size="icon-sm"
                             type="button"
                             variant="outline"
