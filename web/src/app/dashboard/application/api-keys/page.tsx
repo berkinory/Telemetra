@@ -11,7 +11,8 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import Link from 'next/link';
 import { useQueryState } from 'nuqs';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useScramble } from 'use-scramble';
 import { RequireApp } from '@/components/require-app';
 import { RotateKeyDialog } from '@/components/rotate-key-dialog';
 import { Button } from '@/components/ui/button';
@@ -30,11 +31,35 @@ export default function ApiKeysPage() {
   const { data: app, isPending: appLoading } = useApp(appId || '');
   const { data: keysData, isPending: keysLoading } = useAppKeys(appId || '');
   const [isKeyVisible, setIsKeyVisible] = useState(false);
+  const isFirstRender = useRef(true);
 
   const isOwner = app?.role === 'owner';
   const showLoading = appLoading || keysLoading;
   const apiKey = keysData?.key || '';
-  const displayKey = isKeyVisible ? apiKey : '•'.repeat(32);
+  const keyLength = apiKey.length || 32;
+  const maskedKey = '•'.repeat(keyLength);
+
+  let displayText = maskedKey;
+  if (!isFirstRender.current) {
+    displayText = isKeyVisible ? apiKey : maskedKey;
+  }
+
+  const { ref } = useScramble({
+    text: displayText,
+    speed: 0.5,
+    tick: 1,
+    step: 3,
+    overflow: true,
+    scramble: 3,
+    seed: 2,
+    chance: 1.0,
+    range: [65.0, 125.0],
+    overdrive: false,
+  });
+
+  useEffect(() => {
+    isFirstRender.current = false;
+  }, []);
 
   return (
     <RequireApp>
@@ -86,7 +111,10 @@ export default function ApiKeysPage() {
                 <div className="space-y-3">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <div className="flex-1 overflow-hidden rounded-lg border bg-muted/50 px-3 py-2 font-mono text-sm">
-                      <div className="overflow-x-auto">{displayKey}</div>
+                      <div
+                        className="overflow-x-auto whitespace-nowrap"
+                        ref={ref}
+                      />
                     </div>
                     <div className="flex gap-2">
                       <Tooltip>
