@@ -1,6 +1,6 @@
 'use client';
 
-import { UserAdd01Icon } from '@hugeicons/core-free-icons';
+import { PencilEdit02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
@@ -17,26 +17,35 @@ import {
 import { Input } from '@/components/ui/input';
 import { AutoHeight } from '@/components/ui/primitives/effects/auto-height';
 import { Spinner } from '@/components/ui/spinner';
-import { useAddTeamMember } from '@/lib/queries';
+import { useRenameApp } from '@/lib/queries';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const APP_NAME_MIN_LENGTH = 3;
+const APP_NAME_MAX_LENGTH = 14;
+const APP_NAME_REGEX = /^[a-zA-Z0-9\s-]+$/;
 
-type AddMemberDialogProps = {
+type EditAppNameDialogProps = {
   appId: string;
+  currentName: string;
+  disabled?: boolean;
   children?: React.ReactNode;
 };
 
-export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
+export function EditAppNameDialog({
+  appId,
+  currentName,
+  disabled = false,
+  children,
+}: EditAppNameDialogProps) {
   const [open, setOpen] = useState(false);
-  const addMember = useAddTeamMember();
+  const renameApp = useRenameApp();
 
   const form = useForm({
     defaultValues: {
-      email: '',
+      name: currentName,
     },
     onSubmit: ({ value }) => {
-      addMember.mutate(
-        { appId, data: { email: value.email.trim() } },
+      renameApp.mutate(
+        { appId, data: { name: value.name.trim() } },
         {
           onSuccess: () => {
             setOpen(false);
@@ -49,19 +58,21 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
-    if (!newOpen) {
+    if (newOpen) {
+      form.setFieldValue('name', currentName);
+    } else {
       form.reset();
-      addMember.reset();
+      renameApp.reset();
     }
   };
 
   return (
     <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild disabled={disabled}>
         {children || (
-          <Button type="button" variant="default">
-            <HugeiconsIcon className="mr-2 size-4" icon={UserAdd01Icon} />
-            Add Member
+          <Button disabled={disabled} size="sm" type="button" variant="outline">
+            <HugeiconsIcon className="mr-1.5 size-3" icon={PencilEdit02Icon} />
+            Edit
           </Button>
         )}
       </DialogTrigger>
@@ -74,25 +85,33 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
           }}
         >
           <DialogHeader>
-            <DialogTitle>Add Team Member</DialogTitle>
+            <DialogTitle>Edit Application Name</DialogTitle>
             <DialogDescription>
-              Enter the email address of the user you want to add to your team.
-              They must have a Telemetra account.
+              Change the name of your application. This will be visible to all
+              team members.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="py-4">
             <form.Field
-              name="email"
+              name="name"
               validators={{
                 onChange: ({ value }) => {
                   const trimmedValue = value.trim();
 
-                  if (!trimmedValue) {
-                    return 'Email is required';
+                  if (trimmedValue.length === 0) {
+                    return 'Application name is required';
                   }
 
-                  if (!EMAIL_REGEX.test(trimmedValue)) {
-                    return 'Please enter a valid email address';
+                  if (trimmedValue.length < APP_NAME_MIN_LENGTH) {
+                    return `Application name must be at least ${APP_NAME_MIN_LENGTH} characters`;
+                  }
+
+                  if (trimmedValue.length > APP_NAME_MAX_LENGTH) {
+                    return `Application name must be at most ${APP_NAME_MAX_LENGTH} characters`;
+                  }
+
+                  if (!APP_NAME_REGEX.test(trimmedValue)) {
+                    return 'Application name can only contain letters, numbers, spaces, and hyphens';
                   }
 
                   return;
@@ -102,23 +121,25 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
             >
               {(field) => (
                 <div className="space-y-2">
-                  <label className="font-medium text-sm" htmlFor="member-email">
-                    Email Address
+                  <label className="font-medium text-sm" htmlFor="app-name">
+                    Application Name
                   </label>
                   <Input
+                    aria-invalid={field.state.meta.errors.length > 0}
                     autoComplete="off"
-                    disabled={addMember.isPending}
-                    id="member-email"
+                    disabled={renameApp.isPending}
+                    id="app-name"
+                    maxLength={APP_NAME_MAX_LENGTH}
                     onBlur={field.handleBlur}
                     onChange={(event) => field.handleChange(event.target.value)}
-                    placeholder="member@example.com"
-                    type="email"
+                    placeholder="Enter application name"
+                    type="text"
                     value={field.state.value}
                   />
                   <AutoHeight
                     deps={[
                       field.state.meta.errors.length,
-                      addMember.error?.message,
+                      renameApp.error?.message,
                     ]}
                   >
                     {field.state.meta.errors.length > 0 && (
@@ -126,9 +147,9 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
                         {field.state.meta.errors[0]}
                       </p>
                     )}
-                    {addMember.error && (
+                    {renameApp.error && (
                       <p className="text-destructive text-sm">
-                        {addMember.error.message || 'Failed to add team member'}
+                        {renameApp.error.message || 'Failed to rename app'}
                       </p>
                     )}
                   </AutoHeight>
@@ -138,7 +159,7 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
           </div>
           <DialogFooter>
             <Button
-              disabled={addMember.isPending}
+              disabled={renameApp.isPending}
               onClick={() => setOpen(false)}
               type="button"
               variant="outline"
@@ -150,11 +171,11 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
             >
               {([canSubmit, isSubmitting]) => (
                 <Button
-                  disabled={!canSubmit || addMember.isPending || isSubmitting}
+                  disabled={!canSubmit || renameApp.isPending || isSubmitting}
                   type="submit"
                 >
-                  {addMember.isPending && <Spinner className="mr-2 size-4" />}
-                  {addMember.isPending ? 'Adding' : 'Add Member'}
+                  {renameApp.isPending && <Spinner className="mr-2 size-4" />}
+                  {renameApp.isPending ? 'Saving' : 'Save Changes'}
                 </Button>
               )}
             </form.Subscribe>

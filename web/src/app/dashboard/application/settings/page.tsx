@@ -2,112 +2,31 @@
 
 import {
   ArrowRight01Icon,
-  CheckmarkSquare01Icon,
   Delete02Icon,
   Key01Icon,
-  PencilEdit02Icon,
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQueryState } from 'nuqs';
-import { type FormEvent, useState } from 'react';
 import { DeleteAppDialog } from '@/components/delete-app-dialog';
+import { EditAppNameDialog } from '@/components/edit-app-name-dialog';
 import { RequireApp } from '@/components/require-app';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useApp, useRenameApp } from '@/lib/queries';
-
-const APP_NAME_MIN_LENGTH = 3;
-const APP_NAME_MAX_LENGTH = 14;
-const APP_NAME_REGEX = /^[a-zA-Z0-9\s-]+$/;
+import { useApp } from '@/lib/queries';
 
 export default function SettingsPage() {
   const router = useRouter();
   const [appId] = useQueryState('app');
   const { data: app, isLoading } = useApp(appId || '');
-  const renameApp = useRenameApp();
-  const [isEditing, setIsEditing] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  const validateAppName = (name: string): string | null => {
-    const trimmedName = name.trim();
-
-    if (trimmedName.length === 0) {
-      return 'Application name is required';
-    }
-
-    if (trimmedName.length < APP_NAME_MIN_LENGTH) {
-      return `Application name must be at least ${APP_NAME_MIN_LENGTH} characters`;
-    }
-
-    if (trimmedName.length > APP_NAME_MAX_LENGTH) {
-      return `Application name must be at most ${APP_NAME_MAX_LENGTH} characters`;
-    }
-
-    if (!APP_NAME_REGEX.test(trimmedName)) {
-      return 'Application name can only contain letters, numbers, spaces, and hyphens';
-    }
-
-    return null;
-  };
-
-  const handleEdit = () => {
-    setNewName(app?.name || '');
-    setIsEditing(true);
-    setError(null);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setNewName('');
-    setError(null);
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const validationError = validateAppName(newName);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    if (!appId) {
-      return;
-    }
-
-    renameApp.mutate(
-      { appId, data: { name: newName.trim() } },
-      {
-        onSuccess: () => {
-          setIsEditing(false);
-          setNewName('');
-          setError(null);
-        },
-        onError: (err) => {
-          setError(err.message || 'Failed to rename app');
-        },
-      }
-    );
-  };
-
-  const handleNameChange = (value: string) => {
-    setNewName(value);
-    if (error) {
-      setError(null);
-    }
-  };
 
   const isOwner = app?.role === 'owner';
   const showLoading = isLoading || !app;
@@ -122,69 +41,20 @@ export default function SettingsPage() {
       );
     }
 
-    if (isEditing) {
-      return (
-        <form className="space-y-2" onSubmit={handleSubmit}>
-          <Input
-            aria-invalid={!!error}
-            autoComplete="off"
-            disabled={renameApp.isPending}
-            id="app-name"
-            maxLength={APP_NAME_MAX_LENGTH}
-            onChange={(event) => handleNameChange(event.target.value)}
-            placeholder="Enter application name"
-            type="text"
-            value={newName}
-          />
-          {error && <p className="text-destructive text-sm">{error}</p>}
-          <div className="flex gap-2">
-            <Button disabled={renameApp.isPending} size="sm" type="submit">
-              {renameApp.isPending ? (
-                <Spinner className="mr-2 size-3" />
-              ) : (
-                <HugeiconsIcon
-                  className="mr-1.5 size-3"
-                  icon={CheckmarkSquare01Icon}
-                />
-              )}
-              {renameApp.isPending ? 'Saving' : 'Save'}
-            </Button>
-            <Button
-              disabled={renameApp.isPending}
-              onClick={handleCancel}
-              size="sm"
-              type="button"
-              variant="outline"
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
-      );
-    }
-
     return (
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-medium text-base">{app?.name}</p>
         <Tooltip>
           <TooltipTrigger asChild>
             <span tabIndex={isOwner ? undefined : 0}>
-              <Button
+              <EditAppNameDialog
+                appId={appId || ''}
+                currentName={app?.name || ''}
                 disabled={!isOwner}
-                onClick={handleEdit}
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                <HugeiconsIcon
-                  className="mr-1.5 size-3"
-                  icon={PencilEdit02Icon}
-                />
-                Edit
-              </Button>
+              />
             </span>
           </TooltipTrigger>
-          <TooltipContent>Owner only</TooltipContent>
+          {!isOwner && <TooltipContent>Owner only</TooltipContent>}
         </Tooltip>
       </div>
     );
