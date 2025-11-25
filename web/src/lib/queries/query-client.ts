@@ -5,10 +5,10 @@ export const queryClient = new QueryClient({
     queries: {
       retry: 1,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
       refetchOnReconnect: true,
-      staleTime: 1 * 60_000,
+      staleTime: 30_000,
       gcTime: 20 * 60_000,
     },
     mutations: {
@@ -24,26 +24,23 @@ export const cacheConfig = {
     refetchInterval: 30_000,
   },
   overview: {
-    staleTime: 1 * 60_000,
+    staleTime: 30_000,
     gcTime: 20 * 60_000,
   },
   list: {
-    staleTime: 1 * 60_000,
+    staleTime: 30_000,
     gcTime: 20 * 60_000,
   },
   detail: {
-    staleTime: 1 * 60_000,
+    staleTime: 30_000,
     gcTime: 20 * 60_000,
   },
   static: {
-    staleTime: 5 * 60_000,
+    staleTime: 30_000,
     gcTime: 40 * 60_000,
   },
   timeseries: {
-    staleTime: 2 * 60_000,
+    staleTime: 30_000,
     gcTime: 30 * 60_000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchInterval: false,
   },
 } as const;
