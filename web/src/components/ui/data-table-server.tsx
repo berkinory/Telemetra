@@ -250,7 +250,7 @@ export function DataTableServer<TData, TValue>({
                           key={`loading-${rowIndex}-${header.id}`}
                           style={{ width: header.getSize() }}
                         >
-                          <Skeleton className="h-6 w-full" />
+                          <Skeleton className="h-5 w-full" />
                         </TableCell>
                       ))}
                     </TableRow>
