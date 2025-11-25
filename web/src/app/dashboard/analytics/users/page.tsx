@@ -357,6 +357,7 @@ export default function UsersPage() {
                 <div className="space-y-3">
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
                 </div>
               )}
 
@@ -472,6 +473,7 @@ export default function UsersPage() {
                 <div className="space-y-3">
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
                 </div>
               )}
 
@@ -482,7 +484,6 @@ export default function UsersPage() {
                     {Object.entries(overview.countryStats)
                       .filter(([, count]) => count > 0)
                       .sort(([, a], [, b]) => b - a)
-                      .slice(0, 10)
                       .map(([country, count]) => {
                         const percentage = overview.totalDevices
                           ? (count / overview.totalDevices) * 100
@@ -495,17 +496,20 @@ export default function UsersPage() {
                             )
                           );
 
+                        const getCountryLabel = (countryCode: string) =>
+                          new Intl.DisplayNames(['en'], {
+                            type: 'region',
+                          }).of(countryCode) || countryCode;
+
                         return (
                           <div className="space-y-1.5" key={country}>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <span className="text-lg">
+                                <span className="text-lg leading-none">
                                   {getCountryFlag(country)}
                                 </span>
                                 <span className="font-medium text-sm">
-                                  {new Intl.DisplayNames(['en'], {
-                                    type: 'region',
-                                  }).of(country) || country}
+                                  {getCountryLabel(country)}
                                 </span>
                               </div>
                               <div className="flex items-baseline gap-2">
@@ -590,7 +594,6 @@ export default function UsersPage() {
                 { label: 'Android', value: 'android', icon: AndroidIcon },
                 { label: 'iOS', value: 'ios', icon: AppleIcon },
                 { label: 'Web', value: 'web', icon: BrowserIcon },
-                { label: 'Unknown', value: 'unknown', icon: AnonymousIcon },
               ]}
               filterPlaceholder="Platform"
               isLoading={devicesLoading}

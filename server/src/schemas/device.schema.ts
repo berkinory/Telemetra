@@ -6,7 +6,7 @@ import {
   paginationSchema,
 } from './common.schema';
 
-export const platformEnum = z.enum(['ios', 'android', 'web', 'unknown']);
+export const platformEnum = z.enum(['ios', 'android', 'web']);
 
 export const deviceSchema = z
   .object({
@@ -102,9 +102,13 @@ export const deviceOverviewResponseSchema = z
     activeDevices24h: z.number().int().min(0).openapi({ example: 342 }),
     platformStats: z.record(z.string(), z.number()).openapi({
       example: { ios: 650, android: 480, web: 120 },
+      description:
+        'Platform distribution - top 3 platforms by count (ios, android, web only, null values excluded).',
     }),
     countryStats: z.record(z.string(), z.number()).openapi({
-      example: { US: 450, GB: 320, TR: 280, DE: 200 },
+      example: { US: 450, GB: 320, TR: 280 },
+      description:
+        'Country distribution - top 3 countries by count (null values excluded).',
     }),
     totalDevicesChange24h: z
       .number()

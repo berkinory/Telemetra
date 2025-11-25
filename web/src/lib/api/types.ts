@@ -55,7 +55,7 @@ export type DateRangeParams = {
 
 export type TimeRange = '7d' | '30d' | '180d' | '360d';
 
-export type Platform = 'ios' | 'android' | 'web' | 'unknown';
+export type Platform = 'ios' | 'android' | 'web';
 
 export type DevicesListResponse = {
   devices: Device[];

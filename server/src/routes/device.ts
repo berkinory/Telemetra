@@ -414,28 +414,45 @@ deviceWebRouter.openapi(getDeviceOverviewRoute, async (c: any) => {
         activeDevicesYesterdayForCalc) *
       100;
 
-    const platformStats: Record<string, number> = {
-      ios: 0,
-      android: 0,
-      web: 0,
-      unknown: 0,
-    };
+    const allPlatformStats: Array<{ platform: string; count: number }> = [];
 
     for (const row of platformStatsResult) {
-      const platform = row.platform.toLowerCase();
+      const platform = row.platform?.toLowerCase();
       if (platform === 'ios' || platform === 'android' || platform === 'web') {
-        platformStats[platform] = Number(row.count);
-      } else {
-        platformStats.unknown += Number(row.count);
+        allPlatformStats.push({
+          platform,
+          count: Number(row.count),
+        });
       }
     }
 
-    const countryStats: Record<string, number> = {};
+    const topPlatforms = allPlatformStats
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+
+    const platformStats: Record<string, number> = {};
+    for (const { platform, count: countValue } of topPlatforms) {
+      platformStats[platform] = countValue;
+    }
+
+    const allCountryStats: Array<{ country: string; count: number }> = [];
 
     for (const row of countryStatsResult) {
       if (row.country !== null) {
-        countryStats[row.country] = Number(row.count);
+        allCountryStats.push({
+          country: row.country,
+          count: Number(row.count),
+        });
       }
+    }
+
+    const topCountries = allCountryStats
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+
+    const countryStats: Record<string, number> = {};
+    for (const { country, count: countValue } of topCountries) {
+      countryStats[country] = countValue;
     }
 
     return c.json(
