@@ -463,7 +463,7 @@ export default function UsersPage() {
           <Card className="py-0">
             <CardContent className="space-y-4 p-4">
               <div>
-                <h2 className="font-semibold text-lg">Country Distribution</h2>
+                <h2 className="font-semibold text-lg">Top Countries</h2>
                 <p className="text-muted-foreground text-sm">
                   User distribution by country
                 </p>
