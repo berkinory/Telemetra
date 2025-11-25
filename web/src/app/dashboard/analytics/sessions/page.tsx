@@ -1,8 +1,13 @@
 'use client';
 
-import { ChartDownIcon, ChartUpIcon } from '@hugeicons/core-free-icons';
+import {
+  ChartDownIcon,
+  ChartUpIcon,
+  ViewIcon,
+} from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import Link from 'next/link';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { RequireApp } from '@/components/require-app';
 import { TimescaleChart } from '@/components/timescale-chart';
@@ -35,7 +40,7 @@ const formatDurationTable = (startedAt: string, lastActivityAt: string) => {
   return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 };
 
-const columns: ColumnDef<Session>[] = [
+const getColumns = (appId: string): ColumnDef<Session>[] => [
   {
     accessorKey: 'deviceId',
     header: 'User ID',
@@ -77,6 +82,21 @@ const columns: ColumnDef<Session>[] = [
       );
       return <div className="text-sm">{duration}</div>;
     },
+  },
+  {
+    id: 'actions',
+    header: '',
+    size: 50,
+    cell: ({ row }) => (
+      <div className="flex h-full w-full items-center justify-center">
+        <Link
+          className="text-muted-foreground transition-colors hover:text-foreground"
+          href={`/dashboard/analytics/users/${row.original.deviceId}?app=${appId}`}
+        >
+          <HugeiconsIcon className="size-4" icon={ViewIcon} />
+        </Link>
+      </div>
+    ),
   },
 ];
 
@@ -358,7 +378,7 @@ export default function SessionsPage() {
             </div>
 
             <DataTableServer
-              columns={columns}
+              columns={getColumns(appId || '')}
               data={sessionsData?.sessions || []}
               isLoading={sessionsLoading}
               pagination={

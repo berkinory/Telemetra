@@ -8,9 +8,11 @@ import {
   ChartDownIcon,
   ChartUpIcon,
   ComputerPhoneSyncIcon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import Link from 'next/link';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { RequireApp } from '@/components/require-app';
 import { TimescaleChart } from '@/components/timescale-chart';
@@ -27,7 +29,7 @@ import {
 } from '@/lib/queries';
 import { cn } from '@/lib/utils';
 
-const columns: ColumnDef<Device>[] = [
+const getColumns = (appId: string): ColumnDef<Device>[] => [
   {
     accessorKey: 'deviceId',
     header: 'User ID',
@@ -115,6 +117,21 @@ const columns: ColumnDef<Device>[] = [
         </Badge>
       );
     },
+  },
+  {
+    id: 'actions',
+    header: '',
+    size: 50,
+    cell: ({ row }) => (
+      <div className="flex h-full w-full items-center justify-center">
+        <Link
+          className="text-muted-foreground transition-colors hover:text-foreground"
+          href={`/dashboard/analytics/users/${row.original.deviceId}?app=${appId}`}
+        >
+          <HugeiconsIcon className="size-4" icon={ViewIcon} />
+        </Link>
+      </div>
+    ),
   },
 ];
 
@@ -482,7 +499,7 @@ export default function UsersPage() {
             </div>
 
             <DataTableServer
-              columns={columns}
+              columns={getColumns(appId || '')}
               data={devicesData?.devices || []}
               filterAllIcon={ComputerPhoneSyncIcon}
               filterKey="platform"

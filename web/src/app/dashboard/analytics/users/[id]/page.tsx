@@ -11,9 +11,11 @@ import {
   Flag02Icon,
   InformationCircleIcon,
   UserSquareIcon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { use } from 'react';
@@ -44,7 +46,7 @@ const formatDurationTable = (startedAt: string, lastActivityAt: string) => {
   return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 };
 
-const columns: ColumnDef<Session>[] = [
+const getColumns = (deviceId: string, appId: string): ColumnDef<Session>[] => [
   {
     accessorKey: 'sessionId',
     header: 'Session ID',
@@ -86,6 +88,21 @@ const columns: ColumnDef<Session>[] = [
       );
       return <div className="text-sm">{duration}</div>;
     },
+  },
+  {
+    id: 'actions',
+    header: '',
+    size: 50,
+    cell: () => (
+      <div className="flex h-full w-full items-center justify-center">
+        <Link
+          className="text-muted-foreground transition-colors hover:text-foreground"
+          href={`/dashboard/analytics/users/${deviceId}?app=${appId}`}
+        >
+          <HugeiconsIcon className="size-4" icon={ViewIcon} />
+        </Link>
+      </div>
+    ),
   },
 ];
 
@@ -452,7 +469,7 @@ export default function UserPage({ params }: UserPageProps) {
             </div>
 
             <DataTableServer
-              columns={columns}
+              columns={getColumns(id, appId || '')}
               data={sessionsData?.sessions || []}
               isLoading={sessionsLoading}
               pagination={
