@@ -263,7 +263,7 @@ export default function EventsPage() {
               <div className="grid gap-3 md:grid-cols-2">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Skeleton
-                    className="h-16 w-full"
+                    className="h-9 w-full"
                     key={`top-events-skeleton-${i.toString()}`}
                   />
                 ))}
