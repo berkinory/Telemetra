@@ -21,6 +21,7 @@ import {
   useSessionTimeseries,
 } from '@/lib/queries';
 import { cn } from '@/lib/utils';
+import { usePaginationStore } from '@/stores/pagination-store';
 
 const formatDurationTable = (startedAt: string, lastActivityAt: string) => {
   const start = new Date(startedAt).getTime();
@@ -126,7 +127,6 @@ const getColumns = (appId: string): ColumnDef<Session>[] => [
 export default function SessionsPage() {
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
-  const [pageSize] = useQueryState('pageSize', parseAsInteger.withDefault(10));
   const [search] = useQueryState('search', parseAsString.withDefault(''));
   const [timeRange, setTimeRange] = useQueryState(
     'range',
@@ -136,6 +136,8 @@ export default function SessionsPage() {
     'metric',
     parseAsString.withDefault('daily_sessions')
   );
+
+  const { pageSize } = usePaginationStore();
 
   const { data: overview, isPending: overviewLoading } = useSessionOverview(
     appId || ''

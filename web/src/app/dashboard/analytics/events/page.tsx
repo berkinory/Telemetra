@@ -22,6 +22,7 @@ import {
   useTopEvents,
 } from '@/lib/queries';
 import { cn } from '@/lib/utils';
+import { usePaginationStore } from '@/stores/pagination-store';
 
 type Event = {
   eventId: string;
@@ -90,12 +91,13 @@ const getColumns = (appId: string): ColumnDef<Event>[] => [
 export default function EventsPage() {
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
-  const [pageSize] = useQueryState('pageSize', parseAsInteger.withDefault(5));
   const [search] = useQueryState('search', parseAsString.withDefault(''));
   const [timeRange, setTimeRange] = useQueryState(
     'range',
     parseAsString.withDefault('7d')
   );
+
+  const { pageSize } = usePaginationStore();
 
   const { data: overview, isPending: overviewLoading } = useEventOverview(
     appId || ''

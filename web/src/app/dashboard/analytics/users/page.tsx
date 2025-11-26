@@ -29,6 +29,7 @@ import {
   useDeviceTimeseries,
 } from '@/lib/queries';
 import { cn } from '@/lib/utils';
+import { usePaginationStore } from '@/stores/pagination-store';
 
 const getColumns = (appId: string): ColumnDef<Device>[] => [
   {
@@ -193,7 +194,6 @@ const getColumns = (appId: string): ColumnDef<Device>[] => [
 export default function UsersPage() {
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
-  const [pageSize] = useQueryState('pageSize', parseAsInteger.withDefault(5));
   const [search] = useQueryState('search', parseAsString.withDefault(''));
   const [filter] = useQueryState('filter', parseAsString.withDefault(''));
   const [timeRange, setTimeRange] = useQueryState(
@@ -204,6 +204,8 @@ export default function UsersPage() {
     'metric',
     parseAsString.withDefault('total')
   );
+
+  const { pageSize } = usePaginationStore();
 
   const { data: overview, isPending: overviewLoading } = useDeviceOverview(
     appId || ''

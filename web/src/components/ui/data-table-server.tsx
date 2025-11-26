@@ -78,7 +78,6 @@ export function DataTableServer<TData, TValue>({
   const [params, setParams] = useQueryStates(
     {
       page: parseAsInteger.withDefault(1),
-      pageSize: parseAsInteger.withDefault(pageSize),
       search: parseAsString.withDefault(''),
       filter: parseAsString.withDefault(''),
     },
@@ -132,7 +131,7 @@ export function DataTableServer<TData, TValue>({
 
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
-    setParams({ pageSize: newSize, page: 1 });
+    setParams({ page: 1 });
   };
 
   const handleFilterChange = (value: string) => {
@@ -343,7 +342,7 @@ export function DataTableServer<TData, TValue>({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button disabled={isLoading} size="sm" variant="outline">
-                  Rows: {params.pageSize}
+                  Rows: {pageSize}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center">
@@ -354,7 +353,7 @@ export function DataTableServer<TData, TValue>({
                   >
                     <HugeiconsIcon
                       className={
-                        params.pageSize === size ? 'opacity-100' : 'opacity-0'
+                        pageSize === size ? 'opacity-100' : 'opacity-0'
                       }
                       icon={CheckmarkSquare01Icon}
                     />
@@ -365,7 +364,7 @@ export function DataTableServer<TData, TValue>({
             </DropdownMenu>
           ) : (
             <Button disabled size="sm" variant="outline">
-              Rows: {params.pageSize}
+              Rows: {pageSize}
             </Button>
           )}
         </div>

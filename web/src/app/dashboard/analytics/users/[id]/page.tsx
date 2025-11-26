@@ -29,6 +29,7 @@ import { DataTableServer } from '@/components/ui/data-table-server';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Session } from '@/lib/api/types';
 import { useDevice, useSessions } from '@/lib/queries';
+import { usePaginationStore } from '@/stores/pagination-store';
 
 const formatDurationTable = (startedAt: string, lastActivityAt: string) => {
   const start = new Date(startedAt).getTime();
@@ -197,7 +198,8 @@ export default function UserPage({ params }: UserPageProps) {
   const router = useRouter();
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
-  const [pageSize] = useQueryState('pageSize', parseAsInteger.withDefault(10));
+
+  const { pageSize } = usePaginationStore();
 
   const { data: device, isPending: deviceLoading } = useDevice(id, appId || '');
   const { data: sessionsData, isPending: sessionsLoading } = useSessions(
