@@ -338,11 +338,23 @@ eventWebRouter.openapi(getEventsRoute, async (c) => {
       offset,
     });
 
-    const formattedEvents = eventsList.map((event) => ({
-      eventId: event.event_id,
-      name: event.name,
-      timestamp: new Date(event.timestamp).toISOString(),
-    }));
+    const formattedEvents = eventsList.map((event) => {
+      let timestamp: string;
+      try {
+        const parsed = new Date(event.timestamp);
+        timestamp = Number.isNaN(parsed.getTime())
+          ? new Date().toISOString()
+          : parsed.toISOString();
+      } catch {
+        timestamp = new Date().toISOString();
+      }
+
+      return {
+        eventId: event.event_id,
+        name: event.name,
+        timestamp,
+      };
+    });
 
     return c.json(
       {
@@ -455,13 +467,23 @@ eventWebRouter.openapi(getEventRoute, async (c: any) => {
       }
     }
 
+    let timestamp: string;
+    try {
+      const parsed = new Date(event.timestamp);
+      timestamp = Number.isNaN(parsed.getTime())
+        ? new Date().toISOString()
+        : parsed.toISOString();
+    } catch {
+      timestamp = new Date().toISOString();
+    }
+
     return c.json(
       {
         eventId: event.event_id,
         sessionId: event.session_id,
         name: event.name,
         params: parsedParams,
-        timestamp: new Date(event.timestamp).toISOString(),
+        timestamp,
       },
       HttpStatus.OK
     );

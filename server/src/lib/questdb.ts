@@ -209,7 +209,7 @@ export async function getEvents(
     offset > 0 ? `LIMIT ${offset}, ${limit}` : `LIMIT ${limit}`;
 
   const eventsQuery = `
-    SELECT event_id, session_id, name, params, timestamp
+    SELECT event_id, session_id, name, params, to_str(timestamp, 'yyyy-MM-ddTHH:mm:ss.SSSUUUZ') as timestamp
     FROM events
     ${whereClause}
     ORDER BY timestamp DESC
@@ -289,7 +289,7 @@ export async function getEventById(
   validateIdentifier(options.appId, 'appId');
 
   const query = `
-    SELECT event_id, session_id, name, params, timestamp
+    SELECT event_id, session_id, name, params, to_str(timestamp, 'yyyy-MM-ddTHH:mm:ss.SSSUUUZ') as timestamp
     FROM events
     WHERE event_id = '${escapeSqlString(options.eventId)}'
     AND app_id = '${escapeSqlString(options.appId)}'
