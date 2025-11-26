@@ -35,7 +35,7 @@ export async function writeEvent(event: EventRecord): Promise<void> {
       '${escapeSqlString(event.appId)}',
       '${escapeSqlString(event.name)}',
       ${paramsValue},
-      to_timestamp(${timestampMicros}, 'us')
+      ${timestampMicros}
     )
   `;
 
