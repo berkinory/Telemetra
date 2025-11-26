@@ -174,6 +174,7 @@ const getColumns = (deviceId: string, appId: string): ColumnDef<Session>[] => [
     id: 'actions',
     header: '',
     size: 50,
+    minSize: 50,
     cell: () => (
       <div className="flex h-full w-full items-center justify-center">
         <Link

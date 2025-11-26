@@ -75,6 +75,7 @@ const getColumns = (appId: string): ColumnDef<Event>[] => [
     id: 'actions',
     header: '',
     size: 50,
+    minSize: 50,
     cell: ({ row }) => (
       <div className="flex h-full w-full items-center justify-center">
         <Link
