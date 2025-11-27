@@ -5,7 +5,7 @@ import {
   CheckmarkSquare01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
 import {
@@ -87,6 +87,16 @@ export function TimescaleChart({
       color: chartColor,
     },
   } satisfies ChartConfig;
+
+  const processedData = useMemo(
+    () =>
+      data.map((item, index) => ({
+        ...item,
+        value_solid: index <= data.length - 2 ? item.value : null,
+        value_dotted: index >= data.length - 2 ? item.value : null,
+      })),
+    [data]
+  );
 
   const currentOption = timeRangeOptions.find((opt) => opt.value === timeRange);
   const currentLabel = currentOption?.label || timeRangeOptions[0]?.label;
@@ -213,7 +223,7 @@ export function TimescaleChart({
             className="aspect-auto h-[250px] w-full"
             config={chartConfig}
           >
-            <AreaChart data={data}>
+            <AreaChart data={processedData}>
               <defs>
                 <linearGradient
                   id={`fill${dataKey}`}
@@ -252,7 +262,14 @@ export function TimescaleChart({
               <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    formatter={(value) => {
+                    formatter={(value, _, item) => {
+                      if (
+                        item.dataKey === 'value_dotted' &&
+                        item.payload.value_solid !== null
+                      ) {
+                        return null;
+                      }
+
                       const formattedValue = valueFormatter
                         ? valueFormatter(value as number)
                         : defaultFormatter(value as number);
@@ -293,9 +310,20 @@ export function TimescaleChart({
                 cursor={false}
               />
               <Area
-                dataKey="value"
+                dataKey="value_solid"
                 fill={`url(#fill${dataKey})`}
+                name={dataKey}
                 stroke={`var(--color-${dataKey})`}
+                strokeWidth={2}
+                type="monotone"
+              />
+              <Area
+                dataKey="value_dotted"
+                fill={`url(#fill${dataKey})`}
+                name={dataKey}
+                stroke={`var(--color-${dataKey})`}
+                strokeDasharray="1 4"
+                strokeLinecap="round"
                 strokeWidth={2}
                 type="monotone"
               />
