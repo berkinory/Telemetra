@@ -1,5 +1,7 @@
 const AM_PM_REGEX = /[ap]m/i;
 
+type DateFormat = 'DD/MM/YYYY' | 'MM/DD/YYYY';
+
 export function getUserTimezone(): string {
   if (typeof window === 'undefined') {
     return 'UTC';
@@ -18,6 +20,26 @@ export function getUserTimezone(): string {
   }
 
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+export function getUserDateFormat(): DateFormat {
+  if (typeof window === 'undefined') {
+    return 'DD/MM/YYYY';
+  }
+
+  try {
+    const stored = localStorage.getItem('user-timezone');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed?.state?.dateFormat) {
+        return parsed.state.dateFormat;
+      }
+    }
+  } catch {
+    // If parsing fails, fall through to default
+  }
+
+  return 'DD/MM/YYYY';
 }
 
 export function getUserTimeFormat(): '12h' | '24h' {
@@ -62,6 +84,29 @@ function shouldUse12Hour(): boolean {
   return format === '12h';
 }
 
+function formatDateParts(
+  date: Date,
+  timezone: string,
+  dateFormat: DateFormat
+): string {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  const parts = formatter.formatToParts(date);
+  const day = parts.find((p) => p.type === 'day')?.value || '01';
+  const month = parts.find((p) => p.type === 'month')?.value || '01';
+  const year = parts.find((p) => p.type === 'year')?.value || '2024';
+
+  if (dateFormat === 'MM/DD/YYYY') {
+    return `${month}/${day}/${year}`;
+  }
+  return `${day}/${month}/${year}`;
+}
+
 export function formatDateTime(
   dateStr: string | null | undefined,
   timezone?: string
@@ -74,18 +119,21 @@ export function formatDateTime(
     const tz = timezone ?? getUserTimezone();
     const locale = getBrowserLocale();
     const use12Hour = shouldUse12Hour();
+    const dateFormat = getUserDateFormat();
+    const date = new Date(dateStr);
 
-    const formatter = new Intl.DateTimeFormat(locale, {
+    const datePart = formatDateParts(date, tz, dateFormat);
+
+    const timeFormatter = new Intl.DateTimeFormat(locale, {
       timeZone: tz,
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
       hour12: use12Hour,
     });
 
-    return formatter.format(new Date(dateStr));
+    const timePart = timeFormatter.format(date);
+
+    return `${datePart} ${timePart}`;
   } catch {
     return 'N/A';
   }
@@ -101,16 +149,10 @@ export function formatDate(
 
   try {
     const tz = timezone ?? getUserTimezone();
-    const locale = getBrowserLocale();
+    const dateFormat = getUserDateFormat();
+    const date = new Date(dateStr);
 
-    const formatter = new Intl.DateTimeFormat(locale, {
-      timeZone: tz,
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-
-    return formatter.format(new Date(dateStr));
+    return formatDateParts(date, tz, dateFormat);
   } catch {
     return 'N/A';
   }
@@ -154,18 +196,21 @@ export function formatDateTimeLong(
     const tz = timezone ?? getUserTimezone();
     const locale = getBrowserLocale();
     const use12Hour = shouldUse12Hour();
+    const dateFormat = getUserDateFormat();
+    const date = new Date(dateStr);
 
-    const formatter = new Intl.DateTimeFormat(locale, {
+    const datePart = formatDateParts(date, tz, dateFormat);
+
+    const timeFormatter = new Intl.DateTimeFormat(locale, {
       timeZone: tz,
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
       hour12: use12Hour,
     });
 
-    return formatter.format(new Date(dateStr));
+    const timePart = timeFormatter.format(date);
+
+    return `${datePart} ${timePart}`;
   } catch {
     return 'N/A';
   }
