@@ -1,10 +1,9 @@
 'use client';
 
-import { ViewIcon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
-import Link from 'next/link';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { useState } from 'react';
+import { SessionDetailsDialog } from '@/components/sessions/session-details-dialog';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import type { Session } from '@/lib/api/types';
 import { formatDateTime } from '@/lib/date-utils';
@@ -65,60 +64,42 @@ function formatDurationTable(startedAt: string, lastActivityAt: string) {
   );
 }
 
-function getColumns(deviceId: string, appId: string): ColumnDef<Session>[] {
-  return [
-    {
-      accessorKey: 'sessionId',
-      header: 'Session ID',
-      size: 400,
-      cell: ({ row }) => (
-        <div
-          className="max-w-xs truncate font-mono text-xs lg:max-w-sm"
-          title={row.getValue('sessionId')}
-        >
-          {row.getValue('sessionId')}
-        </div>
-      ),
+const columns: ColumnDef<Session>[] = [
+  {
+    accessorKey: 'sessionId',
+    header: 'Session ID',
+    size: 350,
+    cell: ({ row }) => (
+      <div
+        className="max-w-xs truncate font-mono text-xs lg:max-w-sm"
+        title={row.getValue('sessionId')}
+      >
+        {row.getValue('sessionId')}
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'startedAt',
+    header: 'Date',
+    size: 200,
+    cell: ({ row }) => {
+      const timestamp = row.getValue('startedAt') as string;
+      return <div className="text-sm">{formatDateTime(timestamp)}</div>;
     },
-    {
-      accessorKey: 'startedAt',
-      header: 'Date',
-      size: 250,
-      cell: ({ row }) => {
-        const timestamp = row.getValue('startedAt') as string;
-        return <div className="text-sm">{formatDateTime(timestamp)}</div>;
-      },
+  },
+  {
+    accessorKey: 'lastActivityAt',
+    header: 'Duration',
+    size: 150,
+    cell: ({ row }) => {
+      const duration = formatDurationTable(
+        row.original.startedAt,
+        row.original.lastActivityAt
+      );
+      return <div className="text-sm">{duration}</div>;
     },
-    {
-      accessorKey: 'lastActivityAt',
-      header: 'Duration',
-      size: 150,
-      cell: ({ row }) => {
-        const duration = formatDurationTable(
-          row.original.startedAt,
-          row.original.lastActivityAt
-        );
-        return <div className="text-sm">{duration}</div>;
-      },
-    },
-    {
-      id: 'actions',
-      header: '',
-      size: 50,
-      minSize: 50,
-      cell: () => (
-        <div className="flex h-full w-full items-center justify-center">
-          <Link
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            href={`/dashboard/analytics/users/${deviceId}?app=${appId}`}
-          >
-            <HugeiconsIcon className="size-4" icon={ViewIcon} />
-          </Link>
-        </div>
-      ),
-    },
-  ];
-}
+  },
+];
 
 type UserSessionsTableProps = {
   deviceId: string;
@@ -128,6 +109,8 @@ export function UserSessionsTable({ deviceId }: UserSessionsTableProps) {
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
   const { pageSize } = usePaginationStore();
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: sessionsData } = useSessions(appId || '', {
     page: page.toString(),
@@ -135,23 +118,37 @@ export function UserSessionsTable({ deviceId }: UserSessionsTableProps) {
     deviceId,
   });
 
+  const handleViewSession = (session: Session) => {
+    setSelectedSession(session);
+    setDialogOpen(true);
+  };
+
   if (!appId) {
     return null;
   }
 
   return (
-    <DataTableServer
-      columns={getColumns(deviceId, appId)}
-      data={sessionsData?.sessions || []}
-      isLoading={false}
-      pagination={
-        sessionsData?.pagination || {
-          total: 0,
-          page: 1,
-          pageSize: 10,
-          totalPages: 0,
+    <>
+      <DataTableServer
+        columns={columns}
+        data={sessionsData?.sessions || []}
+        isLoading={false}
+        onRowClick={handleViewSession}
+        pagination={
+          sessionsData?.pagination || {
+            total: 0,
+            page: 1,
+            pageSize: 10,
+            totalPages: 0,
+          }
         }
-      }
-    />
+      />
+      <SessionDetailsDialog
+        appId={appId}
+        onOpenChange={setDialogOpen}
+        open={dialogOpen}
+        session={selectedSession}
+      />
+    </>
   );
 }

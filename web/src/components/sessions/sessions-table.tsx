@@ -1,15 +1,14 @@
 'use client';
 
-import { ViewIcon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import type { ColumnDef } from '@tanstack/react-table';
-import Link from 'next/link';
+import type { ColumnDef } from '@tantml/react-table';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { useState } from 'react';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import type { Session } from '@/lib/api/types';
 import { formatDateTime } from '@/lib/date-utils';
 import { useSessions } from '@/lib/queries';
 import { usePaginationStore } from '@/stores/pagination-store';
+import { SessionDetailsDialog } from './session-details-dialog';
 
 function formatDurationTable(startedAt: string, lastActivityAt: string) {
   const start = new Date(startedAt).getTime();
@@ -65,70 +64,54 @@ function formatDurationTable(startedAt: string, lastActivityAt: string) {
   );
 }
 
-function getColumns(appId: string): ColumnDef<Session>[] {
-  return [
-    {
-      accessorKey: 'deviceId',
-      header: 'User ID',
-      size: 400,
-      cell: ({ row }) => (
-        <div
-          className="max-w-xs truncate font-mono text-xs lg:max-w-sm"
-          title={row.getValue('deviceId')}
-        >
-          {row.getValue('deviceId')}
-        </div>
-      ),
+const columns: ColumnDef<Session>[] = [
+  {
+    accessorKey: 'deviceId',
+    header: 'User ID',
+    size: 350,
+    cell: ({ row }) => (
+      <div
+        className="max-w-xs truncate font-mono text-xs lg:max-w-sm"
+        title={row.getValue('deviceId')}
+      >
+        {row.getValue('deviceId')}
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'lastActivityAt',
+    header: 'Duration',
+    size: 150,
+    cell: ({ row }) => {
+      const duration = formatDurationTable(
+        row.original.startedAt,
+        row.original.lastActivityAt
+      );
+      return <div className="text-sm">{duration}</div>;
     },
-    {
-      accessorKey: 'lastActivityAt',
-      header: 'Duration',
-      size: 150,
-      cell: ({ row }) => {
-        const duration = formatDurationTable(
-          row.original.startedAt,
-          row.original.lastActivityAt
-        );
-        return <div className="text-sm">{duration}</div>;
-      },
+  },
+  {
+    accessorKey: 'startedAt',
+    header: 'Time',
+    size: 200,
+    cell: ({ row }) => {
+      const timestamp = row.getValue('startedAt') as string;
+      return (
+        <span className="text-muted-foreground text-xs">
+          {formatDateTime(timestamp)}
+        </span>
+      );
     },
-    {
-      accessorKey: 'startedAt',
-      header: 'Time',
-      size: 200,
-      cell: ({ row }) => {
-        const timestamp = row.getValue('startedAt') as string;
-        return (
-          <span className="text-muted-foreground text-xs">
-            {formatDateTime(timestamp)}
-          </span>
-        );
-      },
-    },
-    {
-      id: 'actions',
-      header: '',
-      size: 50,
-      minSize: 50,
-      cell: ({ row }) => (
-        <div className="flex h-full w-full items-center justify-center">
-          <Link
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            href={`/dashboard/analytics/users/${row.original.deviceId}?app=${appId}`}
-          >
-            <HugeiconsIcon className="size-4" icon={ViewIcon} />
-          </Link>
-        </div>
-      ),
-    },
-  ];
-}
+  },
+];
 
 export function SessionsTable() {
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
   const [search] = useQueryState('search', parseAsString.withDefault(''));
   const { pageSize } = usePaginationStore();
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: sessionsData } = useSessions(appId || '', {
     page: page.toString(),
@@ -136,25 +119,39 @@ export function SessionsTable() {
     deviceId: search || undefined,
   });
 
+  const handleViewSession = (session: Session) => {
+    setSelectedSession(session);
+    setDialogOpen(true);
+  };
+
   if (!appId) {
     return null;
   }
 
   return (
-    <DataTableServer
-      columns={getColumns(appId)}
-      data={sessionsData?.sessions || []}
-      isLoading={false}
-      pagination={
-        sessionsData?.pagination || {
-          total: 0,
-          page: 1,
-          pageSize: 10,
-          totalPages: 0,
+    <>
+      <DataTableServer
+        columns={columns}
+        data={sessionsData?.sessions || []}
+        isLoading={false}
+        onRowClick={handleViewSession}
+        pagination={
+          sessionsData?.pagination || {
+            total: 0,
+            page: 1,
+            pageSize: 10,
+            totalPages: 0,
+          }
         }
-      }
-      searchKey="deviceId"
-      searchPlaceholder="Search User ID"
-    />
+        searchKey="deviceId"
+        searchPlaceholder="Search User ID"
+      />
+      <SessionDetailsDialog
+        appId={appId}
+        onOpenChange={setDialogOpen}
+        open={dialogOpen}
+        session={selectedSession}
+      />
+    </>
   );
 }

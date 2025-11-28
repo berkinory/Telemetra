@@ -334,8 +334,8 @@ eventWebRouter.openapi(getEventsRoute, async (c) => {
 
     const paginationValidation = validatePagination(
       c,
-      query.page,
-      query.pageSize
+      sessionId ? '1' : query.page,
+      sessionId ? '1000' : query.pageSize
     );
     if (!paginationValidation.success) {
       return paginationValidation.response;

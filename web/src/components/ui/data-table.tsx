@@ -41,6 +41,7 @@ type DataTableProps<TData, TValue> = {
   searchKey?: string;
   searchPlaceholder?: string;
   pageSize?: number;
+  onRowClick?: (row: TData) => void;
 };
 
 export function DataTable<TData, TValue>({
@@ -49,6 +50,7 @@ export function DataTable<TData, TValue>({
   searchKey,
   searchPlaceholder = 'Search...',
   pageSize = 10,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -136,7 +138,11 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => {
                 const cells = row.getVisibleCells();
                 return (
-                  <TableRow key={row.id}>
+                  <TableRow
+                    className={onRowClick ? 'cursor-pointer' : ''}
+                    key={row.id}
+                    onClick={() => onRowClick?.(row.original)}
+                  >
                     {cells.map((cell, index) => (
                       <TableCell
                         className={

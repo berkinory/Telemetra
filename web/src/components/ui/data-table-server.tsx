@@ -59,6 +59,7 @@ type DataTableServerProps<TData, TValue> = {
   filterOptions?: FilterOption[];
   filterPlaceholder?: string;
   filterAllIcon?: typeof CheckmarkSquare01Icon;
+  onRowClick?: (row: TData) => void;
 };
 
 export function DataTableServer<TData, TValue>({
@@ -72,6 +73,7 @@ export function DataTableServer<TData, TValue>({
   filterOptions = [],
   filterPlaceholder = 'All',
   filterAllIcon,
+  onRowClick,
 }: DataTableServerProps<TData, TValue>) {
   const { pageSize, setPageSize } = usePaginationStore();
 
@@ -267,7 +269,11 @@ export function DataTableServer<TData, TValue>({
               ? table.getRowModel().rows.map((row) => {
                   const cells = row.getVisibleCells();
                   return (
-                    <TableRow key={row.id}>
+                    <TableRow
+                      className={onRowClick ? 'cursor-pointer' : ''}
+                      key={row.id}
+                      onClick={() => onRowClick?.(row.original)}
+                    >
                       {cells.map((cell, index) => (
                         <TableCell
                           className={
