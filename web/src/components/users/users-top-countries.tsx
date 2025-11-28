@@ -53,11 +53,12 @@ export function UsersTopCountries() {
         {hasCountryData ? (
           <div className="space-y-3">
             {Object.entries(overview.countryStats)
-              .filter(([, count]) => count > 0)
-              .sort(([, a], [, b]) => b - a)
+              .filter(([, count]) => (count as number) > 0)
+              .sort(([, a], [, b]) => (b as number) - (a as number))
               .map(([country, count]) => {
+                const countNum = count as number;
                 const percentage = overview.totalDevices
-                  ? (count / overview.totalDevices) * 100
+                  ? (countNum / overview.totalDevices) * 100
                   : 0;
 
                 return (
@@ -73,7 +74,7 @@ export function UsersTopCountries() {
                       </div>
                       <div className="flex items-baseline gap-2">
                         <span className="font-semibold text-sm">
-                          {count.toLocaleString()}
+                          {countNum.toLocaleString()}
                         </span>
                         <span className="text-muted-foreground text-xs">
                           ({percentage.toFixed(1)}%)
