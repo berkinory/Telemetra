@@ -47,7 +47,7 @@ import {
 } from '@/components/ui/sidebar';
 import { UserSettings } from '@/components/user-settings';
 import { authClient, useSession } from '@/lib/auth';
-import { queryClient } from '@/lib/queries/query-client';
+import { getQueryClient } from '@/lib/queries/query-client';
 
 type NavItem = {
   label: string;
@@ -164,6 +164,7 @@ export function DashboardSidebar() {
     const prevUserId = sessionStorage.getItem('prevUserId');
 
     if (userId && prevUserId && userId !== prevUserId) {
+      const queryClient = getQueryClient();
       queryClient.clear();
     }
 
@@ -176,6 +177,7 @@ export function DashboardSidebar() {
 
   const handleLogout = async () => {
     await authClient.signOut();
+    const queryClient = getQueryClient();
     queryClient.clear();
   };
 

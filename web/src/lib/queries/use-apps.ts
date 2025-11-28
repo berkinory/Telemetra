@@ -13,7 +13,7 @@ import type {
   UpdateAppRequest,
 } from '@/lib/api/types';
 import { useSession } from '@/lib/auth';
-import { cacheConfig, queryClient } from './query-client';
+import { cacheConfig, getQueryClient } from './query-client';
 import { queryKeys } from './query-keys';
 
 export function useApps() {
@@ -69,6 +69,7 @@ export function useCreateApp() {
         body: JSON.stringify(data),
       }),
     onSuccess: (data) => {
+      const queryClient = getQueryClient();
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.all });
       toast.success(`Application  "${data.name}" created successfully!`);
     },
@@ -85,6 +86,7 @@ export function useDeleteApp() {
         method: 'DELETE',
       }),
     onSuccess: () => {
+      const queryClient = getQueryClient();
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.all });
       toast.success('Application deleted successfully');
     },
@@ -102,6 +104,7 @@ export function useRenameApp() {
         body: JSON.stringify(data),
       }),
     onSuccess: (data, variables) => {
+      const queryClient = getQueryClient();
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.all });
       queryClient.invalidateQueries({
         queryKey: queryKeys.apps.detail(variables.appId),
@@ -121,6 +124,7 @@ export function useRotateAppKey() {
         method: 'POST',
       }),
     onSuccess: (_, appId) => {
+      const queryClient = getQueryClient();
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.keys(appId) });
       toast.success('API key rotated successfully!');
     },
@@ -144,6 +148,7 @@ export function useAddTeamMember() {
         body: JSON.stringify(data),
       }),
     onSuccess: (data, variables) => {
+      const queryClient = getQueryClient();
       queryClient.invalidateQueries({
         queryKey: queryKeys.apps.team(variables.appId),
       });
@@ -162,6 +167,7 @@ export function useRemoveTeamMember() {
         method: 'DELETE',
       }),
     onSuccess: (_, variables) => {
+      const queryClient = getQueryClient();
       queryClient.invalidateQueries({
         queryKey: queryKeys.apps.team(variables.appId),
       });

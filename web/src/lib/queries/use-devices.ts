@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { buildQueryString, fetchApi } from '@/lib/api/client';
 import type {
   DateRangeParams,
@@ -33,60 +33,76 @@ type DeviceFilters = PaginationParams & {
 };
 
 export function useDevices(appId: string, filters?: DeviceFilters) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: queryKeys.devices.list(appId, filters),
-    queryFn: () =>
-      fetchApi<DevicesListResponse>(
+    queryFn: () => {
+      if (!appId) {
+        throw new Error('App ID is required');
+      }
+      return fetchApi<DevicesListResponse>(
         `/web/devices${buildQueryString({ ...filters, appId })}`
-      ),
+      );
+    },
     ...cacheConfig.list,
-    enabled: Boolean(appId),
   });
 }
 
 export function useDevice(deviceId: string, appId: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: queryKeys.devices.detail(deviceId, appId),
-    queryFn: () =>
-      fetchApi<DeviceDetail>(`/web/devices/${deviceId}?appId=${appId}`),
+    queryFn: () => {
+      if (!(deviceId && appId)) {
+        throw new Error('Device ID and App ID are required');
+      }
+      return fetchApi<DeviceDetail>(`/web/devices/${deviceId}?appId=${appId}`);
+    },
     ...cacheConfig.detail,
-    enabled: Boolean(deviceId && appId),
   });
 }
 
 export function useDeviceOverview(appId: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: queryKeys.devices.overview(appId),
-    queryFn: () =>
-      fetchApi<DeviceOverview>(`/web/devices/overview?appId=${appId}`),
+    queryFn: () => {
+      if (!appId) {
+        throw new Error('App ID is required');
+      }
+      return fetchApi<DeviceOverview>(`/web/devices/overview?appId=${appId}`);
+    },
     ...cacheConfig.overview,
-    enabled: Boolean(appId),
   });
 }
 
 export function useDeviceLive(appId: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: queryKeys.devices.live(appId),
-    queryFn: () => fetchApi<DeviceLive>(`/web/devices/live?appId=${appId}`),
+    queryFn: () => {
+      if (!appId) {
+        throw new Error('App ID is required');
+      }
+      return fetchApi<DeviceLive>(`/web/devices/live?appId=${appId}`);
+    },
     ...cacheConfig.realtime,
-    enabled: Boolean(appId),
   });
 }
 
 export function useDeviceTimeseries(
   appId: string,
   range?: TimeRange | DateRangeParams,
-  metric?: DeviceMetric,
-  enabled = true
+  metric?: DeviceMetric
 ) {
   const queryKeyParams = {
     range,
     ...(metric && { metric }),
   };
 
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: queryKeys.devices.timeseries(appId, queryKeyParams),
     queryFn: () => {
+      if (!appId) {
+        throw new Error('App ID is required');
+      }
+
       const dateParams =
         range && typeof range === 'string'
           ? getTimeRangeDates(range)
@@ -102,6 +118,5 @@ export function useDeviceTimeseries(
       );
     },
     ...cacheConfig.timeseries,
-    enabled: Boolean(appId) && enabled,
   });
 }
