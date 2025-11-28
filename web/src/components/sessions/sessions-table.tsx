@@ -1,6 +1,6 @@
 'use client';
 
-import type { ColumnDef } from '@tantml/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { useState } from 'react';
 import { DataTableServer } from '@/components/ui/data-table-server';
@@ -92,7 +92,7 @@ const columns: ColumnDef<Session>[] = [
   },
   {
     accessorKey: 'startedAt',
-    header: 'Time',
+    header: 'Date',
     size: 200,
     cell: ({ row }) => {
       const timestamp = row.getValue('startedAt') as string;

@@ -78,7 +78,7 @@ const columns: ColumnDef<EventListItem>[] = [
   },
   {
     accessorKey: 'timestamp',
-    header: 'Time',
+    header: 'Date',
     size: 250,
     cell: ({ row }) => {
       const timestamp = row.getValue('timestamp') as string;

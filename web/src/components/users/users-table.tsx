@@ -193,9 +193,7 @@ export function UsersTable() {
       filterPlaceholder="Platform"
       isLoading={isLoading}
       onRowClick={(row) => {
-        router.push(
-          `/dashboard/analytics/users/${row.deviceId}?app=${appId}`
-        );
+        router.push(`/dashboard/analytics/users/${row.deviceId}?app=${appId}`);
       }}
       pagination={
         devicesData?.pagination || {

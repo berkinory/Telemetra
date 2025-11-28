@@ -44,7 +44,7 @@ const columns: ColumnDef<Event>[] = [
   },
   {
     accessorKey: 'timestamp',
-    header: 'Time',
+    header: 'Date',
     size: 200,
     cell: ({ row }) => {
       const timestamp = row.getValue('timestamp') as string;
@@ -80,9 +80,7 @@ export function EventsTable() {
       data={eventsData?.events || []}
       isLoading={false}
       onRowClick={(row) => {
-        router.push(
-          `/dashboard/analytics/events/${row.eventId}?app=${appId}`
-        );
+        router.push(`/dashboard/analytics/events/${row.eventId}?app=${appId}`);
       }}
       pagination={
         eventsData?.pagination || {
