@@ -1,8 +1,11 @@
 'use client';
 
 import { parseAsString, useQueryState } from 'nuqs';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useDeviceOverview } from '@/lib/queries';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useDeviceLocationOverview } from '@/lib/queries';
 
 const COUNTRY_CODE_REGEX = /^[A-Za-z]{2}$/;
 
@@ -31,35 +34,58 @@ function getCountryLabel(countryCode: string) {
 
 export function UsersTopCountries() {
   const [appId] = useQueryState('app', parseAsString);
-  const { data: overview } = useDeviceOverview(appId || '');
+  const [activeTab, setActiveTab] = useState<'country' | 'city'>('country');
+  const { data: overview } = useDeviceLocationOverview(appId || '');
 
   if (!appId) {
     return null;
   }
 
-  const hasCountryData =
-    overview?.countryStats && Object.keys(overview.countryStats).length > 0;
+  const countryStats = (overview?.countryStats || {}) as Record<string, number>;
+  const cityStats = (overview?.cityStats || {}) as Record<string, number>;
+
+  const sortedCountries = Object.entries(countryStats)
+    .filter(([, count]) => count > 0)
+    .sort(([, a], [, b]) => b - a);
+
+  const sortedCities = Object.entries(cityStats)
+    .filter(([, count]) => count > 0)
+    .sort(([, a], [, b]) => b - a);
+
+  const totalDevices = overview?.totalDevices || 0;
 
   return (
     <Card className="py-0">
       <CardContent className="space-y-4 p-4">
-        <div>
-          <h2 className="font-semibold text-lg">Top Countries</h2>
-          <p className="text-muted-foreground text-sm">
-            User distribution by country
-          </p>
-        </div>
+        <Tabs
+          onValueChange={(v) => setActiveTab(v as 'country' | 'city')}
+          value={activeTab}
+        >
+          <TabsList className="h-8">
+            <TabsTrigger className="text-xs" value="country">
+              <span className="sm:hidden">Countries</span>
+              <span className="hidden sm:inline">Top Countries</span>
+            </TabsTrigger>
+            <TabsTrigger className="text-xs" value="city">
+              <span className="sm:hidden">Cities</span>
+              <span className="hidden sm:inline">Top Cities</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
-        {hasCountryData ? (
-          <div className="space-y-3">
-            {Object.entries(overview.countryStats)
-              .filter(([, count]) => (count as number) > 0)
-              .sort(([, a], [, b]) => (b as number) - (a as number))
-              .slice(0, 3)
-              .map(([country, count]) => {
-                const countNum = count as number;
-                const percentage = overview.totalDevices
-                  ? (countNum / overview.totalDevices) * 100
+        <p className="text-muted-foreground text-sm">
+          {activeTab === 'country'
+            ? 'User distribution by country'
+            : 'User distribution by city'}
+        </p>
+
+        <ScrollArea className="h-[130px]">
+          <div className="space-y-3 pr-4">
+            {activeTab === 'country' &&
+              sortedCountries.length > 0 &&
+              sortedCountries.map(([country, count]) => {
+                const percentage = totalDevices
+                  ? (count / totalDevices) * 100
                   : 0;
 
                 return (
@@ -75,7 +101,7 @@ export function UsersTopCountries() {
                       </div>
                       <div className="flex items-baseline gap-2">
                         <span className="font-semibold text-sm">
-                          {countNum.toLocaleString()}
+                          {count.toLocaleString()}
                         </span>
                         <span className="text-muted-foreground text-xs">
                           ({percentage.toFixed(1)}%)
@@ -98,14 +124,61 @@ export function UsersTopCountries() {
                   </div>
                 );
               })}
+
+            {activeTab === 'country' && sortedCountries.length === 0 && (
+              <div className="rounded-lg border border-dashed p-8 text-center">
+                <p className="text-muted-foreground">
+                  No country data available yet.
+                </p>
+              </div>
+            )}
+
+            {activeTab === 'city' &&
+              sortedCities.length > 0 &&
+              sortedCities.map(([city, count]) => {
+                const percentage = totalDevices
+                  ? (count / totalDevices) * 100
+                  : 0;
+
+                return (
+                  <div className="space-y-1.5" key={city}>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">{city}</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-semibold text-sm">
+                          {count.toLocaleString()}
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          ({percentage.toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      aria-label={`${city}: ${percentage.toFixed(1)}% of users`}
+                      aria-valuemax={100}
+                      aria-valuemin={0}
+                      aria-valuenow={percentage}
+                      className="h-2 w-full overflow-hidden rounded-full bg-secondary"
+                      role="progressbar"
+                    >
+                      <div
+                        className="h-full bg-primary transition-all"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+
+            {activeTab === 'city' && sortedCities.length === 0 && (
+              <div className="rounded-lg border border-dashed p-8 text-center">
+                <p className="text-muted-foreground">
+                  No city data available yet.
+                </p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="rounded-lg border border-dashed p-8 text-center">
-            <p className="text-muted-foreground">
-              No country data available yet.
-            </p>
-          </div>
-        )}
+        </ScrollArea>
       </CardContent>
     </Card>
   );

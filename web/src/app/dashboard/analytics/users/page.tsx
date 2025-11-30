@@ -14,6 +14,7 @@ import {
   UsersOverviewCardsSkeleton,
   UsersPlatformDistributionSkeleton,
   UsersTableSkeleton,
+  UsersTopCountriesSkeleton,
 } from '@/components/users/users-skeletons';
 import { UsersTable } from '@/components/users/users-table';
 import { UsersTopCountries } from '@/components/users/users-top-countries';
@@ -43,7 +44,7 @@ export default function UsersPage() {
           </ErrorBoundary>
 
           <ErrorBoundary>
-            <Suspense fallback={<UsersPlatformDistributionSkeleton />}>
+            <Suspense fallback={<UsersTopCountriesSkeleton />}>
               <UsersTopCountries />
             </Suspense>
           </ErrorBoundary>

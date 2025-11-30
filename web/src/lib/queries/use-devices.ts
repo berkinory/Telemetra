@@ -7,10 +7,9 @@ import type {
   DeviceLocationOverview,
   DeviceMetric,
   DeviceOverview,
-  DevicePlatformModelOverview,
+  DevicePlatformOverview,
   DevicesListResponse,
   DeviceTimeseriesResponse,
-  OverviewLimit,
   PaginationParams,
   TimeRange,
 } from '../api/types';
@@ -86,12 +85,9 @@ export function useDeviceOverview(appId: string) {
   });
 }
 
-export function useDevicePlatformModelOverview(
-  appId: string,
-  limit?: OverviewLimit
-) {
+export function useDevicePlatformOverview(appId: string) {
   return useSuspenseQuery({
-    queryKey: queryKeys.devices.platformModelOverview(appId, limit),
+    queryKey: queryKeys.devices.platformOverview(appId),
     queryFn: () => {
       if (!appId) {
         return Promise.resolve({
@@ -100,24 +96,19 @@ export function useDevicePlatformModelOverview(
           activeDevices24h: 0,
           activeDevicesChange24h: 0,
           platformStats: {},
-          modelStats: {},
         });
       }
-      const queryParams = limit ? { appId, limit } : { appId };
-      return fetchApi<DevicePlatformModelOverview>(
-        `/web/devices/overview/platform-model${buildQueryString(queryParams)}`
+      return fetchApi<DevicePlatformOverview>(
+        `/web/devices/overview/platform${buildQueryString({ appId })}`
       );
     },
     ...cacheConfig.overview,
   });
 }
 
-export function useDeviceLocationOverview(
-  appId: string,
-  limit?: OverviewLimit
-) {
+export function useDeviceLocationOverview(appId: string) {
   return useSuspenseQuery({
-    queryKey: queryKeys.devices.locationOverview(appId, limit),
+    queryKey: queryKeys.devices.locationOverview(appId),
     queryFn: () => {
       if (!appId) {
         return Promise.resolve({
@@ -126,9 +117,8 @@ export function useDeviceLocationOverview(
           cityStats: {},
         });
       }
-      const queryParams = limit ? { appId, limit } : { appId };
       return fetchApi<DeviceLocationOverview>(
-        `/web/devices/overview/location${buildQueryString(queryParams)}`
+        `/web/devices/overview/location${buildQueryString({ appId, limit: 'all' })}`
       );
     },
     ...cacheConfig.overview,

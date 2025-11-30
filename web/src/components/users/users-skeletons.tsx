@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function UsersOverviewCardsSkeleton() {
   return (
@@ -41,14 +42,54 @@ export function UsersPlatformDistributionSkeleton() {
   return (
     <Card className="py-0">
       <CardContent className="space-y-4 p-4">
-        <div>
-          <h2 className="font-semibold text-lg">Platform Distribution</h2>
-          <p className="text-muted-foreground text-sm">
-            User distribution across platforms
-          </p>
-        </div>
+        <Tabs value="platform">
+          <TabsList className="h-8">
+            <TabsTrigger className="text-xs" value="platform">
+              <span className="sm:hidden">Platforms</span>
+              <span className="hidden sm:inline">Platform Distribution</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <p className="text-muted-foreground text-sm">
+          User distribution across platforms
+        </p>
+
         <div className="space-y-3">
           {Array.from({ length: 3 }, (_, i) => `skeleton-platform-${i}`).map(
+            (key) => (
+              <Skeleton className="h-9 w-full" key={key} />
+            )
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function UsersTopCountriesSkeleton() {
+  return (
+    <Card className="py-0">
+      <CardContent className="space-y-4 p-4">
+        <Tabs value="country">
+          <TabsList className="h-8">
+            <TabsTrigger className="text-xs" value="country">
+              <span className="sm:hidden">Countries</span>
+              <span className="hidden sm:inline">Top Countries</span>
+            </TabsTrigger>
+            <TabsTrigger className="text-xs" value="city">
+              <span className="sm:hidden">Cities</span>
+              <span className="hidden sm:inline">Top Cities</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <p className="text-muted-foreground text-sm">
+          User distribution by country
+        </p>
+
+        <div className="space-y-3">
+          {Array.from({ length: 3 }, (_, i) => `skeleton-country-${i}`).map(
             (key) => (
               <Skeleton className="h-9 w-full" key={key} />
             )

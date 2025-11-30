@@ -9,7 +9,8 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Card, CardContent } from '@/components/ui/card';
-import { useDeviceOverview } from '@/lib/queries';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useDevicePlatformOverview } from '@/lib/queries';
 
 function getPlatformIcon(platform: string) {
   switch (platform) {
@@ -39,18 +40,19 @@ function getPlatformLabel(platform: string) {
 
 export function UsersPlatformDistribution() {
   const [appId] = useQueryState('app', parseAsString);
-  const { data: overview } = useDeviceOverview(appId || '');
+  const { data: overview } = useDevicePlatformOverview(appId || '');
 
   if (!appId) {
     return null;
   }
 
-  const platforms = ['android', 'ios', 'web'] as const;
   const platformStats = (overview?.platformStats || {}) as Record<
     string,
     number
   >;
+  const totalDevices = overview?.totalDevices || 0;
 
+  const platforms = ['android', 'ios', 'web'] as const;
   const sortedPlatforms = [...platforms].sort((a, b) => {
     const countA = platformStats[a] || 0;
     const countB = platformStats[b] || 0;
@@ -60,18 +62,24 @@ export function UsersPlatformDistribution() {
   return (
     <Card className="py-0">
       <CardContent className="space-y-4 p-4">
-        <div>
-          <h2 className="font-semibold text-lg">Platform Distribution</h2>
-          <p className="text-muted-foreground text-sm">
-            User distribution across platforms
-          </p>
-        </div>
+        <Tabs value="platform">
+          <TabsList className="h-8">
+            <TabsTrigger className="text-xs" value="platform">
+              <span className="sm:hidden">Platforms</span>
+              <span className="hidden sm:inline">Platform Distribution</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <p className="text-muted-foreground text-sm">
+          User distribution across platforms
+        </p>
 
         <div className="space-y-3">
           {sortedPlatforms.map((platform) => {
             const countNum = platformStats[platform] || 0;
-            const percentage = overview?.totalDevices
-              ? (countNum / overview.totalDevices) * 100
+            const percentage = totalDevices
+              ? (countNum / totalDevices) * 100
               : 0;
 
             return (

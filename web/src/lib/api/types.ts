@@ -101,11 +101,10 @@ export type DeviceOverview = {
 
 export type OverviewLimit = 'top3' | 'all';
 
-export type DevicePlatformModelOverview = {
+export type DevicePlatformOverview = {
   totalDevices: number;
   activeDevices24h: number;
   platformStats: Record<string, number>;
-  modelStats: Record<string, number>;
   totalDevicesChange24h: number;
   activeDevicesChange24h: number;
 };
