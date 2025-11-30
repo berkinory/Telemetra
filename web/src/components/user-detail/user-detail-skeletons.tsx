@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Calendar03Icon,
   ComputerPhoneSyncIcon,
@@ -6,8 +8,10 @@ import {
   Time03Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePaginationStore } from '@/stores/pagination-store';
 
 export function UserInformationSkeleton() {
   return (
@@ -115,6 +119,15 @@ export function DeviceInformationSkeleton() {
 }
 
 export function UserSessionsTableSkeleton() {
+  const [isMounted, setIsMounted] = useState(false);
+  const { pageSize } = usePaginationStore();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const skeletonCount = isMounted ? pageSize : 10;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -122,11 +135,12 @@ export function UserSessionsTableSkeleton() {
         <Skeleton className="h-9 w-32" />
       </div>
       <div className="space-y-2">
-        {Array.from({ length: 5 }, (_, i) => `skeleton-table-${i}`).map(
-          (key) => (
-            <Skeleton className="h-12 w-full" key={key} />
-          )
-        )}
+        {Array.from(
+          { length: skeletonCount },
+          (_, i) => `skeleton-table-${i}`
+        ).map((key) => (
+          <Skeleton className="h-10 w-full" key={key} />
+        ))}
       </div>
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-32" />

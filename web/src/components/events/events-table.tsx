@@ -4,6 +4,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { useRouter } from 'next/navigation';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { DataTableServer } from '@/components/ui/data-table-server';
+import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import { formatDateTime } from '@/lib/date-utils';
 import { useEvents } from '@/lib/queries';
 import { usePaginationStore } from '@/stores/pagination-store';
@@ -17,28 +18,33 @@ type Event = {
 
 const columns: ColumnDef<Event>[] = [
   {
+    accessorKey: 'deviceId',
+    header: 'User',
+    size: 300,
+    cell: ({ row }) => {
+      const deviceId = row.getValue('deviceId') as string;
+      const generatedName = getGeneratedName(deviceId);
+      return (
+        <div
+          className="flex max-w-xs items-center gap-2 lg:max-w-sm"
+          title={deviceId}
+        >
+          <UserAvatar seed={deviceId} size={20} />
+          <span className="truncate text-sm">{generatedName}</span>
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: 'name',
     header: 'Event Name',
-    size: 300,
+    size: 350,
     cell: ({ row }) => (
       <div
         className="max-w-xs truncate font-medium text-sm lg:max-w-sm"
         title={row.getValue('name')}
       >
         {row.getValue('name')}
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'deviceId',
-    header: 'User ID',
-    size: 350,
-    cell: ({ row }) => (
-      <div
-        className="max-w-xs truncate font-mono text-xs lg:max-w-sm"
-        title={row.getValue('deviceId')}
-      >
-        {row.getValue('deviceId')}
       </div>
     ),
   },
@@ -64,7 +70,7 @@ export function EventsTable() {
   const [search] = useQueryState('search', parseAsString.withDefault(''));
   const { pageSize } = usePaginationStore();
 
-  const { data: eventsData } = useEvents(appId || '', {
+  const { data: eventsData, isLoading } = useEvents(appId || '', {
     page: page.toString(),
     pageSize: pageSize.toString(),
     eventName: search || undefined,
@@ -78,7 +84,7 @@ export function EventsTable() {
     <DataTableServer
       columns={columns}
       data={eventsData?.events || []}
-      isLoading={false}
+      isLoading={isLoading}
       onRowClick={(row) => {
         router.push(`/dashboard/analytics/events/${row.eventId}?app=${appId}`);
       }}
@@ -86,7 +92,7 @@ export function EventsTable() {
         eventsData?.pagination || {
           total: 0,
           page: 1,
-          pageSize: 10,
+          pageSize,
           totalPages: 0,
         }
       }

@@ -104,7 +104,7 @@ export function DeviceInformationCard({
           <div>
             <div className="flex items-center gap-2">
               {device.country ? (
-                <span className="fade-in animate-in text-base duration-300">
+                <span className="fade-in inline-block w-4 animate-in text-center text-sm leading-none duration-300">
                   {String.fromCodePoint(
                     ...[...device.country.toUpperCase()].map(
                       (char) => 0x1_f1_e6 - 65 + char.charCodeAt(0)

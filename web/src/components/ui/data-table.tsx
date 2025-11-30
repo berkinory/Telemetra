@@ -34,7 +34,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
 
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
@@ -127,7 +126,7 @@ export function DataTable<TData, TValue>({
                   </TableHead>
                 ))}
                 {onRowClick && (
-                  <TableHead className="bg-muted/50 font-semibold w-12" />
+                  <TableHead className="w-12 bg-muted/50 font-semibold" />
                 )}
               </TableRow>
             ))}

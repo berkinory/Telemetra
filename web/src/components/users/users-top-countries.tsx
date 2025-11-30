@@ -92,7 +92,7 @@ export function UsersTopCountries() {
                   <div className="space-y-1.5" key={country}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-lg leading-none">
+                        <span className="inline-block w-4 text-center text-base leading-none">
                           {getCountryFlag(country)}
                         </span>
                         <span className="font-medium text-sm">

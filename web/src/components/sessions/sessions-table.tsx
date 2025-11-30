@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { DataTableServer } from '@/components/ui/data-table-server';
+import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import type { Session } from '@/lib/api/types';
 import { formatDateTime } from '@/lib/date-utils';
 import { useSessions } from '@/lib/queries';
@@ -66,16 +67,21 @@ function formatDurationTable(startedAt: string, lastActivityAt: string) {
 const columns: ColumnDef<Session>[] = [
   {
     accessorKey: 'deviceId',
-    header: 'User ID',
+    header: 'User',
     size: 350,
-    cell: ({ row }) => (
-      <div
-        className="max-w-xs truncate font-mono text-xs lg:max-w-sm"
-        title={row.getValue('deviceId')}
-      >
-        {row.getValue('deviceId')}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const deviceId = row.getValue('deviceId') as string;
+      const generatedName = getGeneratedName(deviceId);
+      return (
+        <div
+          className="flex max-w-xs items-center gap-2 lg:max-w-sm"
+          title={deviceId}
+        >
+          <UserAvatar seed={deviceId} size={20} />
+          <span className="truncate text-sm">{generatedName}</span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'lastActivityAt',
@@ -111,7 +117,7 @@ export function SessionsTable() {
   const [sessionId, setSessionId] = useQueryState('session', parseAsString);
   const { pageSize } = usePaginationStore();
 
-  const { data: sessionsData } = useSessions(appId || '', {
+  const { data: sessionsData, isLoading } = useSessions(appId || '', {
     page: page.toString(),
     pageSize: pageSize.toString(),
     deviceId: search || undefined,
@@ -133,18 +139,18 @@ export function SessionsTable() {
       <DataTableServer
         columns={columns}
         data={sessionsData?.sessions || []}
-        isLoading={false}
+        isLoading={isLoading}
         onRowClick={handleViewSession}
         pagination={
           sessionsData?.pagination || {
             total: 0,
             page: 1,
-            pageSize: 10,
+            pageSize,
             totalPages: 0,
           }
         }
         searchKey="deviceId"
-        searchPlaceholder="Search User ID"
+        searchPlaceholder="Search User"
       />
       <SessionDetailsDialog
         appId={appId}

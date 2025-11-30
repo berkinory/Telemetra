@@ -40,7 +40,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { PaginationResponse } from '@/lib/api/types';
-import { cn } from '@/lib/utils';
 import { usePaginationStore } from '@/stores/pagination-store';
 
 type FilterOption = {
@@ -232,36 +231,38 @@ export function DataTableServer<TData, TValue>({
                   </TableHead>
                 ))}
                 {onRowClick && (
-                  <TableHead className="bg-muted/50 font-semibold w-12" />
+                  <TableHead className="w-12 bg-muted/50 font-semibold" />
                 )}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
             {isLoading
-              ? Array.from({ length: 10 }, (_, i) => i).map((rowIndex) => {
-                  const headers = table.getHeaderGroups()[0]?.headers || [];
-                  return (
-                    <TableRow key={`loading-row-${rowIndex}`}>
-                      {headers.map((header) => (
-                        <TableCell
-                          key={`loading-${rowIndex}-${header.id}`}
-                          style={{
-                            width: header.getSize(),
-                            minWidth: header.column.columnDef.minSize,
-                          }}
-                        >
-                          <Skeleton className="h-5 w-full" />
-                        </TableCell>
-                      ))}
-                      {onRowClick && (
-                        <TableCell className="w-12 text-center">
-                          <Skeleton className="h-5 w-5 mx-auto" />
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  );
-                })
+              ? Array.from({ length: pageSize }, (_, i) => i).map(
+                  (rowIndex) => {
+                    const headers = table.getHeaderGroups()[0]?.headers || [];
+                    return (
+                      <TableRow key={`loading-row-${rowIndex}`}>
+                        {headers.map((header) => (
+                          <TableCell
+                            key={`loading-${rowIndex}-${header.id}`}
+                            style={{
+                              width: header.getSize(),
+                              minWidth: header.column.columnDef.minSize,
+                            }}
+                          >
+                            <Skeleton className="h-5 w-full" />
+                          </TableCell>
+                        ))}
+                        {onRowClick && (
+                          <TableCell className="w-12 text-center">
+                            <Skeleton className="mx-auto h-5 w-5" />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  }
+                )
               : null}
 
             {!isLoading && table.getRowModel().rows?.length

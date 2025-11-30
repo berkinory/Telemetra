@@ -2,6 +2,7 @@
 
 import {
   AndroidIcon,
+  AnonymousIcon,
   AppleIcon,
   BrowserIcon,
   ComputerPhoneSyncIcon,
@@ -12,6 +13,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { useRouter } from 'next/navigation';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { DataTableServer } from '@/components/ui/data-table-server';
+import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import type { Device } from '@/lib/api/types';
 import { formatDateTime } from '@/lib/date-utils';
 import { useDevices } from '@/lib/queries';
@@ -26,7 +28,7 @@ function getPlatformIcon(platform: string) {
     case 'web':
       return BrowserIcon;
     default:
-      return Flag02Icon;
+      return AnonymousIcon;
   }
 }
 
@@ -62,16 +64,21 @@ function getCountryLabel(countryCode: string) {
 const columns: ColumnDef<Device>[] = [
   {
     accessorKey: 'deviceId',
-    header: 'User ID',
+    header: 'User',
     size: 350,
-    cell: ({ row }) => (
-      <div
-        className="max-w-xs truncate font-mono text-xs lg:max-w-sm"
-        title={row.getValue('deviceId')}
-      >
-        {row.getValue('deviceId')}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const deviceId = row.getValue('deviceId') as string;
+      const generatedName = getGeneratedName(deviceId);
+      return (
+        <div
+          className="flex max-w-xs items-center gap-2 lg:max-w-sm"
+          title={deviceId}
+        >
+          <UserAvatar seed={deviceId} size={20} />
+          <span className="truncate text-sm">{generatedName}</span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'platform',
@@ -92,7 +99,7 @@ const columns: ColumnDef<Device>[] = [
         <div className="flex items-center gap-1.5">
           <HugeiconsIcon
             className="size-3.5 text-muted-foreground"
-            icon={Flag02Icon}
+            icon={AnonymousIcon}
           />
           <span className="text-sm">Unknown</span>
         </div>
@@ -120,7 +127,7 @@ const columns: ColumnDef<Device>[] = [
 
       return (
         <div className="flex items-center gap-1.5">
-          <span className="text-base leading-none">
+          <span className="inline-block w-3.5 text-center text-sm leading-none">
             {getCountryFlag(country)}
           </span>
           <span className="text-sm">{getCountryLabel(country)}</span>
@@ -178,12 +185,12 @@ export function UsersTable() {
         devicesData?.pagination || {
           total: 0,
           page: 1,
-          pageSize: 5,
+          pageSize,
           totalPages: 0,
         }
       }
       searchKey="deviceId"
-      searchPlaceholder="Search User ID"
+      searchPlaceholder="Search User"
     />
   );
 }
