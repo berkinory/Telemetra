@@ -2,7 +2,7 @@
 
 ## Package Management
 - **REQUIRED**: Always use Bun as the package manager for all dependency operations
-- Use "bun check" for the linter errors, formattings
+- Use "bun check" and "bun typecheck" for the linter errors, formattings, typescript errors
 - Never use npm, yarn, or pnpm
 
 # Project Context
