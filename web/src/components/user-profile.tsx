@@ -24,7 +24,7 @@ export function getGeneratedName(seed: string): string {
   }
   const hash = hashString(seed);
   faker.seed(hash);
-  return faker.person.firstName();
+  return faker.person.fullName();
 }
 
 type UserAvatarProps = {
