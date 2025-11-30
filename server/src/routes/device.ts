@@ -239,7 +239,8 @@ const getDeviceActivityTimeseriesRoute = createRoute({
   method: 'get',
   path: '/:deviceId/activity',
   tags: ['device'],
-  description: 'Get device activity time series (daily session count)',
+  description:
+    'Get device activity time series (daily session count, default: last 6 months)',
   security: [{ CookieAuth: [] }],
   request: {
     query: deviceActivityTimeseriesQuerySchema,
@@ -1168,7 +1169,7 @@ deviceWebRouter.openapi(getDeviceActivityTimeseriesRoute, async (c: any) => {
     }
 
     const now = new Date();
-    const defaultStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const defaultStart = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
     const start = startDate ? new Date(startDate) : defaultStart;
     const end = endDate ? new Date(endDate) : now;
 
