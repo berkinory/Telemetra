@@ -70,6 +70,11 @@ export const deviceDetailSchema = z
       .string()
       .datetime()
       .openapi({ example: '2024-01-01T00:00:00Z' }),
+    lastActivityAt: z
+      .string()
+      .datetime()
+      .nullable()
+      .openapi({ example: '2024-01-01T12:30:00Z' }),
   })
   .openapi('DeviceDetail');
 
@@ -258,11 +263,6 @@ export const deviceActivityTimeseriesResponseSchema = z
       example: 1250.5,
       description: 'Average session duration in seconds',
     }),
-    lastActivityAt: z
-      .string()
-      .datetime()
-      .nullable()
-      .openapi({ example: '2024-01-01T12:30:00Z' }),
   })
   .openapi('DeviceActivityTimeseriesResponse');
 

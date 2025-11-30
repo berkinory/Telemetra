@@ -1059,10 +1059,18 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
     const { deviceId } = c.req.param();
     const query = c.req.valid('query');
 
-    const device = await db.query.devices.findFirst({
-      where: (table, { eq: eqFn, and: andFn }) =>
-        andFn(eqFn(table.deviceId, deviceId), eqFn(table.appId, query.appId)),
-    });
+    const [device, sessionStats] = await Promise.all([
+      db.query.devices.findFirst({
+        where: (table, { eq: eqFn, and: andFn }) =>
+          andFn(eqFn(table.deviceId, deviceId), eqFn(table.appId, query.appId)),
+      }),
+      db
+        .select({
+          lastActivityAt: sql<Date | null>`MAX(${sessions.lastActivityAt})::timestamp`,
+        })
+        .from(sessions)
+        .where(eq(sessions.deviceId, deviceId)),
+    ]);
 
     if (!device) {
       return c.json(
@@ -1074,6 +1082,8 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
       );
     }
 
+    const [{ lastActivityAt }] = sessionStats;
+
     return c.json(
       {
         deviceId: device.deviceId,
@@ -1084,6 +1094,12 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
         country: device.country,
         city: device.city,
         firstSeen: device.firstSeen.toISOString(),
+        lastActivityAt: lastActivityAt
+          ? (lastActivityAt instanceof Date
+              ? lastActivityAt
+              : new Date(lastActivityAt)
+            ).toISOString()
+          : null,
       },
       HttpStatus.OK
     );
@@ -1154,7 +1170,6 @@ deviceWebRouter.openapi(getDeviceActivityTimeseriesRoute, async (c: any) => {
           avgDuration: sql<number | null>`
             AVG(EXTRACT(EPOCH FROM (${sessions.lastActivityAt} - ${sessions.startedAt})))
           `,
-          lastActivityAt: sql<Date | null>`MAX(${sessions.lastActivityAt})::timestamp`,
         })
         .from(sessions)
         .where(eq(sessions.deviceId, deviceId)),
@@ -1165,7 +1180,7 @@ deviceWebRouter.openapi(getDeviceActivityTimeseriesRoute, async (c: any) => {
       sessionCount: Number(row.sessionCount),
     }));
 
-    const [{ totalSessions, avgDuration, lastActivityAt }] = sessionStats;
+    const [{ totalSessions, avgDuration }] = sessionStats;
 
     return c.json(
       {
@@ -1176,12 +1191,6 @@ deviceWebRouter.openapi(getDeviceActivityTimeseriesRoute, async (c: any) => {
         },
         totalSessions: Number(totalSessions),
         avgSessionDuration: avgDuration ? Number(avgDuration) : null,
-        lastActivityAt: lastActivityAt
-          ? (lastActivityAt instanceof Date
-              ? lastActivityAt
-              : new Date(lastActivityAt)
-            ).toISOString()
-          : null,
       },
       HttpStatus.OK
     );
