@@ -1210,7 +1210,7 @@ deviceWebRouter.openapi(getDeviceSessionsWithEventsRoute, async (c: any) => {
   try {
     const { deviceId } = c.req.param();
     const query = c.req.valid('query');
-    const { appId, page = 1, pageSize = 5 } = query;
+    const { appId, page = 1, pageSize = 3 } = query;
 
     const device = await db.query.devices.findFirst({
       where: (table, { eq: eqFn }) =>
@@ -1256,7 +1256,7 @@ deviceWebRouter.openapi(getDeviceSessionsWithEventsRoute, async (c: any) => {
         const { events: eventsList } = await getEvents({
           sessionId: session.sessionId,
           appId,
-          limit: 100,
+          limit: 500,
         });
 
         const events = eventsList.map((event) => ({

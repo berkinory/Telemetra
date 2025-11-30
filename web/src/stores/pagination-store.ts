@@ -9,7 +9,7 @@ type PaginationSettings = {
 export const usePaginationStore = create<PaginationSettings>()(
   persist(
     (set) => ({
-      pageSize: 5,
+      pageSize: 10,
       setPageSize: (pageSize: number) => set({ pageSize }),
     }),
     {

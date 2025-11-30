@@ -211,7 +211,7 @@ export async function getEvents(
 
   const whereClause =
     conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-  const limit = sanitizeNumeric(options.limit, 20, 1, 1000);
+  const limit = sanitizeNumeric(options.limit, 10, 1, 1000);
   const offset = sanitizeNumeric(options.offset, 0, 0, 1_000_000);
 
   const limitClause =
