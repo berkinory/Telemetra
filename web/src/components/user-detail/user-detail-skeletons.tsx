@@ -1,19 +1,12 @@
 'use client';
 
-import {
-  Calendar03Icon,
-  ComputerPhoneSyncIcon,
-  InformationCircleIcon,
-  PlaySquareIcon,
-  Time03Icon,
-} from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePaginationStore } from '@/stores/pagination-store';
 
-export function UserInformationSkeleton() {
+export function UserDetailCardSkeleton() {
   return (
     <Card className="py-0">
       <CardContent className="space-y-4 p-4">
@@ -21,96 +14,40 @@ export function UserInformationSkeleton() {
           <h2 className="font-semibold text-lg">User Information</h2>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="size-4" />
-              <p className="text-muted-foreground text-sm">User ID</p>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full">
+              <Skeleton className="h-20 w-20 rounded-full" />
             </div>
-            <Skeleton className="mt-1 h-5 w-64" />
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-7 w-48" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="size-4" />
+                <Skeleton className="h-5 w-64" />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-4">
           <div>
-            <div className="flex items-center gap-2">
-              <HugeiconsIcon className="size-4" icon={Calendar03Icon} />
-              <p className="text-muted-foreground text-sm">First Seen</p>
+            <p className="text-muted-foreground text-sm">Location</p>
+            <div className="mt-1">
+              <Skeleton className="h-5 w-32" />
             </div>
-            <Skeleton className="mt-1 h-5 w-40" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <HugeiconsIcon className="size-4" icon={Calendar03Icon} />
-              <p className="text-muted-foreground text-sm">Last Activity</p>
-            </div>
-            <Skeleton className="mt-1 h-5 w-40" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <HugeiconsIcon className="size-4" icon={PlaySquareIcon} />
-              <p className="text-muted-foreground text-sm">Total Sessions</p>
-            </div>
-            <Skeleton className="mt-1 h-5 w-20" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <HugeiconsIcon className="size-4" icon={Time03Icon} />
-              <p className="text-muted-foreground text-sm">
-                Avg Session Duration
-              </p>
-            </div>
-            <Skeleton className="mt-1 h-5 w-24" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
-export function DeviceInformationSkeleton() {
-  return (
-    <Card className="py-0">
-      <CardContent className="space-y-4 p-4">
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-lg">Device Information</h2>
-        </div>
+          <div>
+            <p className="text-muted-foreground text-sm">Device</p>
+            <div className="mt-1 space-y-2">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-5 w-36" />
+            </div>
+          </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="size-4" />
-              <p className="text-muted-foreground text-sm">Platform</p>
-            </div>
+            <p className="text-muted-foreground text-sm">App Version</p>
             <Skeleton className="mt-1 h-5 w-24" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <HugeiconsIcon className="size-4" icon={InformationCircleIcon} />
-              <p className="text-muted-foreground text-sm">OS Version</p>
-            </div>
-            <Skeleton className="mt-1 h-5 w-24" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <HugeiconsIcon className="size-4" icon={ComputerPhoneSyncIcon} />
-              <p className="text-muted-foreground text-sm">Model</p>
-            </div>
-            <Skeleton className="mt-1 h-5 w-24" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <HugeiconsIcon className="size-4" icon={InformationCircleIcon} />
-              <p className="text-muted-foreground text-sm">App Version</p>
-            </div>
-            <Skeleton className="mt-1 h-5 w-16" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="size-4" />
-              <p className="text-muted-foreground text-sm">Country</p>
-            </div>
-            <Skeleton className="mt-1 h-5 w-20" />
           </div>
         </div>
       </CardContent>
@@ -156,21 +93,56 @@ export function UserActivityCalendarSkeleton() {
       <CardContent className="space-y-4 p-4">
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-lg">Activity Calendar</h2>
-          <span className="text-muted-foreground text-sm">(Last 6 months)</span>
         </div>
 
-        <div className="flex h-[200px] items-center justify-center">
-          <Skeleton className="h-full w-full" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <p className="text-muted-foreground text-sm">Total Sessions</p>
+            <div className="mt-1 flex items-center gap-1.5">
+              <Skeleton className="size-4" />
+              <Skeleton className="h-5 w-12" />
+            </div>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-sm">
+              Avg Session Duration
+            </p>
+            <div className="mt-1 flex items-center gap-1.5">
+              <Skeleton className="size-4" />
+              <Skeleton className="h-5 w-16" />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <p className="text-muted-foreground text-sm">First Seen</p>
+            <div className="mt-1 flex items-center gap-1.5">
+              <Skeleton className="size-4" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-sm">Last Activity</p>
+            <div className="mt-1 flex items-center gap-1.5">
+              <Skeleton className="size-4" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex h-[120px] flex-wrap gap-1">
+          <Skeleton className="h-full w-full rounded-sm" />
         </div>
 
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">Less</span>
           <div className="flex gap-1">
-            <Skeleton className="size-3 rounded-sm" />
-            <Skeleton className="size-3 rounded-sm" />
-            <Skeleton className="size-3 rounded-sm" />
-            <Skeleton className="size-3 rounded-sm" />
-            <Skeleton className="size-3 rounded-sm" />
+            <div className="size-3 rounded-sm bg-muted" />
+            <div className="size-3 rounded-sm bg-chart-2/20" />
+            <div className="size-3 rounded-sm bg-chart-2/40" />
+            <div className="size-3 rounded-sm bg-chart-2/60" />
+            <div className="size-3 rounded-sm bg-chart-2" />
           </div>
           <span className="text-muted-foreground">More</span>
         </div>
@@ -182,18 +154,25 @@ export function UserActivityCalendarSkeleton() {
 export function UserSessionsWithEventsSkeleton() {
   return (
     <Card className="py-0">
-      <CardContent className="space-y-4 p-4">
-        <div className="flex items-center justify-between">
+      <CardContent className="flex flex-col p-4">
+        <div className="mb-4 flex items-center gap-2">
           <h2 className="font-semibold text-lg">Sessions & Events</h2>
-          <Skeleton className="h-5 w-32" />
         </div>
 
-        <div className="space-y-3">
-          {Array.from({ length: 3 }, (_, i) => `skeleton-session-${i}`).map(
-            (key) => (
-              <Skeleton className="h-16 w-full rounded-lg" key={key} />
-            )
-          )}
+        <ScrollArea className="h-[280px]">
+          <div className="space-y-3 pr-4">
+            {Array.from({ length: 5 }, (_, i) => `skeleton-session-${i}`).map(
+              (key) => (
+                <Skeleton className="h-11 w-full rounded-lg" key={key} />
+              )
+            )}
+          </div>
+        </ScrollArea>
+
+        <div className="mt-4 flex items-center justify-between border-border border-t pt-4">
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-9 w-20" />
         </div>
       </CardContent>
     </Card>

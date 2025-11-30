@@ -7,15 +7,13 @@ import { Suspense, use } from 'react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { RequireApp } from '@/components/require-app';
 import { Button } from '@/components/ui/button';
-import { DeviceInformationCard } from '@/components/user-detail/device-information-card';
 import { UserActivityCalendar } from '@/components/user-detail/user-activity-calendar';
+import { UserDetailCard } from '@/components/user-detail/user-detail-card';
 import {
-  DeviceInformationSkeleton,
   UserActivityCalendarSkeleton,
-  UserInformationSkeleton,
+  UserDetailCardSkeleton,
   UserSessionsWithEventsSkeleton,
 } from '@/components/user-detail/user-detail-skeletons';
-import { UserInformationCard } from '@/components/user-detail/user-information-card';
 import { UserSessionsWithEvents } from '@/components/user-detail/user-sessions-with-events';
 
 type UserPageProps = {
@@ -47,23 +45,19 @@ export default function UserPage({ params }: UserPageProps) {
           Back
         </Button>
 
-        <ErrorBoundary>
-          <Suspense fallback={<UserInformationSkeleton />}>
-            <UserInformationCard deviceId={id} />
-          </Suspense>
-        </ErrorBoundary>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <ErrorBoundary>
+            <Suspense fallback={<UserDetailCardSkeleton />}>
+              <UserDetailCard deviceId={id} />
+            </Suspense>
+          </ErrorBoundary>
 
-        <ErrorBoundary>
-          <Suspense fallback={<DeviceInformationSkeleton />}>
-            <DeviceInformationCard deviceId={id} />
-          </Suspense>
-        </ErrorBoundary>
-
-        <ErrorBoundary>
-          <Suspense fallback={<UserActivityCalendarSkeleton />}>
-            <UserActivityCalendar deviceId={id} />
-          </Suspense>
-        </ErrorBoundary>
+          <ErrorBoundary>
+            <Suspense fallback={<UserActivityCalendarSkeleton />}>
+              <UserActivityCalendar deviceId={id} />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
 
         <ErrorBoundary>
           <Suspense fallback={<UserSessionsWithEventsSkeleton />}>
