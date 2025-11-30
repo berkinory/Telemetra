@@ -7,8 +7,10 @@ import {
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { parseAsString, useQueryState } from 'nuqs';
+import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CopyButton } from '@/components/ui/copy-button';
+import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import { formatDateTime } from '@/lib/date-utils';
 import { useDevice } from '@/lib/queries';
 
@@ -78,6 +80,13 @@ export function UserInformationCard({ deviceId }: UserInformationCardProps) {
   const [appId] = useQueryState('app', parseAsString);
   const { data: device } = useDevice(deviceId, appId || '');
 
+  const generatedName = useMemo(() => {
+    if (!device?.deviceId) {
+      return '';
+    }
+    return getGeneratedName(device.deviceId);
+  }, [device?.deviceId]);
+
   if (!(appId && device)) {
     return null;
   }
@@ -85,8 +94,14 @@ export function UserInformationCard({ deviceId }: UserInformationCardProps) {
   return (
     <Card className="py-0">
       <CardContent className="space-y-4 p-4">
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-lg">User Information</h2>
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full">
+            <UserAvatar seed={device.deviceId} size={48} variant="marble" />
+          </div>
+          <div className="flex flex-col">
+            <h2 className="font-semibold text-lg">{generatedName}</h2>
+            <p className="text-muted-foreground text-sm">User Information</p>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

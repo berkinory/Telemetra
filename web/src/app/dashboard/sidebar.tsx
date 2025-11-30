@@ -17,7 +17,6 @@ import {
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import Avatar from 'boring-avatars';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useQueryState } from 'nuqs';
@@ -45,6 +44,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { UserAvatar } from '@/components/user-profile';
 import { UserSettings } from '@/components/user-settings';
 import { authClient, useSession } from '@/lib/auth';
 import { getQueryClient } from '@/lib/queries/query-client';
@@ -341,7 +341,7 @@ export function DashboardSidebar() {
                 >
                   <UIAvatar className="size-8">
                     <div className="flex h-full w-full items-center justify-center">
-                      <Avatar name={username} size={32} variant="marble" />
+                      <UserAvatar seed={username} size={32} variant="beam" />
                     </div>
                     <AvatarFallback className="bg-transparent" />
                   </UIAvatar>

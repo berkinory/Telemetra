@@ -7,7 +7,6 @@ import {
   UserRemove01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import Avatar from 'boring-avatars';
 import Link from 'next/link';
 import { useQueryState } from 'nuqs';
 import { AddMemberDialog } from '@/components/add-member-dialog';
@@ -22,6 +21,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { UserAvatar } from '@/components/user-profile';
 import { useApp, useAppTeam } from '@/lib/queries';
 
 export default function TeamPage() {
@@ -59,7 +59,7 @@ export default function TeamPage() {
                 <div className="flex items-center gap-3 rounded-lg border p-3">
                   <UIAvatar className="size-8">
                     <div className="flex h-full w-full items-center justify-center">
-                      <Avatar
+                      <UserAvatar
                         colors={[
                           '#92A1C6',
                           '#146A7C',
@@ -67,9 +67,9 @@ export default function TeamPage() {
                           '#C271B4',
                           '#C20D90',
                         ]}
-                        name={teamData?.owner.email || 'Owner'}
+                        seed={teamData?.owner.email || 'Owner'}
                         size={32}
-                        variant="marble"
+                        variant="beam"
                       />
                     </div>
                     <AvatarFallback className="bg-transparent" />
@@ -148,10 +148,10 @@ export default function TeamPage() {
                         <div className="flex items-center gap-3">
                           <UIAvatar className="size-8">
                             <div className="flex h-full w-full items-center justify-center">
-                              <Avatar
-                                name={member.email}
+                              <UserAvatar
+                                seed={member.email}
                                 size={32}
-                                variant="marble"
+                                variant="beam"
                               />
                             </div>
                             <AvatarFallback className="bg-transparent" />
