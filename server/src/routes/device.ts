@@ -1154,7 +1154,7 @@ deviceWebRouter.openapi(getDeviceActivityTimeseriesRoute, async (c: any) => {
           avgDuration: sql<number | null>`
             AVG(EXTRACT(EPOCH FROM (${sessions.lastActivityAt} - ${sessions.startedAt})))
           `,
-          lastActivityAt: sql<Date | null>`MAX(${sessions.lastActivityAt})`,
+          lastActivityAt: sql<Date | null>`MAX(${sessions.lastActivityAt})::timestamp`,
         })
         .from(sessions)
         .where(eq(sessions.deviceId, deviceId)),
@@ -1176,7 +1176,12 @@ deviceWebRouter.openapi(getDeviceActivityTimeseriesRoute, async (c: any) => {
         },
         totalSessions: Number(totalSessions),
         avgSessionDuration: avgDuration ? Number(avgDuration) : null,
-        lastActivityAt: lastActivityAt ? lastActivityAt.toISOString() : null,
+        lastActivityAt: lastActivityAt
+          ? (lastActivityAt instanceof Date
+              ? lastActivityAt
+              : new Date(lastActivityAt)
+            ).toISOString()
+          : null,
       },
       HttpStatus.OK
     );
