@@ -1059,27 +1059,12 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
     const { deviceId } = c.req.param();
     const query = c.req.valid('query');
 
-    const [deviceWithSession] = await db
-      .select({
-        deviceId: devices.deviceId,
-        model: devices.model,
-        osVersion: devices.osVersion,
-        platform: devices.platform,
-        appVersion: devices.appVersion,
-        country: devices.country,
-        city: devices.city,
-        firstSeen: devices.firstSeen,
-        lastActivityAt: sessions.lastActivityAt,
-      })
-      .from(devices)
-      .leftJoin(sessions, eq(devices.deviceId, sessions.deviceId))
-      .where(
-        and(eq(devices.deviceId, deviceId), eq(devices.appId, query.appId))
-      )
-      .orderBy(desc(sessions.lastActivityAt))
-      .limit(1);
+    const device = await db.query.devices.findFirst({
+      where: (table, { eq: eqFn, and: andFn }) =>
+        andFn(eqFn(table.deviceId, deviceId), eqFn(table.appId, query.appId)),
+    });
 
-    if (!deviceWithSession) {
+    if (!device) {
       return c.json(
         {
           code: ErrorCode.NOT_FOUND,
@@ -1089,31 +1074,16 @@ deviceWebRouter.openapi(getDeviceRoute, async (c: any) => {
       );
     }
 
-    const [{ count: totalSessions, avgDuration }] = await db
-      .select({
-        count: count(),
-        avgDuration: sql<number | null>`
-          AVG(EXTRACT(EPOCH FROM (${sessions.lastActivityAt} - ${sessions.startedAt})))
-        `,
-      })
-      .from(sessions)
-      .where(eq(sessions.deviceId, deviceId));
-
     return c.json(
       {
-        deviceId: deviceWithSession.deviceId,
-        model: deviceWithSession.model,
-        osVersion: deviceWithSession.osVersion,
-        platform: deviceWithSession.platform,
-        appVersion: deviceWithSession.appVersion,
-        country: deviceWithSession.country,
-        city: deviceWithSession.city,
-        firstSeen: deviceWithSession.firstSeen.toISOString(),
-        lastActivityAt: deviceWithSession.lastActivityAt
-          ? deviceWithSession.lastActivityAt.toISOString()
-          : null,
-        totalSessions: Number(totalSessions),
-        avgSessionDuration: avgDuration ? Number(avgDuration) : null,
+        deviceId: device.deviceId,
+        model: device.model,
+        osVersion: device.osVersion,
+        platform: device.platform,
+        appVersion: device.appVersion,
+        country: device.country,
+        city: device.city,
+        firstSeen: device.firstSeen.toISOString(),
       },
       HttpStatus.OK
     );
@@ -1156,32 +1126,46 @@ deviceWebRouter.openapi(getDeviceActivityTimeseriesRoute, async (c: any) => {
     const start = startDate ? new Date(startDate) : defaultStart;
     const end = endDate ? new Date(endDate) : now;
 
-    const result = await db.execute<{
-      date: string;
-      sessionCount: number;
-    }>(sql`
-      WITH date_series AS (
-        SELECT DATE(generate_series(
-          ${start}::timestamp,
-          ${end}::timestamp,
-          '1 day'::interval
-        )) as date
-      )
-      SELECT
-        ds.date::text,
-        COALESCE(COUNT(s.session_id), 0)::int as "sessionCount"
-      FROM date_series ds
-      LEFT JOIN sessions_analytics s ON DATE(s.started_at) = ds.date
-        AND s.device_id = ${deviceId}
-      WHERE ds.date <= CURRENT_DATE
-      GROUP BY ds.date
-      ORDER BY ds.date
-    `);
+    const [result, sessionStats] = await Promise.all([
+      db.execute<{
+        date: string;
+        sessionCount: number;
+      }>(sql`
+        WITH date_series AS (
+          SELECT DATE(generate_series(
+            ${start}::timestamp,
+            ${end}::timestamp,
+            '1 day'::interval
+          )) as date
+        )
+        SELECT
+          ds.date::text,
+          COALESCE(COUNT(s.session_id), 0)::int as "sessionCount"
+        FROM date_series ds
+        LEFT JOIN sessions_analytics s ON DATE(s.started_at) = ds.date
+          AND s.device_id = ${deviceId}
+        WHERE ds.date <= CURRENT_DATE
+        GROUP BY ds.date
+        ORDER BY ds.date
+      `),
+      db
+        .select({
+          totalSessions: count(),
+          avgDuration: sql<number | null>`
+            AVG(EXTRACT(EPOCH FROM (${sessions.lastActivityAt} - ${sessions.startedAt})))
+          `,
+          lastActivityAt: sql<Date | null>`MAX(${sessions.lastActivityAt})`,
+        })
+        .from(sessions)
+        .where(eq(sessions.deviceId, deviceId)),
+    ]);
 
     const data = result.rows.map((row) => ({
       date: row.date,
       sessionCount: Number(row.sessionCount),
     }));
+
+    const [{ totalSessions, avgDuration, lastActivityAt }] = sessionStats;
 
     return c.json(
       {
@@ -1190,6 +1174,9 @@ deviceWebRouter.openapi(getDeviceActivityTimeseriesRoute, async (c: any) => {
           startDate: start.toISOString(),
           endDate: end.toISOString(),
         },
+        totalSessions: Number(totalSessions),
+        avgSessionDuration: avgDuration ? Number(avgDuration) : null,
+        lastActivityAt: lastActivityAt ? lastActivityAt.toISOString() : null,
       },
       HttpStatus.OK
     );
