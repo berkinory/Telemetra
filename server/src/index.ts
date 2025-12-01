@@ -27,7 +27,7 @@ const webRoutes = new Elysia({ prefix: '/web' })
 
 const app = new Elysia()
   .use(authCors)
-  .mount('/api/auth', auth.handler)
+  .mount(auth.handler)
   .use(health)
   .use(sdkRoutes)
   .use(webRoutes)
