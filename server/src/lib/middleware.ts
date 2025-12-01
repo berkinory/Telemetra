@@ -25,67 +25,34 @@ export type BetterAuthSession = {
 
 export type App = typeof appsTable.$inferSelect;
 
-export const sessionPlugin = new ElysiaClass({ name: 'session' })
-  .resolve(async ({ request }) => {
-    console.log('========================================');
-    console.log('[SessionPlugin] Request URL:', request.url);
-    console.log('[SessionPlugin] Request Method:', request.method);
-    console.log('[SessionPlugin] Cookie Header:', request.headers.get('cookie'));
-    console.log('[SessionPlugin] Authorization Header:', request.headers.get('authorization'));
-
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    console.log('[SessionPlugin] Session Result:', {
-      hasSession: !!session,
-      hasUser: !!session?.user,
-      userId: session?.user?.id,
-      userEmail: session?.user?.email,
-      sessionId: session?.session?.id,
-    });
-    console.log('========================================');
-
-    return {
-      user: session?.user as BetterAuthUser,
-      session: session?.session as BetterAuthSession,
-    };
-  });
-
-const appContextPlugin = new ElysiaClass({ name: 'app-context' }).state({
-  app: null as App | null,
-  userId: null as string | null,
-});
+export const sessionPlugin = new ElysiaClass({ name: 'session' });
 
 export const authPlugin = new ElysiaClass({ name: 'auth' })
-  .use(sessionPlugin)
-  .use(appContextPlugin)
+  .state({
+    app: null as App | null,
+    userId: null as string | null,
+  })
   .macro(({ onBeforeHandle }) => ({
     requireAuth(enabled: boolean) {
       if (!enabled) {
         return;
       }
 
-      onBeforeHandle(
-        ({
-          user,
-          set,
-        }: {
-          user: BetterAuthUser;
-          set: { status: number; headers: Record<string, string> };
-        }) => {
-          console.log('[requireAuth] Checking auth - User:', user ? { id: user.id, email: user.email } : null);
-          if (!user) {
-            console.log('[requireAuth] BLOCKED - No user found');
-            set.status = HttpStatus.UNAUTHORIZED;
-            return {
-              code: ErrorCode.UNAUTHORIZED,
-              detail: 'Authentication required',
-            };
-          }
-          console.log('[requireAuth] PASSED - User authenticated');
+      onBeforeHandle(({ user, set }: { user: BetterAuthUser; set: { status: number } }) => {
+        console.log('✅ [requireAuth] Checking user...');
+        console.log('✅ [requireAuth] User:', user ? { id: user.id, email: user.email } : null);
+
+        if (!user) {
+          console.log('❌ [requireAuth] BLOCKED - No user in context');
+          set.status = HttpStatus.UNAUTHORIZED;
+          return {
+            code: ErrorCode.UNAUTHORIZED,
+            detail: 'Authentication required',
+          };
         }
-      );
+
+        console.log('✅ [requireAuth] PASSED - User authenticated');
+      });
     },
 
     requireAppKey(enabled: boolean) {
@@ -166,17 +133,21 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
 
       onBeforeHandle(
         async ({
-          user,
+          request,
           query,
           set,
           store,
         }: {
-          user: BetterAuthUser;
+          request: Request;
           query: Record<string, string | string[] | undefined>;
-          set: { status: number; headers: Record<string, string> };
+          set: { status: number };
           store: { app: App | null; userId: string | null };
         }) => {
-          if (!user) {
+          const session = await auth.api.getSession({
+            headers: request.headers,
+          });
+
+          if (!session?.user) {
             set.status = HttpStatus.UNAUTHORIZED;
             return {
               code: ErrorCode.UNAUTHORIZED,
@@ -194,34 +165,34 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
             };
           }
 
-          try {
-            const userApp = await db.query.apps.findFirst({
-              where: and(
-                eq(appsTable.id, appId as string),
-                or(
-                  eq(appsTable.userId, user.id),
-                  sql`${user.id} = ANY(${appsTable.memberIds})`
-                )
-              ),
-            });
+        try {
+          const userApp = await db.query.apps.findFirst({
+            where: and(
+              eq(appsTable.id, appId as string),
+              or(
+                eq(appsTable.userId, session.user.id),
+                sql`${session.user.id} = ANY(${appsTable.memberIds})`
+              )
+            ),
+          });
 
-            if (!userApp) {
-              set.status = HttpStatus.FORBIDDEN;
-              return {
-                code: ErrorCode.FORBIDDEN,
-                detail: 'You do not have permission to access this app',
-              };
-            }
-
-            store.app = userApp;
-          } catch (error) {
-            console.error('[Middleware] App access verification error:', error);
-            set.status = HttpStatus.INTERNAL_SERVER_ERROR;
+          if (!userApp) {
+            set.status = HttpStatus.FORBIDDEN;
             return {
-              code: ErrorCode.INTERNAL_SERVER_ERROR,
-              detail: 'Failed to verify app access',
+              code: ErrorCode.FORBIDDEN,
+              detail: 'You do not have permission to access this app',
             };
           }
+
+          store.app = userApp;
+        } catch (error) {
+          console.error('[Middleware] App access verification error:', error);
+          set.status = HttpStatus.INTERNAL_SERVER_ERROR;
+          return {
+            code: ErrorCode.INTERNAL_SERVER_ERROR,
+            detail: 'Failed to verify app access',
+          };
+        }
         }
       );
     },
@@ -233,17 +204,21 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
 
       onBeforeHandle(
         async ({
-          user,
+          request,
           query,
           set,
           store,
         }: {
-          user: BetterAuthUser;
+          request: Request;
           query: Record<string, string | string[] | undefined>;
-          set: { status: number; headers: Record<string, string> };
+          set: { status: number };
           store: { app: App | null; userId: string | null };
         }) => {
-          if (!user) {
+          const session = await auth.api.getSession({
+            headers: request.headers,
+          });
+
+          if (!session?.user) {
             set.status = HttpStatus.UNAUTHORIZED;
             return {
               code: ErrorCode.UNAUTHORIZED,
@@ -253,42 +228,42 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
 
           const appId = query.appId;
 
-          if (!appId) {
-            set.status = HttpStatus.BAD_REQUEST;
+        if (!appId) {
+          set.status = HttpStatus.BAD_REQUEST;
+          return {
+            code: ErrorCode.VALIDATION_ERROR,
+            detail: 'appId is required',
+          };
+        }
+
+        try {
+          const userApp = await db.query.apps.findFirst({
+            where: and(
+              eq(appsTable.id, appId as string),
+              eq(appsTable.userId, session.user.id)
+            ),
+          });
+
+          if (!userApp) {
+            set.status = HttpStatus.FORBIDDEN;
             return {
-              code: ErrorCode.VALIDATION_ERROR,
-              detail: 'appId is required',
+              code: ErrorCode.FORBIDDEN,
+              detail: 'You must be the app owner to perform this action',
             };
           }
 
-          try {
-            const userApp = await db.query.apps.findFirst({
-              where: and(
-                eq(appsTable.id, appId as string),
-                eq(appsTable.userId, user.id)
-              ),
-            });
-
-            if (!userApp) {
-              set.status = HttpStatus.FORBIDDEN;
-              return {
-                code: ErrorCode.FORBIDDEN,
-                detail: 'You must be the app owner to perform this action',
-              };
-            }
-
-            store.app = userApp;
-          } catch (error) {
-            console.error(
-              '[Middleware] App ownership verification error:',
-              error
-            );
-            set.status = HttpStatus.INTERNAL_SERVER_ERROR;
-            return {
-              code: ErrorCode.INTERNAL_SERVER_ERROR,
-              detail: 'Failed to verify app ownership',
-            };
-          }
+          store.app = userApp;
+        } catch (error) {
+          console.error(
+            '[Middleware] App ownership verification error:',
+            error
+          );
+          set.status = HttpStatus.INTERNAL_SERVER_ERROR;
+          return {
+            code: ErrorCode.INTERNAL_SERVER_ERROR,
+            detail: 'Failed to verify app ownership',
+          };
+        }
         }
       );
     },

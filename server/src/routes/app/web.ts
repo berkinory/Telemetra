@@ -1,11 +1,12 @@
 import { eq, or, sql } from 'drizzle-orm';
 import { Elysia, t } from 'elysia';
 import { apps, db } from '@/db';
+import { auth } from '@/lib/auth';
 import { generateAppId, generateAppKey } from '@/lib/keys';
 import {
   authPlugin,
   type BetterAuthUser,
-  sessionPlugin,
+  type BetterAuthSession,
 } from '@/lib/middleware';
 import {
   AddTeamMemberRequestSchema,
@@ -22,10 +23,20 @@ import {
   UpdateAppRequestSchema,
 } from '@/schemas';
 
-type AuthContext = { user: BetterAuthUser };
+type AuthContext = { user: BetterAuthUser; session: BetterAuthSession };
 
 export const appWebRouter = new Elysia({ prefix: '/apps' })
-  .use(sessionPlugin)
+  .derive(async ({ request }) => {
+    console.log('🔄 [appWebRouter.derive] Getting session...');
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+    console.log('🔄 [appWebRouter.derive] Session:', session ? { userId: session.user?.id, email: session.user?.email } : null);
+    return {
+      user: session?.user as BetterAuthUser,
+      session: session?.session as BetterAuthSession,
+    };
+  })
   .use(authPlugin)
   .get('/debug-session', async ({ request }) => {
     console.log('🔍 DEBUG ENDPOINT CALLED');
