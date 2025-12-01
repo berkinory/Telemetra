@@ -5,8 +5,8 @@ import { auth } from '@/lib/auth';
 import { generateAppId, generateAppKey } from '@/lib/keys';
 import {
   authPlugin,
-  type BetterAuthUser,
   type BetterAuthSession,
+  type BetterAuthUser,
 } from '@/lib/middleware';
 import {
   AddTeamMemberRequestSchema,

@@ -12,6 +12,19 @@ import {
   type Platform,
 } from '@/schemas';
 
+function normalizePlatform(
+  platform: string | null | undefined
+): Platform | null {
+  if (!platform) {
+    return null;
+  }
+  const lower = platform.toLowerCase();
+  if (lower === 'ios' || lower === 'android' || lower === 'web') {
+    return lower as Platform;
+  }
+  return 'unknown';
+}
+
 export const deviceSdkRouter = new Elysia({ prefix: '/devices' })
   .use(authPlugin)
   .post(
@@ -89,7 +102,7 @@ export const deviceSdkRouter = new Elysia({ prefix: '/devices' })
           deviceId: device.deviceId,
           model: device.model,
           osVersion: device.osVersion,
-          platform: device.platform as Platform | null,
+          platform: normalizePlatform(device.platform),
           appVersion: device.appVersion,
           country: device.country,
           city: device.city,

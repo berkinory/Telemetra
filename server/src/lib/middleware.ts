@@ -38,15 +38,17 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
         return;
       }
 
-      onBeforeHandle(({ user, set }: { user: BetterAuthUser; set: { status: number } }) => {
-        if (!user) {
-          set.status = HttpStatus.UNAUTHORIZED;
-          return {
-            code: ErrorCode.UNAUTHORIZED,
-            detail: 'Authentication required',
-          };
+      onBeforeHandle(
+        ({ user, set }: { user: BetterAuthUser; set: { status: number } }) => {
+          if (!user) {
+            set.status = HttpStatus.UNAUTHORIZED;
+            return {
+              code: ErrorCode.UNAUTHORIZED,
+              detail: 'Authentication required',
+            };
+          }
         }
-      });
+      );
     },
 
     requireAppKey(enabled: boolean) {
@@ -159,34 +161,34 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
             };
           }
 
-        try {
-          const userApp = await db.query.apps.findFirst({
-            where: and(
-              eq(appsTable.id, appId as string),
-              or(
-                eq(appsTable.userId, session.user.id),
-                sql`${session.user.id} = ANY(${appsTable.memberIds})`
-              )
-            ),
-          });
+          try {
+            const userApp = await db.query.apps.findFirst({
+              where: and(
+                eq(appsTable.id, appId as string),
+                or(
+                  eq(appsTable.userId, session.user.id),
+                  sql`${session.user.id} = ANY(${appsTable.memberIds})`
+                )
+              ),
+            });
 
-          if (!userApp) {
-            set.status = HttpStatus.FORBIDDEN;
+            if (!userApp) {
+              set.status = HttpStatus.FORBIDDEN;
+              return {
+                code: ErrorCode.FORBIDDEN,
+                detail: 'You do not have permission to access this app',
+              };
+            }
+
+            store.app = userApp;
+          } catch (error) {
+            console.error('[Middleware] App access verification error:', error);
+            set.status = HttpStatus.INTERNAL_SERVER_ERROR;
             return {
-              code: ErrorCode.FORBIDDEN,
-              detail: 'You do not have permission to access this app',
+              code: ErrorCode.INTERNAL_SERVER_ERROR,
+              detail: 'Failed to verify app access',
             };
           }
-
-          store.app = userApp;
-        } catch (error) {
-          console.error('[Middleware] App access verification error:', error);
-          set.status = HttpStatus.INTERNAL_SERVER_ERROR;
-          return {
-            code: ErrorCode.INTERNAL_SERVER_ERROR,
-            detail: 'Failed to verify app access',
-          };
-        }
         }
       );
     },
@@ -222,42 +224,42 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
 
           const appId = query.appId;
 
-        if (!appId) {
-          set.status = HttpStatus.BAD_REQUEST;
-          return {
-            code: ErrorCode.VALIDATION_ERROR,
-            detail: 'appId is required',
-          };
-        }
-
-        try {
-          const userApp = await db.query.apps.findFirst({
-            where: and(
-              eq(appsTable.id, appId as string),
-              eq(appsTable.userId, session.user.id)
-            ),
-          });
-
-          if (!userApp) {
-            set.status = HttpStatus.FORBIDDEN;
+          if (!appId) {
+            set.status = HttpStatus.BAD_REQUEST;
             return {
-              code: ErrorCode.FORBIDDEN,
-              detail: 'You must be the app owner to perform this action',
+              code: ErrorCode.VALIDATION_ERROR,
+              detail: 'appId is required',
             };
           }
 
-          store.app = userApp;
-        } catch (error) {
-          console.error(
-            '[Middleware] App ownership verification error:',
-            error
-          );
-          set.status = HttpStatus.INTERNAL_SERVER_ERROR;
-          return {
-            code: ErrorCode.INTERNAL_SERVER_ERROR,
-            detail: 'Failed to verify app ownership',
-          };
-        }
+          try {
+            const userApp = await db.query.apps.findFirst({
+              where: and(
+                eq(appsTable.id, appId as string),
+                eq(appsTable.userId, session.user.id)
+              ),
+            });
+
+            if (!userApp) {
+              set.status = HttpStatus.FORBIDDEN;
+              return {
+                code: ErrorCode.FORBIDDEN,
+                detail: 'You must be the app owner to perform this action',
+              };
+            }
+
+            store.app = userApp;
+          } catch (error) {
+            console.error(
+              '[Middleware] App ownership verification error:',
+              error
+            );
+            set.status = HttpStatus.INTERNAL_SERVER_ERROR;
+            return {
+              code: ErrorCode.INTERNAL_SERVER_ERROR,
+              detail: 'Failed to verify app ownership',
+            };
+          }
         }
       );
     },

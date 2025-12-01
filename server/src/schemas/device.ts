@@ -4,6 +4,7 @@ export const PlatformSchema = t.Union([
   t.Literal('ios'),
   t.Literal('android'),
   t.Literal('web'),
+  t.Literal('unknown'),
 ]);
 
 export const DeviceSchema = t.Object({
@@ -133,7 +134,7 @@ export const DeviceSessionsWithEventsResponseSchema = t.Object({
   }),
 });
 
-export type Platform = 'ios' | 'android' | 'web';
+export type Platform = 'ios' | 'android' | 'web' | 'unknown';
 export type Device = typeof DeviceSchema.static;
 export type CreateDeviceRequest = typeof CreateDeviceRequestSchema.static;
 export type DeviceListItem = typeof DeviceListItemSchema.static;

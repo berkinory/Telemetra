@@ -43,6 +43,19 @@ import {
 
 type AuthContext = { user: BetterAuthUser; session: BetterAuthSession };
 
+function normalizePlatform(
+  platform: string | null | undefined
+): Platform | null {
+  if (!platform) {
+    return null;
+  }
+  const lower = platform.toLowerCase();
+  if (lower === 'ios' || lower === 'android' || lower === 'web') {
+    return lower as Platform;
+  }
+  return 'unknown';
+}
+
 export const deviceWebRouter = new Elysia({ prefix: '/devices' })
   .derive(async ({ request }) => {
     const session = await auth.api.getSession({
@@ -164,14 +177,10 @@ export const deviceWebRouter = new Elysia({ prefix: '/devices' })
         const allPlatformStats: Array<{ platform: string; count: number }> = [];
 
         for (const row of platformStatsResult) {
-          const platform = row.platform?.toLowerCase();
-          if (
-            platform === 'ios' ||
-            platform === 'android' ||
-            platform === 'web'
-          ) {
+          const normalizedPlatform = normalizePlatform(row.platform);
+          if (normalizedPlatform) {
             allPlatformStats.push({
-              platform,
+              platform: normalizedPlatform,
               count: Number(row.count),
             });
           }
@@ -338,15 +347,10 @@ export const deviceWebRouter = new Elysia({ prefix: '/devices' })
         const allPlatformStats: Array<{ platform: string; count: number }> = [];
 
         for (const row of platformStatsResult) {
-          const platform = row.platform?.toLowerCase();
-
-          if (
-            platform === 'ios' ||
-            platform === 'android' ||
-            platform === 'web'
-          ) {
+          const normalizedPlatform = normalizePlatform(row.platform);
+          if (normalizedPlatform) {
             allPlatformStats.push({
-              platform,
+              platform: normalizedPlatform,
               count: Number(row.count),
             });
           }
@@ -625,7 +629,7 @@ export const deviceWebRouter = new Elysia({ prefix: '/devices' })
         return {
           devices: devicesList.map((device) => ({
             ...device,
-            platform: device.platform as Platform | null,
+            platform: normalizePlatform(device.platform),
             firstSeen: device.firstSeen.toISOString(),
           })),
           pagination: formatPaginationResponse(
@@ -653,7 +657,12 @@ export const deviceWebRouter = new Elysia({ prefix: '/devices' })
         startDate: t.Optional(t.String()),
         endDate: t.Optional(t.String()),
         platform: t.Optional(
-          t.Union([t.Literal('ios'), t.Literal('android'), t.Literal('web')])
+          t.Union([
+            t.Literal('ios'),
+            t.Literal('android'),
+            t.Literal('web'),
+            t.Literal('unknown'),
+          ])
         ),
       }),
       response: {
@@ -834,7 +843,7 @@ export const deviceWebRouter = new Elysia({ prefix: '/devices' })
           deviceId: device.deviceId,
           model: device.model,
           osVersion: device.osVersion,
-          platform: device.platform as Platform | null,
+          platform: normalizePlatform(device.platform),
           appVersion: device.appVersion,
           country: device.country,
           city: device.city,
