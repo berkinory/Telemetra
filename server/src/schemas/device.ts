@@ -87,6 +87,10 @@ export const DeviceTimeseriesDataPointSchema = t.Object({
 
 export const DeviceTimeseriesResponseSchema = t.Object({
   data: t.Array(DeviceTimeseriesDataPointSchema),
+  period: t.Object({
+    startDate: t.String({ format: 'date-time' }),
+    endDate: t.String({ format: 'date-time' }),
+  }),
 });
 
 export const DeviceLiveResponseSchema = t.Object({
