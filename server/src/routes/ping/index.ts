@@ -1,0 +1,1 @@
+export { pingSdkRouter } from './sdk';

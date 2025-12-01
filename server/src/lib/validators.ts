@@ -1,18 +1,29 @@
-import type { SQL } from 'drizzle-orm';
-import { type AnyColumn, and, count, eq, gte, lte } from 'drizzle-orm';
-import type { Context } from 'hono';
+import {
+  type AnyColumn,
+  and,
+  count,
+  eq,
+  gte,
+  lte,
+  type SQL,
+} from 'drizzle-orm';
 import { db, devices, sessions } from '@/db';
-import { ErrorCode, HttpStatus } from '@/schemas';
+import { ErrorCode, HttpStatus } from '@/schemas/common';
 
 const MIN_PAGE_SIZE = 5;
 const MAX_PAGE_SIZE = 25;
 const MAX_TIMESTAMP_AGE_MS = 24 * 60 * 60 * 1000;
 const MAX_TIMESTAMP_FUTURE_MS = 5 * 60 * 1000;
 
-export type ValidationResult<T = void> =
-  | (T extends void ? { success: true } : { success: true; data: T })
-  // biome-ignore lint/suspicious/noExplicitAny: OpenAPI TypedResponse compatibility requires any
-  | { success: false; response: Response | any };
+export type ValidationError = {
+  code: ErrorCode;
+  detail: string;
+  status: HttpStatus;
+};
+
+export type ValidationResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: ValidationError };
 
 export type PaginationParams = {
   page: number;
@@ -21,7 +32,6 @@ export type PaginationParams = {
 };
 
 export function validatePagination(
-  c: Context,
   pageStr: string,
   pageSizeStr: string,
   maxPageSize?: number
@@ -33,39 +43,33 @@ export function validatePagination(
   if (Number.isNaN(page) || page < 1) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: 'Invalid page parameter: must be a positive integer',
-        },
-        HttpStatus.BAD_REQUEST
-      ),
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: 'Invalid page parameter: must be a positive integer',
+        status: HttpStatus.BAD_REQUEST,
+      },
     };
   }
 
   if (Number.isNaN(pageSize) || pageSize < MIN_PAGE_SIZE) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: `Invalid pageSize parameter: must be at least ${MIN_PAGE_SIZE}`,
-        },
-        HttpStatus.BAD_REQUEST
-      ),
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `Invalid pageSize parameter: must be at least ${MIN_PAGE_SIZE}`,
+        status: HttpStatus.BAD_REQUEST,
+      },
     };
   }
 
   if (pageSize > effectiveMaxPageSize) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: `Invalid pageSize parameter: must be between ${MIN_PAGE_SIZE} and ${effectiveMaxPageSize}`,
-        },
-        HttpStatus.BAD_REQUEST
-      ),
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `Invalid pageSize parameter: must be between ${MIN_PAGE_SIZE} and ${effectiveMaxPageSize}`,
+        status: HttpStatus.BAD_REQUEST,
+      },
     };
   }
 
@@ -78,7 +82,6 @@ export function validatePagination(
 }
 
 export function validateTimestamp(
-  c: Context,
   timestampStr: string,
   fieldName = 'timestamp'
 ): ValidationResult<Date> {
@@ -87,13 +90,11 @@ export function validateTimestamp(
   if (Number.isNaN(clientTimestamp.getTime())) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: `Invalid ${fieldName} format`,
-        },
-        HttpStatus.BAD_REQUEST
-      ),
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `Invalid ${fieldName} format`,
+        status: HttpStatus.BAD_REQUEST,
+      },
     };
   }
 
@@ -103,26 +104,22 @@ export function validateTimestamp(
   if (timeDiffMs < -MAX_TIMESTAMP_FUTURE_MS) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: `${fieldName} cannot be in the future`,
-        },
-        HttpStatus.BAD_REQUEST
-      ),
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `${fieldName} cannot be in the future`,
+        status: HttpStatus.BAD_REQUEST,
+      },
     };
   }
 
   if (timeDiffMs > MAX_TIMESTAMP_AGE_MS) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.VALIDATION_ERROR,
-          detail: `${fieldName} is too old (max 24 hours old)`,
-        },
-        HttpStatus.BAD_REQUEST
-      ),
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `${fieldName} is too old (max 24 hours old)`,
+        status: HttpStatus.BAD_REQUEST,
+      },
     };
   }
 
@@ -133,7 +130,6 @@ export function validateTimestamp(
 }
 
 export async function validateDevice(
-  c: Context,
   deviceId: string,
   appId?: string
 ): Promise<ValidationResult<typeof devices.$inferSelect>> {
@@ -144,26 +140,22 @@ export async function validateDevice(
   if (!device) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.NOT_FOUND,
-          detail: 'Device not found',
-        },
-        HttpStatus.NOT_FOUND
-      ),
+      error: {
+        code: ErrorCode.NOT_FOUND,
+        detail: 'Device not found',
+        status: HttpStatus.NOT_FOUND,
+      },
     };
   }
 
   if (appId && device.appId !== appId) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.FORBIDDEN,
-          detail: 'You do not have permission to access this device',
-        },
-        HttpStatus.FORBIDDEN
-      ),
+      error: {
+        code: ErrorCode.FORBIDDEN,
+        detail: 'You do not have permission to access this device',
+        status: HttpStatus.FORBIDDEN,
+      },
     };
   }
 
@@ -174,7 +166,6 @@ export async function validateDevice(
 }
 
 export async function validateSession(
-  c: Context,
   sessionId: string,
   appId?: string
 ): Promise<
@@ -201,26 +192,22 @@ export async function validateSession(
   if (!sessionData) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.NOT_FOUND,
-          detail: 'Session not found',
-        },
-        HttpStatus.NOT_FOUND
-      ),
+      error: {
+        code: ErrorCode.NOT_FOUND,
+        detail: 'Session not found',
+        status: HttpStatus.NOT_FOUND,
+      },
     };
   }
 
   if (appId && sessionData.device.appId !== appId) {
     return {
       success: false,
-      response: c.json(
-        {
-          code: ErrorCode.FORBIDDEN,
-          detail: 'You do not have permission to access this session',
-        },
-        HttpStatus.FORBIDDEN
-      ),
+      error: {
+        code: ErrorCode.FORBIDDEN,
+        detail: 'You do not have permission to access this session',
+        status: HttpStatus.FORBIDDEN,
+      },
     };
   }
 
@@ -234,7 +221,6 @@ export async function validateSession(
 }
 
 export function validateDateRange(
-  c: Context,
   startDate?: string,
   endDate?: string
 ): ValidationResult<void> {
@@ -243,13 +229,11 @@ export function validateDateRange(
     if (Number.isNaN(start.getTime())) {
       return {
         success: false,
-        response: c.json(
-          {
-            code: ErrorCode.VALIDATION_ERROR,
-            detail: 'Invalid startDate format',
-          },
-          HttpStatus.BAD_REQUEST
-        ),
+        error: {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'Invalid startDate format',
+          status: HttpStatus.BAD_REQUEST,
+        },
       };
     }
   }
@@ -259,13 +243,11 @@ export function validateDateRange(
     if (Number.isNaN(end.getTime())) {
       return {
         success: false,
-        response: c.json(
-          {
-            code: ErrorCode.VALIDATION_ERROR,
-            detail: 'Invalid endDate format',
-          },
-          HttpStatus.BAD_REQUEST
-        ),
+        error: {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'Invalid endDate format',
+          status: HttpStatus.BAD_REQUEST,
+        },
       };
     }
   }
@@ -276,19 +258,18 @@ export function validateDateRange(
     if (start > end) {
       return {
         success: false,
-        response: c.json(
-          {
-            code: ErrorCode.VALIDATION_ERROR,
-            detail: 'startDate must be before or equal to endDate',
-          },
-          HttpStatus.BAD_REQUEST
-        ),
+        error: {
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'startDate must be before or equal to endDate',
+          status: HttpStatus.BAD_REQUEST,
+        },
       };
     }
   }
 
   return {
     success: true,
+    data: undefined,
   };
 }
 

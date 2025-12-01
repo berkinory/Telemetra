@@ -1,186 +1,278 @@
-import { eq } from 'drizzle-orm';
-import { apps, db } from '@/db';
+import { and, eq, or, sql } from 'drizzle-orm';
+import { Elysia as ElysiaClass } from 'elysia';
+import { apps as appsTable, db } from '@/db';
 import { auth } from '@/lib/auth';
-import { unauthorized } from '@/lib/response';
+import { ErrorCode, HttpStatus } from '@/schemas/common';
 
-// biome-ignore lint/suspicious/noExplicitAny: Hono middleware context typing requires any
-export const authMiddleware = async (c: any, next: any) => {
-  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+export type BetterAuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  emailVerified: boolean;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+} | null;
 
-  if (!session) {
-    c.set('user', null);
-    c.set('session', null);
-    await next();
-    return;
-  }
+export type BetterAuthSession = {
+  id: string;
+  userId: string;
+  expiresAt: Date;
+  token: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+} | null;
 
-  c.set('user', session.user);
-  c.set('session', session.session);
-  await next();
-};
+export type App = typeof appsTable.$inferSelect;
 
-// biome-ignore lint/suspicious/noExplicitAny: Hono middleware context typing requires any
-export const requireAuth = async (c: any, next: any) => {
-  const session = await auth.api.getSession({ headers: c.req.raw.headers });
-
-  if (!session) {
-    return unauthorized(c, 'Authentication required');
-  }
-
-  c.set('user', session.user);
-  c.set('session', session.session);
-  await next();
-};
-
-// biome-ignore lint/suspicious/noExplicitAny: Hono middleware context typing requires any
-export const requireAppKey = async (c: any, next: any) => {
-  const authHeader = c.req.header('authorization');
-
-  if (!authHeader) {
-    return unauthorized(c, 'Authorization header is required');
-  }
-
-  const parts = authHeader.split(' ');
-  if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
-    return unauthorized(c, 'Invalid authorization format. Use: Bearer <token>');
-  }
-
-  const appKey = parts[1];
-
-  if (!appKey) {
-    return unauthorized(c, 'App key is required');
-  }
-
-  try {
-    const app = await db.query.apps.findFirst({
-      where: eq(apps.key, appKey),
+export const sessionPlugin = new ElysiaClass({ name: 'session' }).derive(
+  async ({ request }) => {
+    const session = await auth.api.getSession({
+      headers: request.headers,
     });
 
-    if (!app) {
-      return unauthorized(c, 'Invalid app key');
-    }
-
-    c.set('app', app);
-    c.set('userId', app.userId);
-    await next();
-  } catch (error) {
-    console.error('[Middleware] App key verification error:', error);
-    return unauthorized(c, 'Failed to verify app key');
+    return {
+      user: session?.user as BetterAuthUser,
+      session: session?.session as BetterAuthSession,
+    };
   }
-};
+);
 
-// biome-ignore lint/suspicious/noExplicitAny: Hono middleware context typing requires any
-export const verifyAppAccess = async (c: any, next: any) => {
-  const user = c.get('user');
-  const appId = c.req.query('appId');
+const appContextPlugin = new ElysiaClass({ name: 'app-context' }).state({
+  app: null as App | null,
+  userId: null as string | null,
+});
 
-  if (!user) {
-    return c.json(
-      {
-        code: 'UNAUTHORIZED',
-        detail: 'Authentication required',
-      },
-      401
-    );
-  }
+export const authPlugin = new ElysiaClass({ name: 'auth' })
+  .use(sessionPlugin)
+  .use(appContextPlugin)
+  .macro(({ onBeforeHandle }) => ({
+    requireAuth(enabled: boolean) {
+      if (!enabled) {
+        return;
+      }
 
-  if (!appId) {
-    return c.json(
-      {
-        code: 'VALIDATION_ERROR',
-        detail: 'appId is required',
-      },
-      400
-    );
-  }
-
-  try {
-    const userApp = await db.query.apps.findFirst({
-      where: (table, { eq: eqFn, or: orFn, and: andFn, sql }) =>
-        andFn(
-          eqFn(table.id, appId),
-          orFn(
-            eqFn(table.userId, user.id),
-            sql`${user.id} = ANY(${table.memberIds})`
-          )
-        ),
-    });
-
-    if (!userApp) {
-      return c.json(
-        {
-          code: 'FORBIDDEN',
-          detail: 'You do not have permission to access this app',
-        },
-        403
+      onBeforeHandle(
+        ({
+          user,
+          set,
+        }: {
+          user: BetterAuthUser;
+          set: { status: number; headers: Record<string, string> };
+        }) => {
+          if (!user) {
+            set.status = HttpStatus.UNAUTHORIZED;
+            return {
+              code: ErrorCode.UNAUTHORIZED,
+              detail: 'Authentication required',
+            };
+          }
+        }
       );
-    }
+    },
 
-    c.set('app', userApp);
-    await next();
-  } catch (error) {
-    console.error('[Middleware] App access verification error:', error);
-    return c.json(
-      {
-        code: 'INTERNAL_SERVER_ERROR',
-        detail: 'Failed to verify app access',
-      },
-      500
-    );
-  }
-};
+    requireAppKey(enabled: boolean) {
+      if (!enabled) {
+        return;
+      }
 
-// biome-ignore lint/suspicious/noExplicitAny: Hono middleware context typing requires any
-export const verifyAppOwnership = async (c: any, next: any) => {
-  const user = c.get('user');
-  const appId = c.req.query('appId');
+      onBeforeHandle(
+        async ({
+          request,
+          set,
+          store,
+        }: {
+          request: Request;
+          set: { status: number; headers: Record<string, string> };
+          store: { app: App | null; userId: string | null };
+        }) => {
+          const authHeader = request.headers.get('authorization');
 
-  if (!user) {
-    return c.json(
-      {
-        code: 'UNAUTHORIZED',
-        detail: 'Authentication required',
-      },
-      401
-    );
-  }
+          if (!authHeader) {
+            set.status = HttpStatus.UNAUTHORIZED;
+            return {
+              code: ErrorCode.UNAUTHORIZED,
+              detail: 'Authorization header is required',
+            };
+          }
 
-  if (!appId) {
-    return c.json(
-      {
-        code: 'VALIDATION_ERROR',
-        detail: 'appId is required',
-      },
-      400
-    );
-  }
+          const parts = authHeader.split(' ');
+          if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
+            set.status = HttpStatus.UNAUTHORIZED;
+            return {
+              code: ErrorCode.UNAUTHORIZED,
+              detail: 'Invalid authorization format. Use: Bearer <token>',
+            };
+          }
 
-  try {
-    const userApp = await db.query.apps.findFirst({
-      where: (table, { eq: eqFn, and: andFn }) =>
-        andFn(eqFn(table.id, appId), eqFn(table.userId, user.id)),
-    });
+          const appKey = parts[1];
 
-    if (!userApp) {
-      return c.json(
-        {
-          code: 'FORBIDDEN',
-          detail: 'You must be the app owner to perform this action',
-        },
-        403
+          if (!appKey) {
+            set.status = HttpStatus.UNAUTHORIZED;
+            return {
+              code: ErrorCode.UNAUTHORIZED,
+              detail: 'App key is required',
+            };
+          }
+
+          try {
+            const app = await db.query.apps.findFirst({
+              where: eq(appsTable.key, appKey),
+            });
+
+            if (!app) {
+              set.status = HttpStatus.UNAUTHORIZED;
+              return {
+                code: ErrorCode.UNAUTHORIZED,
+                detail: 'Invalid app key',
+              };
+            }
+
+            store.app = app;
+            store.userId = app.userId;
+          } catch (error) {
+            console.error('[Middleware] App key verification error:', error);
+            set.status = HttpStatus.INTERNAL_SERVER_ERROR;
+            return {
+              code: ErrorCode.INTERNAL_SERVER_ERROR,
+              detail: 'Failed to verify app key',
+            };
+          }
+        }
       );
-    }
+    },
 
-    c.set('app', userApp);
-    await next();
-  } catch (error) {
-    console.error('[Middleware] App ownership verification error:', error);
-    return c.json(
-      {
-        code: 'INTERNAL_SERVER_ERROR',
-        detail: 'Failed to verify app ownership',
-      },
-      500
-    );
-  }
-};
+    verifyAppAccess(enabled: boolean) {
+      if (!enabled) {
+        return;
+      }
+
+      onBeforeHandle(
+        async ({
+          user,
+          query,
+          set,
+          store,
+        }: {
+          user: BetterAuthUser;
+          query: Record<string, string | string[] | undefined>;
+          set: { status: number; headers: Record<string, string> };
+          store: { app: App | null; userId: string | null };
+        }) => {
+          if (!user) {
+            set.status = HttpStatus.UNAUTHORIZED;
+            return {
+              code: ErrorCode.UNAUTHORIZED,
+              detail: 'Authentication required',
+            };
+          }
+
+          const appId = query.appId;
+
+          if (!appId) {
+            set.status = HttpStatus.BAD_REQUEST;
+            return {
+              code: ErrorCode.VALIDATION_ERROR,
+              detail: 'appId is required',
+            };
+          }
+
+          try {
+            const userApp = await db.query.apps.findFirst({
+              where: and(
+                eq(appsTable.id, appId as string),
+                or(
+                  eq(appsTable.userId, user.id),
+                  sql`${user.id} = ANY(${appsTable.memberIds})`
+                )
+              ),
+            });
+
+            if (!userApp) {
+              set.status = HttpStatus.FORBIDDEN;
+              return {
+                code: ErrorCode.FORBIDDEN,
+                detail: 'You do not have permission to access this app',
+              };
+            }
+
+            store.app = userApp;
+          } catch (error) {
+            console.error('[Middleware] App access verification error:', error);
+            set.status = HttpStatus.INTERNAL_SERVER_ERROR;
+            return {
+              code: ErrorCode.INTERNAL_SERVER_ERROR,
+              detail: 'Failed to verify app access',
+            };
+          }
+        }
+      );
+    },
+
+    verifyAppOwnership(enabled: boolean) {
+      if (!enabled) {
+        return;
+      }
+
+      onBeforeHandle(
+        async ({
+          user,
+          query,
+          set,
+          store,
+        }: {
+          user: BetterAuthUser;
+          query: Record<string, string | string[] | undefined>;
+          set: { status: number; headers: Record<string, string> };
+          store: { app: App | null; userId: string | null };
+        }) => {
+          if (!user) {
+            set.status = HttpStatus.UNAUTHORIZED;
+            return {
+              code: ErrorCode.UNAUTHORIZED,
+              detail: 'Authentication required',
+            };
+          }
+
+          const appId = query.appId;
+
+          if (!appId) {
+            set.status = HttpStatus.BAD_REQUEST;
+            return {
+              code: ErrorCode.VALIDATION_ERROR,
+              detail: 'appId is required',
+            };
+          }
+
+          try {
+            const userApp = await db.query.apps.findFirst({
+              where: and(
+                eq(appsTable.id, appId as string),
+                eq(appsTable.userId, user.id)
+              ),
+            });
+
+            if (!userApp) {
+              set.status = HttpStatus.FORBIDDEN;
+              return {
+                code: ErrorCode.FORBIDDEN,
+                detail: 'You must be the app owner to perform this action',
+              };
+            }
+
+            store.app = userApp;
+          } catch (error) {
+            console.error(
+              '[Middleware] App ownership verification error:',
+              error
+            );
+            set.status = HttpStatus.INTERNAL_SERVER_ERROR;
+            return {
+              code: ErrorCode.INTERNAL_SERVER_ERROR,
+              detail: 'Failed to verify app ownership',
+            };
+          }
+        }
+      );
+    },
+  }));
