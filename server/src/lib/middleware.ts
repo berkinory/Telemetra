@@ -39,19 +39,13 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
       }
 
       onBeforeHandle(({ user, set }: { user: BetterAuthUser; set: { status: number } }) => {
-        console.log('✅ [requireAuth] Checking user...');
-        console.log('✅ [requireAuth] User:', user ? { id: user.id, email: user.email } : null);
-
         if (!user) {
-          console.log('❌ [requireAuth] BLOCKED - No user in context');
           set.status = HttpStatus.UNAUTHORIZED;
           return {
             code: ErrorCode.UNAUTHORIZED,
             detail: 'Authentication required',
           };
         }
-
-        console.log('✅ [requireAuth] PASSED - User authenticated');
       });
     },
 

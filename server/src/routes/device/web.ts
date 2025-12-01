@@ -12,10 +12,11 @@ import {
 } from 'drizzle-orm';
 import { Elysia, t } from 'elysia';
 import { db, devices, sessions } from '@/db';
+import { auth } from '@/lib/auth';
 import {
   authPlugin,
+  type BetterAuthSession,
   type BetterAuthUser,
-  sessionPlugin,
 } from '@/lib/middleware';
 import { getEvents } from '@/lib/questdb';
 import {
@@ -40,10 +41,18 @@ import {
   type Platform,
 } from '@/schemas';
 
-type AuthContext = { user: BetterAuthUser };
+type AuthContext = { user: BetterAuthUser; session: BetterAuthSession };
 
 export const deviceWebRouter = new Elysia({ prefix: '/devices' })
-  .use(sessionPlugin)
+  .derive(async ({ request }) => {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+    return {
+      user: session?.user as BetterAuthUser,
+      session: session?.session as BetterAuthSession,
+    };
+  })
   .use(authPlugin)
   .get(
     '/overview',

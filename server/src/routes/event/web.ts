@@ -1,9 +1,10 @@
 import { Elysia, t } from 'elysia';
+import { auth } from '@/lib/auth';
 import {
   type App,
   authPlugin,
+  type BetterAuthSession,
   type BetterAuthUser,
-  sessionPlugin,
 } from '@/lib/middleware';
 import {
   getEventById,
@@ -30,10 +31,22 @@ import {
   TopEventsResponseSchema,
 } from '@/schemas';
 
-type AuthContext = { user: BetterAuthUser; store: { app: App } };
+type AuthContext = {
+  user: BetterAuthUser;
+  session: BetterAuthSession;
+  store: { app: App };
+};
 
 export const eventWebRouter = new Elysia({ prefix: '/events' })
-  .use(sessionPlugin)
+  .derive(async ({ request }) => {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+    return {
+      user: session?.user as BetterAuthUser,
+      session: session?.session as BetterAuthSession,
+    };
+  })
   .use(authPlugin)
   .get(
     '/',
