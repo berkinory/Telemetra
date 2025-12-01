@@ -3,7 +3,7 @@ import type { ErrorResponse } from './types';
 export const API_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3001';
 
-export const API_BASE = `${API_URL}/v1`;
+export const API_BASE = `${API_URL}`;
 
 export class ApiError extends Error {
   code: string;

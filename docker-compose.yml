@@ -135,7 +135,7 @@ services:
       - telemetra-network
       - dokploy-network
     healthcheck:
-      test: ["CMD", "/bin/busybox", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/v1/health"]
+      test: ["CMD", "/bin/busybox", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
       interval: 10s
       timeout: 5s
       retries: 5
