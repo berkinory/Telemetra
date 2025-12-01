@@ -27,9 +27,24 @@ export type App = typeof appsTable.$inferSelect;
 
 export const sessionPlugin = new ElysiaClass({ name: 'session' }).derive(
   async ({ request }) => {
+    console.log('========================================');
+    console.log('[SessionPlugin] Request URL:', request.url);
+    console.log('[SessionPlugin] Request Method:', request.method);
+    console.log('[SessionPlugin] Cookie Header:', request.headers.get('cookie'));
+    console.log('[SessionPlugin] Authorization Header:', request.headers.get('authorization'));
+
     const session = await auth.api.getSession({
       headers: request.headers,
     });
+
+    console.log('[SessionPlugin] Session Result:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+      userEmail: session?.user?.email,
+      sessionId: session?.session?.id,
+    });
+    console.log('========================================');
 
     return {
       user: session?.user as BetterAuthUser,
@@ -60,13 +75,16 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
           user: BetterAuthUser;
           set: { status: number; headers: Record<string, string> };
         }) => {
+          console.log('[requireAuth] Checking auth - User:', user ? { id: user.id, email: user.email } : null);
           if (!user) {
+            console.log('[requireAuth] BLOCKED - No user found');
             set.status = HttpStatus.UNAUTHORIZED;
             return {
               code: ErrorCode.UNAUTHORIZED,
               detail: 'Authentication required',
             };
           }
+          console.log('[requireAuth] PASSED - User authenticated');
         }
       );
     },
