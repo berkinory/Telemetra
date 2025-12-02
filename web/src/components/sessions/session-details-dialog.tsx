@@ -4,6 +4,7 @@ import {
   Calendar03Icon,
   CursorPointer02Icon,
   FolderSearchIcon,
+  LinkSquare01Icon,
   Time03Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -113,13 +114,28 @@ export function SessionDetailsDialog({
               <p className="text-muted-foreground text-sm">User ID</p>
               <div className="flex items-center gap-2">
                 <CopyButton
-                  className="size-4 [&_svg]:size-4"
+                  className="size-4 text-muted-foreground hover:text-primary [&_svg]:size-4"
                   content={session.deviceId}
                   variant="ghost"
                 />
                 <p className="break-all font-mono text-primary text-sm">
                   {session.deviceId}
                 </p>
+                <button
+                  className="size-4 shrink-0 text-muted-foreground transition-colors hover:text-primary"
+                  onClick={() => {
+                    router.push(
+                      `/dashboard/analytics/users/${session.deviceId}?app=${appId}`
+                    );
+                  }}
+                  title="View user details"
+                  type="button"
+                >
+                  <HugeiconsIcon
+                    className="size-4"
+                    icon={LinkSquare01Icon}
+                  />
+                </button>
               </div>
             </div>
 
