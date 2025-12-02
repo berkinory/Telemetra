@@ -15,7 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { formatDate, formatDateTime } from '@/lib/date-utils';
+import { formatDate, formatDateTime, formatDuration } from '@/lib/date-utils';
 import { useDeviceActivityTimeseries } from '@/lib/queries';
 import { cn } from '@/lib/utils';
 import { UserActivityCalendarSkeleton } from './user-detail-skeletons';
@@ -54,57 +54,6 @@ function getSessionLabel(sessionCount: number): string {
     return 'Session';
   }
   return 'Sessions';
-}
-
-function formatDuration(seconds: number | null) {
-  if (seconds === null || seconds === 0) {
-    return (
-      <>
-        0<span>s</span>
-      </>
-    );
-  }
-
-  const totalSeconds = Math.floor(seconds);
-
-  if (totalSeconds < 60) {
-    return (
-      <>
-        {totalSeconds}
-        <span>s</span>
-      </>
-    );
-  }
-  if (totalSeconds < 3600) {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return secs > 0 ? (
-      <>
-        {mins}
-        <span>m</span> {secs}
-        <span>s</span>
-      </>
-    ) : (
-      <>
-        {mins}
-        <span>m</span>
-      </>
-    );
-  }
-  const hours = Math.floor(totalSeconds / 3600);
-  const mins = Math.floor((totalSeconds % 3600) / 60);
-  return mins > 0 ? (
-    <>
-      {hours}
-      <span>h</span> {mins}
-      <span>m</span>
-    </>
-  ) : (
-    <>
-      {hours}
-      <span>h</span>
-    </>
-  );
 }
 
 export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
@@ -156,7 +105,7 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <p className="text-muted-foreground text-sm">Total Sessions</p>
-            <p className="mt-1 flex items-center gap-1.5 font-medium font-mono text-sm">
+            <p className="mt-1 flex items-center gap-1.5 font-medium text-sm">
               <HugeiconsIcon
                 className="size-4 text-muted-foreground"
                 icon={PlaySquareIcon}
@@ -168,7 +117,7 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
             <p className="text-muted-foreground text-sm">
               Avg Session Duration
             </p>
-            <p className="mt-1 flex items-center gap-1.5 font-medium font-mono text-sm">
+            <p className="mt-1 flex items-center gap-1.5 font-medium text-sm">
               <HugeiconsIcon
                 className="size-4 text-muted-foreground"
                 icon={Time03Icon}
@@ -181,7 +130,7 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <p className="text-muted-foreground text-sm">First Seen</p>
-            <p className="mt-1 flex items-center gap-1.5 font-medium font-mono text-xs">
+            <p className="mt-1 flex items-center gap-1.5 font-medium text-sm">
               <HugeiconsIcon
                 className="size-4 text-muted-foreground"
                 icon={Calendar03Icon}
@@ -193,7 +142,7 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
           </div>
           <div>
             <p className="text-muted-foreground text-sm">Last Activity</p>
-            <p className="mt-1 flex items-center gap-1.5 font-medium font-mono text-xs">
+            <p className="mt-1 flex items-center gap-1.5 font-medium text-sm">
               <HugeiconsIcon
                 className="size-4 text-muted-foreground"
                 icon={Calendar03Icon}
@@ -229,10 +178,10 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
                         className="size-3.5"
                         icon={Calendar03Icon}
                       />
-                      <span className="font-mono">{day.formattedDate}</span>
+                      <span>{day.formattedDate}</span>
                     </span>
                     <div className="flex flex-col gap-0.5">
-                      <div className="font-mono font-semibold text-base tabular-nums">
+                      <div className="font-semibold text-base tabular-nums">
                         {day.sessionCount === 0 ? '0' : day.sessionCount}
                       </div>
                       <div className="text-muted-foreground text-xs">

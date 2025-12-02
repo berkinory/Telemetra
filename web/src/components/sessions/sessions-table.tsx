@@ -1,68 +1,16 @@
 'use client';
 
+import { Calendar03Icon, Time03Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import type { Session } from '@/lib/api/types';
-import { formatDateTime } from '@/lib/date-utils';
+import { formatDateTime, formatDuration } from '@/lib/date-utils';
 import { useSessions } from '@/lib/queries';
 import { usePaginationStore } from '@/stores/pagination-store';
 import { SessionDetailsDialog } from './session-details-dialog';
-
-function formatDurationTable(startedAt: string, lastActivityAt: string) {
-  const start = new Date(startedAt).getTime();
-  const end = new Date(lastActivityAt).getTime();
-
-  if (Number.isNaN(start) || Number.isNaN(end)) {
-    return <>—</>;
-  }
-
-  const seconds = Math.floor((end - start) / 1000);
-
-  if (seconds < 0) {
-    return <>—</>;
-  }
-
-  if (seconds < 60) {
-    return (
-      <>
-        {seconds}
-        <span>s</span>
-      </>
-    );
-  }
-  if (seconds < 3600) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return secs > 0 ? (
-      <>
-        {mins}
-        <span>m</span> {secs}
-        <span>s</span>
-      </>
-    ) : (
-      <>
-        {mins}
-        <span>m</span>
-      </>
-    );
-  }
-  const hours = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  return mins > 0 ? (
-    <>
-      {hours}
-      <span>h</span> {mins}
-      <span>m</span>
-    </>
-  ) : (
-    <>
-      {hours}
-      <span>h</span>
-    </>
-  );
-}
 
 const columns: ColumnDef<Session>[] = [
   {
@@ -90,22 +38,40 @@ const columns: ColumnDef<Session>[] = [
     cell: ({ row }) => {
       const timestamp = row.getValue('startedAt') as string;
       return (
-        <span className="font-mono text-muted-foreground text-xs">
-          {formatDateTime(timestamp)}
-        </span>
+        <div className="flex items-center gap-2">
+          <HugeiconsIcon
+            className="text-muted-foreground"
+            icon={Calendar03Icon}
+            size={16}
+          />
+          <span className="text-primary text-sm">
+            {formatDateTime(timestamp)}
+          </span>
+        </div>
       );
     },
   },
   {
     accessorKey: 'lastActivityAt',
     header: 'Duration',
-    size: 150,
+    size: 200,
     cell: ({ row }) => {
-      const duration = formatDurationTable(
-        row.original.startedAt,
-        row.original.lastActivityAt
+      const durationInSeconds = Math.floor(
+        (new Date(row.original.lastActivityAt).getTime() -
+          new Date(row.original.startedAt).getTime()) /
+          1000
       );
-      return <div className="font-mono text-xs">{duration}</div>;
+      const duration = formatDuration(durationInSeconds);
+      return (
+        <div className="flex items-center gap-2">
+          <HugeiconsIcon
+            className="text-muted-foreground"
+            icon={Time03Icon}
+            size={16}
+          />
+          <span className="text-primary text-sm">{duration}</span>
+        </div>
+      );
     },
   },
 ];

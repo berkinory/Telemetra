@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { TimeRange } from '@/lib/api/types';
+import { formatDuration } from '@/lib/date-utils';
 import { useSessionTimeseries } from '@/lib/queries';
 
 export function SessionsActivityChart() {
@@ -85,25 +86,7 @@ export function SessionsActivityChart() {
       ]}
       title="Session Activity"
       valueFormatter={
-        metric === 'avg_duration'
-          ? (value) => {
-              const seconds = Math.floor(value);
-              if (seconds === 0) {
-                return '0s';
-              }
-              if (seconds < 60) {
-                return `${seconds}s`;
-              }
-              if (seconds < 3600) {
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
-              }
-              const hours = Math.floor(seconds / 3600);
-              const mins = Math.floor((seconds % 3600) / 60);
-              return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-            }
-          : undefined
+        metric === 'avg_duration' ? (value) => formatDuration(value) : undefined
       }
     />
   );

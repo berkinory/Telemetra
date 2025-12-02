@@ -229,3 +229,43 @@ export function formatDateTimeSeparate(
     time: formatTime(dateStr, timezone),
   };
 }
+
+export function formatDuration(seconds: number | null): string {
+  if (seconds === null || seconds === 0) {
+    return '0 seconds';
+  }
+
+  const totalSeconds = Math.floor(seconds);
+
+  if (totalSeconds < 0) {
+    return '—';
+  }
+
+  if (totalSeconds < 60) {
+    return totalSeconds === 1 ? '1 second' : `${totalSeconds} seconds`;
+  }
+
+  if (totalSeconds < 3600) {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+
+    if (secs === 0) {
+      return mins === 1 ? '1 minute' : `${mins} minutes`;
+    }
+
+    const minsPart = `${mins} ${mins === 1 ? 'min' : 'mins'}`;
+    const secsPart = `${secs} ${secs === 1 ? 'sec' : 'secs'}`;
+    return `${minsPart} ${secsPart}`;
+  }
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+
+  const hoursPart = `${hours} hr`;
+  if (mins === 0) {
+    return hoursPart;
+  }
+
+  const minsPart = `${mins} ${mins === 1 ? 'min' : 'mins'}`;
+  return `${hoursPart} ${minsPart}`;
+}

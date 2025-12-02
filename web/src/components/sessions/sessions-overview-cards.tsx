@@ -5,6 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Card, CardContent } from '@/components/ui/card';
 import { CountingNumber } from '@/components/ui/counting-number';
+import { formatDuration } from '@/lib/date-utils';
 import { useSessionOverview } from '@/lib/queries';
 import { cn } from '@/lib/utils';
 
@@ -13,25 +14,6 @@ function getChangeColor(change: number) {
     return 'text-muted-foreground';
   }
   return change > 0 ? 'text-green-600' : 'text-red-600';
-}
-
-function formatDuration(seconds: number | null) {
-  if (seconds === null || seconds === 0) {
-    return (
-      <>
-        0<span>s</span>
-      </>
-    );
-  }
-  const minutes = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return (
-    <>
-      {minutes}
-      <span>m</span> {secs}
-      <span>s</span>
-    </>
-  );
 }
 
 export function SessionsOverviewCards() {
@@ -47,7 +29,7 @@ export function SessionsOverviewCards() {
       <Card className="py-0">
         <CardContent className="p-4">
           <p className="text-muted-foreground text-sm">Total Sessions</p>
-          <p className="font-bold font-mono text-3xl">
+          <p className="font-bold text-3xl">
             <CountingNumber number={overview?.totalSessions || 0} />
           </p>
           <div className="mt-1 flex items-center gap-1 text-xs">
@@ -66,7 +48,7 @@ export function SessionsOverviewCards() {
             )}
             <span
               className={cn(
-                'font-medium font-mono',
+                'font-medium',
                 getChangeColor(overview?.totalSessionsChange24h || 0)
               )}
             >
@@ -80,7 +62,7 @@ export function SessionsOverviewCards() {
       <Card className="py-0">
         <CardContent className="p-4">
           <p className="text-muted-foreground text-sm">Daily Sessions</p>
-          <p className="font-bold font-mono text-3xl">
+          <p className="font-bold text-3xl">
             <CountingNumber number={overview?.activeSessions24h || 0} />
           </p>
           <div className="mt-1 flex items-center gap-1 text-xs">
@@ -99,7 +81,7 @@ export function SessionsOverviewCards() {
             )}
             <span
               className={cn(
-                'font-medium font-mono',
+                'font-medium',
                 getChangeColor(overview?.activeSessions24hChange || 0)
               )}
             >
@@ -115,7 +97,7 @@ export function SessionsOverviewCards() {
           <p className="text-muted-foreground text-sm">
             Average Session Duration
           </p>
-          <p className="font-bold font-mono text-3xl">
+          <p className="font-bold text-3xl">
             {formatDuration(overview?.averageSessionDuration || null)}
           </p>
           <div className="mt-1 flex items-center gap-1 text-xs">

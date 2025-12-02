@@ -64,11 +64,11 @@ export function UsersTopCountries() {
           <TabsList className="h-8">
             <TabsTrigger className="text-xs" value="country">
               <span className="sm:hidden">Countries</span>
-              <span className="hidden sm:inline">Top Countries</span>
+              <span className="hidden sm:inline">Countries</span>
             </TabsTrigger>
             <TabsTrigger className="text-xs" value="city">
               <span className="sm:hidden">Cities</span>
-              <span className="hidden sm:inline">Top Cities</span>
+              <span className="hidden sm:inline">Cities</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -100,10 +100,10 @@ export function UsersTopCountries() {
                         </span>
                       </div>
                       <div className="flex items-baseline gap-2">
-                        <span className="font-mono font-semibold text-sm">
+                        <span className="font-semibold text-sm">
                           {count.toLocaleString()}
                         </span>
-                        <span className="font-mono text-muted-foreground text-xs">
+                        <span className="text-muted-foreground text-xs">
                           ({percentage.toFixed(1)}%)
                         </span>
                       </div>
@@ -145,10 +145,10 @@ export function UsersTopCountries() {
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">{city}</span>
                       <div className="flex items-baseline gap-2">
-                        <span className="font-mono font-semibold text-sm">
+                        <span className="font-semibold text-sm">
                           {count.toLocaleString()}
                         </span>
-                        <span className="font-mono text-muted-foreground text-xs">
+                        <span className="text-muted-foreground text-xs">
                           ({percentage.toFixed(1)}%)
                         </span>
                       </div>

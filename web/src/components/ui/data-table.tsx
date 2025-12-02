@@ -114,7 +114,7 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead
-                    className="bg-muted/50 font-semibold"
+                    className="bg-muted/50 font-semibold text-muted-foreground"
                     key={header.id}
                   >
                     {header.isPlaceholder
@@ -126,7 +126,7 @@ export function DataTable<TData, TValue>({
                   </TableHead>
                 ))}
                 {onRowClick && (
-                  <TableHead className="w-12 bg-muted/50 font-semibold" />
+                  <TableHead className="w-12 bg-muted/50 font-semibold text-muted-foreground" />
                 )}
               </TableRow>
             ))}

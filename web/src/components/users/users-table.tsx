@@ -5,6 +5,7 @@ import {
   AnonymousIcon,
   AppleIcon,
   BrowserIcon,
+  Calendar03Icon,
   ComputerPhoneSyncIcon,
   Flag02Icon,
 } from '@hugeicons/core-free-icons';
@@ -142,9 +143,13 @@ const columns: ColumnDef<Device>[] = [
     cell: ({ row }) => {
       const timestamp = row.getValue('firstSeen') as string;
       return (
-        <span className="font-mono text-muted-foreground text-xs">
-          {formatDateTime(timestamp)}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <HugeiconsIcon
+            className="size-3.5 text-muted-foreground"
+            icon={Calendar03Icon}
+          />
+          <span className="text-sm">{formatDateTime(timestamp)}</span>
+        </div>
       );
     },
   },

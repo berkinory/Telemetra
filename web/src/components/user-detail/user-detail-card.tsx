@@ -158,7 +158,7 @@ export function UserDetailCard({ deviceId }: UserDetailCardProps) {
                 <span>
                   {getPlatformLabel(device.platform)}
                   {device.osVersion && (
-                    <span className="font-mono text-muted-foreground">
+                    <span className="text-muted-foreground">
                       {' '}
                       {device.osVersion}
                     </span>
@@ -177,7 +177,7 @@ export function UserDetailCard({ deviceId }: UserDetailCardProps) {
 
           <div>
             <p className="text-muted-foreground text-sm">App Version</p>
-            <p className="mt-1 flex items-center gap-1.5 font-medium font-mono text-sm">
+            <p className="mt-1 flex items-center gap-1.5 font-medium text-sm">
               <HugeiconsIcon
                 className="size-4 text-muted-foreground"
                 icon={InformationCircleIcon}

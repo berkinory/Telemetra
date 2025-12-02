@@ -1,5 +1,10 @@
 'use client';
 
+import {
+  Calendar03Icon,
+  CursorPointer02Icon,
+} from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useRouter } from 'next/navigation';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
@@ -37,14 +42,21 @@ const columns: ColumnDef<Event>[] = [
   },
   {
     accessorKey: 'name',
-    header: 'Event Name',
+    header: 'Event',
     size: 350,
     cell: ({ row }) => (
       <div
-        className="max-w-xs truncate font-medium text-sm lg:max-w-sm"
+        className="flex max-w-xs items-center gap-2 lg:max-w-sm"
         title={row.getValue('name')}
       >
-        {row.getValue('name')}
+        <HugeiconsIcon
+          className="shrink-0 text-muted-foreground"
+          icon={CursorPointer02Icon}
+          size={16}
+        />
+        <span className="truncate font-medium text-primary text-sm">
+          {row.getValue('name')}
+        </span>
       </div>
     ),
   },
@@ -55,9 +67,16 @@ const columns: ColumnDef<Event>[] = [
     cell: ({ row }) => {
       const timestamp = row.getValue('timestamp') as string;
       return (
-        <span className="font-mono text-muted-foreground text-xs">
-          {formatDateTime(timestamp)}
-        </span>
+        <div className="flex items-center gap-2">
+          <HugeiconsIcon
+            className="text-muted-foreground"
+            icon={Calendar03Icon}
+            size={16}
+          />
+          <span className="text-primary text-sm">
+            {formatDateTime(timestamp)}
+          </span>
+        </div>
       );
     },
   },

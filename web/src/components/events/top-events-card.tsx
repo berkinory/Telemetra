@@ -46,10 +46,10 @@ export function TopEventsCard() {
                           {event.name}
                         </span>
                         <div className="flex shrink-0 items-baseline gap-2">
-                          <span className="font-mono font-semibold text-sm">
+                          <span className="font-semibold text-sm">
                             {event.count.toLocaleString()}
                           </span>
-                          <span className="font-mono text-muted-foreground text-xs">
+                          <span className="text-muted-foreground text-xs">
                             ({percentage.toFixed(1)}%)
                           </span>
                         </div>

@@ -1,10 +1,9 @@
 'use client';
 
 import {
-  Activity02Icon,
   Calendar03Icon,
+  CursorPointer02Icon,
   FolderSearchIcon,
-  PresentationLineChart02Icon,
   Time03Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -25,37 +24,10 @@ import type {
   EventsListResponse,
   Session,
 } from '@/lib/api/types';
-import { formatDateTime, formatTime } from '@/lib/date-utils';
+import { formatDateTime, formatDuration, formatTime } from '@/lib/date-utils';
 import { cacheConfig } from '@/lib/queries/query-client';
 import { queryKeys } from '@/lib/queries/query-keys';
 import { cn } from '@/lib/utils';
-
-function formatDuration(startedAt: string, lastActivityAt: string) {
-  const start = new Date(startedAt).getTime();
-  const end = new Date(lastActivityAt).getTime();
-
-  if (Number.isNaN(start) || Number.isNaN(end)) {
-    return '—';
-  }
-
-  const seconds = Math.floor((end - start) / 1000);
-
-  if (seconds < 0) {
-    return '—';
-  }
-
-  if (seconds < 60) {
-    return `${seconds}s`;
-  }
-  if (seconds < 3600) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
-  }
-  const hours = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-}
 
 function EventRow({
   event,
@@ -77,11 +49,11 @@ function EventRow({
       transition={{ duration: 0.15, ease: 'easeOut' }}
       type="button"
     >
-      <HugeiconsIcon className="size-4 shrink-0" icon={Activity02Icon} />
+      <HugeiconsIcon className="size-4 shrink-0" icon={CursorPointer02Icon} />
       <span className="flex-1 truncate font-medium text-sm" title={event.name}>
         {event.name}
       </span>
-      <span className="shrink-0 font-mono text-muted-foreground text-xs">
+      <span className="shrink-0 text-muted-foreground text-xs">
         {formatTime(event.timestamp)}
       </span>
     </motion.button>
@@ -124,7 +96,12 @@ export function SessionDetailsDialog({
     return null;
   }
 
-  const duration = formatDuration(session.startedAt, session.lastActivityAt);
+  const durationInSeconds = Math.floor(
+    (new Date(session.lastActivityAt).getTime() -
+      new Date(session.startedAt).getTime()) /
+      1000
+  );
+  const duration = formatDuration(durationInSeconds);
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
@@ -133,44 +110,41 @@ export function SessionDetailsDialog({
           <DialogTitle>Session Details</DialogTitle>
           <div className="space-y-3 pt-4">
             <div className="space-y-1">
+              <p className="text-muted-foreground text-sm">User ID</p>
               <div className="flex items-center gap-2">
                 <CopyButton
                   className="size-4 [&_svg]:size-4"
                   content={session.deviceId}
                   variant="ghost"
                 />
-                <p className="text-muted-foreground text-xs">User ID</p>
-              </div>
-              <p className="break-all font-mono text-sm">{session.deviceId}</p>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <HugeiconsIcon className="size-4" icon={Calendar03Icon} />
-                  <p className="text-muted-foreground text-xs">Started At</p>
-                </div>
-                <p className="font-mono text-muted-foreground text-xs">
-                  {formatDateTime(session.startedAt)}
+                <p className="break-all font-mono text-primary text-sm">
+                  {session.deviceId}
                 </p>
               </div>
+            </div>
+
+            <div className="flex gap-6">
               <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <HugeiconsIcon className="size-4" icon={Time03Icon} />
-                  <p className="text-muted-foreground text-xs">Duration</p>
-                </div>
-                <p className="font-mono text-xs">{duration}</p>
-              </div>
-              <div className="space-y-1">
+                <p className="text-muted-foreground text-sm">Date</p>
                 <div className="flex items-center gap-2">
                   <HugeiconsIcon
-                    className="size-4"
-                    icon={PresentationLineChart02Icon}
+                    className="size-4 text-muted-foreground"
+                    icon={Calendar03Icon}
                   />
-                  <p className="text-muted-foreground text-xs">Events</p>
+                  <p className="text-primary text-sm">
+                    {formatDateTime(session.startedAt)}
+                  </p>
                 </div>
-                <p className="font-mono text-sm">
-                  {eventsData?.events.length || 0}
-                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-muted-foreground text-sm">Duration</p>
+                <div className="flex items-center gap-2">
+                  <HugeiconsIcon
+                    className="size-4 text-muted-foreground"
+                    icon={Time03Icon}
+                  />
+                  <p className="text-primary text-sm">{duration}</p>
+                </div>
               </div>
             </div>
           </div>

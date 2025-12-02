@@ -121,7 +121,7 @@ export default function ApiKeysPage() {
               ) : (
                 <div className="space-y-3">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="flex-1 overflow-hidden rounded-lg border bg-muted/50 px-3 py-2 font-mono text-sm">
+                    <div className="flex-1 overflow-hidden rounded-lg border bg-muted/50 px-3 py-2 text-sm">
                       <div
                         className="overflow-x-auto whitespace-nowrap"
                         ref={shouldAnimate ? ref : staticRef}

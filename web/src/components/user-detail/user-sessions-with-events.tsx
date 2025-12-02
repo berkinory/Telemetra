@@ -5,6 +5,7 @@ import {
   ArrowRight01Icon,
   Calendar03Icon,
   CursorPointer02Icon,
+  FolderSearchIcon,
   Time03Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -19,28 +20,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { DeviceSessionWithEvents } from '@/lib/api/types';
-import { formatDateTime, formatTime } from '@/lib/date-utils';
+import { formatDateTime, formatDuration, formatTime } from '@/lib/date-utils';
 import { useDeviceSessionsWithEvents } from '@/lib/queries';
-
-function formatDuration(seconds: number | null) {
-  if (seconds === null || seconds === 0) {
-    return '0s';
-  }
-
-  const totalSeconds = Math.floor(seconds);
-
-  if (totalSeconds < 60) {
-    return `${totalSeconds}s`;
-  }
-  if (totalSeconds < 3600) {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
-  }
-  const hours = Math.floor(totalSeconds / 3600);
-  const mins = Math.floor((totalSeconds % 3600) / 60);
-  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-}
 
 type SessionItemProps = {
   session: DeviceSessionWithEvents;
@@ -58,7 +39,7 @@ function SessionItem({ session }: SessionItemProps) {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
                 <HugeiconsIcon className="size-4" icon={Calendar03Icon} />
-                <span className="font-mono text-xs">
+                <span className="text-xs">
                   {formatDateTime(session.startedAt)}
                 </span>
               </div>
@@ -67,12 +48,12 @@ function SessionItem({ session }: SessionItemProps) {
                   className="size-4 text-muted-foreground"
                   icon={Time03Icon}
                 />
-                <span className="font-mono text-xs">
+                <span className="text-xs">
                   {formatDuration(session.duration)}
                 </span>
               </div>
             </div>
-            <div className="hidden font-mono text-muted-foreground text-xs md:block">
+            <div className="hidden text-muted-foreground text-xs md:block">
               {session.events.length}{' '}
               {session.events.length === 1 ? 'event' : 'events'}
             </div>
@@ -97,7 +78,7 @@ function SessionItem({ session }: SessionItemProps) {
                   >
                     {event.name}
                   </span>
-                  <span className="shrink-0 font-mono text-muted-foreground text-xs">
+                  <span className="shrink-0 text-muted-foreground text-xs">
                     {formatTime(event.timestamp)}
                   </span>
                 </div>
@@ -149,8 +130,21 @@ export function UserSessionsWithEvents({
 
         <ScrollArea className="h-[280px]">
           {sessions.length === 0 ? (
-            <div className="flex h-32 items-center justify-center rounded-lg border border-border border-dashed">
-              <p className="text-muted-foreground text-sm">No sessions found</p>
+            <div className="flex h-[280px] items-center justify-center">
+              <div className="flex flex-col items-center justify-center gap-2 py-4">
+                <HugeiconsIcon
+                  className="size-10 text-muted-foreground opacity-40"
+                  icon={FolderSearchIcon}
+                />
+                <div className="flex flex-col gap-1 text-center">
+                  <p className="font-medium text-muted-foreground text-sm">
+                    No sessions found
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    There are no sessions to display
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <Accordion className="space-y-3 pr-4" collapsible type="single">
@@ -175,8 +169,7 @@ export function UserSessionsWithEvents({
           <div className="text-muted-foreground text-sm">
             {pagination.total > 0 ? (
               <>
-                Page <span className="font-mono">{page}</span> of{' '}
-                <span className="font-mono">{pagination.totalPages}</span>
+                Page <span>{page}</span> of <span>{pagination.totalPages}</span>
               </>
             ) : (
               'No results'

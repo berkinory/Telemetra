@@ -269,7 +269,7 @@ export function UserSettings({ children }: UserSettingsProps) {
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Preview</h4>
               <div className="rounded-md border bg-muted/50 p-3">
-                <p className="font-mono text-sm">{previewTime}</p>
+                <p className="text-sm">{previewTime}</p>
               </div>
             </div>
           </div>
