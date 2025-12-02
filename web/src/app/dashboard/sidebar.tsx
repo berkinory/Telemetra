@@ -17,12 +17,13 @@ import {
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { minidenticon } from 'minidenticons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useQueryState } from 'nuqs';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AppSwitcher } from '@/components/app-switcher';
-import { AvatarFallback, Avatar as UIAvatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +45,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { UserAvatar } from '@/components/user-profile';
 import { UserSettings } from '@/components/user-settings';
 import { authClient, useSession } from '@/lib/auth';
 import { getQueryClient } from '@/lib/queries/query-client';
@@ -144,6 +144,14 @@ export function DashboardSidebar() {
   const user = session?.user;
   const username = user?.email || 'User';
   const displayName = user?.name || username.split('@')[0];
+
+  const avatarSrc = useMemo(
+    () =>
+      `data:image/svg+xml;utf8,${encodeURIComponent(
+        minidenticon(username, 55, 45)
+      )}`,
+    [username]
+  );
 
   useEffect(() => {
     if (!isPending && session) {
@@ -339,12 +347,10 @@ export function DashboardSidebar() {
                   size="lg"
                   tooltip="Account"
                 >
-                  <UIAvatar className="size-8">
-                    <div className="flex h-full w-full items-center justify-center">
-                      <UserAvatar seed={username} size={32} variant="beam" />
-                    </div>
+                  <Avatar className="size-8">
+                    <AvatarImage alt={username} src={avatarSrc} />
                     <AvatarFallback className="bg-transparent" />
-                  </UIAvatar>
+                  </Avatar>
                   <div className="flex flex-col gap-0.5 leading-none">
                     <span className="font-semibold text-sm">{displayName}</span>
                     <span className="text-sidebar-foreground/70 text-xs">
