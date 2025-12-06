@@ -305,7 +305,7 @@ export function DataTableServer<TData, TValue>({
               <TableRow>
                 <TableCell
                   className="h-32 text-center"
-                  colSpan={columns.length}
+                  colSpan={columns.length + (onRowClick ? 1 : 0)}
                 >
                   <div className="flex flex-col items-center justify-center gap-2 py-4">
                     <HugeiconsIcon
