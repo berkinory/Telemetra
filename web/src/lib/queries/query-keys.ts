@@ -42,18 +42,6 @@ export const queryKeys = {
         appId,
         params,
       ] as const,
-    sessionsWithEvents: (
-      deviceId: string,
-      appId: string,
-      filters?: PaginationParams
-    ) =>
-      [
-        ...queryKeys.devices.all,
-        'sessions-with-events',
-        deviceId,
-        appId,
-        filters,
-      ] as const,
   },
 
   sessions: {

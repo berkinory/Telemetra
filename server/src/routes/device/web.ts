@@ -18,7 +18,6 @@ import {
   type BetterAuthSession,
   type BetterAuthUser,
 } from '@/lib/middleware';
-import { getEvents } from '@/lib/questdb';
 import {
   buildFilters,
   formatPaginationResponse,
@@ -32,7 +31,6 @@ import {
   DeviceLocationOverviewResponseSchema,
   DeviceOverviewResponseSchema,
   DevicePlatformOverviewResponseSchema,
-  DeviceSessionsWithEventsResponseSchema,
   DevicesListResponseSchema,
   DeviceTimeseriesResponseSchema,
   ErrorCode,
@@ -993,117 +991,6 @@ export const deviceWebRouter = new Elysia({ prefix: '/devices' })
       }),
       response: {
         200: DeviceActivityTimeseriesResponseSchema,
-        401: ErrorResponseSchema,
-        403: ErrorResponseSchema,
-        404: ErrorResponseSchema,
-        500: ErrorResponseSchema,
-      },
-    }
-  )
-  .get(
-    '/:deviceId/sessions-with-events',
-    async (ctx) => {
-      const { params, query, set } = ctx as typeof ctx & AuthContext;
-      try {
-        const { deviceId } = params;
-        const appId = query.appId as string;
-        const page = query.page ? Number.parseInt(query.page as string, 10) : 1;
-        const pageSize = query.pageSize
-          ? Number.parseInt(query.pageSize as string, 10)
-          : 3;
-
-        const device = await db.query.devices.findFirst({
-          where: (table, { eq: eqFn }) =>
-            and(eqFn(table.deviceId, deviceId), eqFn(table.appId, appId)),
-        });
-
-        if (!device) {
-          set.status = HttpStatus.NOT_FOUND;
-          return {
-            code: ErrorCode.NOT_FOUND,
-            detail: 'Device not found',
-          };
-        }
-
-        const offset = (page - 1) * pageSize;
-
-        const [sessionsList, [{ count: totalCount }]] = await Promise.all([
-          db
-            .select({
-              sessionId: sessions.sessionId,
-              startedAt: sessions.startedAt,
-              lastActivityAt: sessions.lastActivityAt,
-            })
-            .from(sessions)
-            .where(eq(sessions.deviceId, deviceId))
-            .orderBy(desc(sessions.startedAt))
-            .limit(pageSize)
-            .offset(offset),
-          db
-            .select({ count: count() })
-            .from(sessions)
-            .where(eq(sessions.deviceId, deviceId)),
-        ]);
-
-        const sessionsWithEvents = await Promise.all(
-          sessionsList.map(async (session) => {
-            const duration =
-              (session.lastActivityAt.getTime() - session.startedAt.getTime()) /
-              1000;
-
-            const { events: eventsList } = await getEvents({
-              sessionId: session.sessionId,
-              appId,
-              limit: 500,
-            });
-
-            const events = eventsList.map((event) => ({
-              eventId: event.event_id,
-              name: event.name,
-              timestamp: event.timestamp,
-            }));
-
-            return {
-              sessionId: session.sessionId,
-              startedAt: session.startedAt.toISOString(),
-              lastActivityAt: session.lastActivityAt.toISOString(),
-              duration,
-              events,
-            };
-          })
-        );
-
-        set.status = HttpStatus.OK;
-        return {
-          sessions: sessionsWithEvents,
-          pagination: formatPaginationResponse(
-            Number(totalCount),
-            page,
-            pageSize
-          ),
-        };
-      } catch (error) {
-        console.error('[Device.SessionsWithEvents] Error:', error);
-        set.status = HttpStatus.INTERNAL_SERVER_ERROR;
-        return {
-          code: ErrorCode.INTERNAL_SERVER_ERROR,
-          detail: 'Failed to fetch device sessions with events',
-        };
-      }
-    },
-    {
-      requireAuth: true,
-      verifyAppAccess: true,
-      params: t.Object({
-        deviceId: t.String(),
-      }),
-      query: t.Object({
-        appId: t.String(),
-        page: t.Optional(t.String()),
-        pageSize: t.Optional(t.String()),
-      }),
-      response: {
-        200: DeviceSessionsWithEventsResponseSchema,
         401: ErrorResponseSchema,
         403: ErrorResponseSchema,
         404: ErrorResponseSchema,

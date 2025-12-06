@@ -97,20 +97,6 @@ export const DeviceLiveResponseSchema = t.Object({
   activeNow: t.Number({ minimum: 0 }),
 });
 
-export const DeviceSessionEventSchema = t.Object({
-  eventId: t.String(),
-  name: t.String(),
-  timestamp: t.String({ format: 'date-time' }),
-});
-
-export const DeviceSessionWithEventsSchema = t.Object({
-  sessionId: t.String(),
-  startedAt: t.String({ format: 'date-time' }),
-  lastActivityAt: t.String({ format: 'date-time' }),
-  duration: t.Number(),
-  events: t.Array(DeviceSessionEventSchema),
-});
-
 export const DeviceActivityTimeseriesDataPointSchema = t.Object({
   date: t.String(),
   sessionCount: t.Number({ minimum: 0 }),
@@ -126,16 +112,6 @@ export const DeviceActivityTimeseriesResponseSchema = t.Object({
   avgSessionDuration: t.Union([t.Number(), t.Null()]),
   firstSeen: t.String({ format: 'date-time' }),
   lastActivityAt: t.Union([t.String({ format: 'date-time' }), t.Null()]),
-});
-
-export const DeviceSessionsWithEventsResponseSchema = t.Object({
-  sessions: t.Array(DeviceSessionWithEventsSchema),
-  pagination: t.Object({
-    total: t.Number({ minimum: 0 }),
-    page: t.Number({ minimum: 1 }),
-    pageSize: t.Number({ minimum: 1 }),
-    totalPages: t.Number({ minimum: 0 }),
-  }),
 });
 
 export type Platform = 'ios' | 'android' | 'web' | 'unknown';
@@ -154,15 +130,10 @@ export type DeviceTimeseriesDataPoint =
 export type DeviceTimeseriesResponse =
   typeof DeviceTimeseriesResponseSchema.static;
 export type DeviceLiveResponse = typeof DeviceLiveResponseSchema.static;
-export type DeviceSessionEvent = typeof DeviceSessionEventSchema.static;
-export type DeviceSessionWithEvents =
-  typeof DeviceSessionWithEventsSchema.static;
 export type DeviceActivityTimeseriesDataPoint =
   typeof DeviceActivityTimeseriesDataPointSchema.static;
 export type DeviceActivityTimeseriesResponse =
   typeof DeviceActivityTimeseriesResponseSchema.static;
-export type DeviceSessionsWithEventsResponse =
-  typeof DeviceSessionsWithEventsResponseSchema.static;
 
 export type ListDevicesQuery = {
   page?: string;
@@ -205,10 +176,4 @@ export type DeviceActivityTimeseriesQuery = {
   appId: string;
   startDate?: string;
   endDate?: string;
-};
-
-export type DeviceSessionsWithEventsQuery = {
-  page?: string;
-  pageSize?: string;
-  appId: string;
 };

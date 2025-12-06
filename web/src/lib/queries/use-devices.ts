@@ -9,7 +9,6 @@ import type {
   DeviceMetric,
   DeviceOverview,
   DevicePlatformOverview,
-  DeviceSessionsWithEventsResponse,
   DevicesListResponse,
   DeviceTimeseriesResponse,
   PaginationParams,
@@ -216,28 +215,5 @@ export function useDeviceActivityTimeseries(
       );
     },
     ...cacheConfig.timeseries,
-  });
-}
-
-export function useDeviceSessionsWithEvents(
-  deviceId: string,
-  appId: string,
-  filters?: PaginationParams
-) {
-  return useSuspenseQuery({
-    queryKey: queryKeys.devices.sessionsWithEvents(deviceId, appId, filters),
-    queryFn: () => {
-      if (!(deviceId && appId)) {
-        return Promise.resolve({
-          sessions: [],
-          pagination: { total: 0, page: 1, pageSize: 5, totalPages: 0 },
-        });
-      }
-
-      return fetchApi<DeviceSessionsWithEventsResponse>(
-        `/web/devices/${deviceId}/sessions-with-events${buildQueryString({ appId, ...filters })}`
-      );
-    },
-    ...cacheConfig.list,
   });
 }

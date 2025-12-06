@@ -9,6 +9,7 @@ import {
   CustomerSupportIcon,
   File02Icon,
   GithubIcon,
+  GlobalIcon,
   Key01Icon,
   Logout01Icon,
   PlaySquareIcon,
@@ -74,6 +75,12 @@ const analyticsNavItems: NavItem[] = [
     icon: CursorPointer02Icon,
     path: '/dashboard/analytics/events',
     tooltip: 'Events',
+  },
+  {
+    label: 'Realtime',
+    icon: GlobalIcon,
+    path: '/dashboard/analytics/realtime',
+    tooltip: 'Realtime',
   },
 ];
 

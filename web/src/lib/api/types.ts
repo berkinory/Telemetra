@@ -150,25 +150,6 @@ export type DeviceActivityTimeseriesResponse = {
   lastActivityAt: string | null;
 };
 
-export type DeviceSessionEvent = {
-  eventId: string;
-  name: string;
-  timestamp: string;
-};
-
-export type DeviceSessionWithEvents = {
-  sessionId: string;
-  startedAt: string;
-  lastActivityAt: string;
-  duration: number;
-  events: DeviceSessionEvent[];
-};
-
-export type DeviceSessionsWithEventsResponse = {
-  sessions: DeviceSessionWithEvents[];
-  pagination: PaginationResponse;
-};
-
 export type Session = {
   sessionId: string;
   deviceId: string;

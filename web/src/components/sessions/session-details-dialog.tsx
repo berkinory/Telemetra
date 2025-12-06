@@ -5,12 +5,15 @@ import {
   CursorPointer02Icon,
   FolderSearchIcon,
   LinkSquare01Icon,
+  PlayCircleIcon,
+  StopCircleIcon,
   Time03Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 import { CopyButton } from '@/components/ui/copy-button';
 import {
   Dialog,
@@ -19,6 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import { buildQueryString, fetchApi } from '@/lib/api/client';
 import type {
   EventListItem,
@@ -41,7 +45,7 @@ function EventRow({
     <motion.button
       animate={{ opacity: 1, scale: 1 }}
       className={cn(
-        'flex w-full items-center gap-3 rounded-md bg-muted/30 px-3 py-3 text-left transition-colors duration-100',
+        'flex w-full items-center gap-3 rounded-md bg-muted/30 px-3 py-2 text-left transition-colors duration-100',
         'cursor-pointer hover:bg-accent hover:text-accent-foreground'
       )}
       exit={{ opacity: 0, scale: 0.95 }}
@@ -93,6 +97,13 @@ export function SessionDetailsDialog({
     ...cacheConfig.list,
   });
 
+  const generatedName = useMemo(() => {
+    if (!session?.deviceId) {
+      return '';
+    }
+    return getGeneratedName(session.deviceId);
+  }, [session?.deviceId]);
+
   if (!(session && appId)) {
     return null;
   }
@@ -110,36 +121,48 @@ export function SessionDetailsDialog({
         <DialogHeader className="border-b px-6 pt-6 pb-4">
           <DialogTitle>Session Details</DialogTitle>
           <div className="space-y-3 pt-4">
-            <div className="space-y-1">
-              <p className="text-muted-foreground text-sm">User ID</p>
-              <div className="flex items-center gap-2">
-                <CopyButton
-                  className="size-4 text-muted-foreground hover:text-primary [&_svg]:size-4"
-                  content={session.deviceId}
-                  variant="ghost"
+            <div className="space-y-2">
+              <p className="text-muted-foreground text-sm">User</p>
+              <div className="flex items-center gap-3">
+                <UserAvatar
+                  seed={session.deviceId}
+                  size={40}
+                  variant="marble"
                 />
-                <p className="break-all font-mono text-primary text-sm">
-                  {session.deviceId}
-                </p>
-                <button
-                  className="size-4 shrink-0 text-muted-foreground transition-colors hover:text-primary"
-                  onClick={() => {
-                    router.push(
-                      `/dashboard/analytics/users/${session.deviceId}?app=${appId}`
-                    );
-                  }}
-                  title="View user details"
-                  type="button"
-                >
-                  <HugeiconsIcon
-                    className="size-4"
-                    icon={LinkSquare01Icon}
-                  />
-                </button>
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm">{generatedName}</p>
+                    <button
+                      className="size-4 shrink-0 cursor-pointer text-muted-foreground transition-colors hover:text-primary"
+                      onClick={() => {
+                        router.push(
+                          `/dashboard/analytics/users/${session.deviceId}?app=${appId}`
+                        );
+                      }}
+                      title="View user details"
+                      type="button"
+                    >
+                      <HugeiconsIcon
+                        className="size-4"
+                        icon={LinkSquare01Icon}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CopyButton
+                      className="size-3 text-muted-foreground hover:text-primary [&_svg]:size-3"
+                      content={session.deviceId}
+                      variant="ghost"
+                    />
+                    <p className="truncate font-mono text-muted-foreground text-xs">
+                      {session.deviceId}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-6">
+            <div className="flex items-start justify-between gap-6">
               <div className="space-y-1">
                 <p className="text-muted-foreground text-sm">Date</p>
                 <div className="flex items-center gap-2">
@@ -169,50 +192,108 @@ export function SessionDetailsDialog({
         <div className="flex-1 overflow-y-auto px-4 pb-4">
           {isLoading && (
             <div className="flex flex-col gap-1">
-              {Array.from({ length: 5 }).map((__, index) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: Loading skeleton rows are static and don't reorder
-                <div className="rounded-md px-3 py-3" key={`loading-${index}`}>
-                  <Skeleton className="h-5 w-full" />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!isLoading && eventsData?.events && eventsData.events.length > 0 && (
-            <div className="flex flex-col gap-1">
-              <AnimatePresence mode="popLayout">
-                {eventsData.events.map((event) => (
-                  <EventRow
-                    event={event}
-                    key={event.eventId}
-                    onClick={() => {
-                      router.push(
-                        `/dashboard/analytics/events/${event.eventId}?app=${appId}`
-                      );
-                    }}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-
-          {!isLoading &&
-            (!eventsData?.events || eventsData.events.length === 0) && (
-              <div className="flex min-h-[200px] flex-col items-center justify-center gap-2">
-                <HugeiconsIcon
-                  className="size-10 text-muted-foreground opacity-40"
-                  icon={FolderSearchIcon}
-                />
-                <div className="flex flex-col gap-1 text-center">
-                  <p className="font-medium text-muted-foreground text-sm">
-                    No events found
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    This session has no recorded events
-                  </p>
-                </div>
+              {/* Session Ended Skeleton */}
+              <div className="flex items-center gap-3 rounded-md bg-muted/30 px-3 py-2">
+                <Skeleton className="size-4 shrink-0 rounded-full" />
+                <Skeleton className="h-5 flex-1" />
+                <Skeleton className="h-4 w-12 shrink-0" />
               </div>
-            )}
+
+              {/* Event Skeletons */}
+              {['skeleton-event-1', 'skeleton-event-2', 'skeleton-event-3'].map(
+                (key) => (
+                  <div
+                    className="flex items-center gap-3 rounded-md bg-muted/30 px-3 py-2"
+                    key={key}
+                  >
+                    <Skeleton className="size-4 shrink-0 rounded-full" />
+                    <Skeleton className="h-5 flex-1" />
+                    <Skeleton className="h-4 w-12 shrink-0" />
+                  </div>
+                )
+              )}
+
+              {/* Session Started Skeleton */}
+              <div className="flex items-center gap-3 rounded-md bg-muted/30 px-3 py-2">
+                <Skeleton className="size-4 shrink-0 rounded-full" />
+                <Skeleton className="h-5 flex-1" />
+                <Skeleton className="h-4 w-12 shrink-0" />
+              </div>
+            </div>
+          )}
+
+          {!isLoading && eventsData?.events && (
+            <div className="flex flex-col gap-1">
+              <motion.div
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-3 rounded-md bg-muted/30 px-3 py-2"
+                initial={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+              >
+                <HugeiconsIcon
+                  className="size-4 shrink-0 text-red-500"
+                  icon={StopCircleIcon}
+                />
+                <span className="flex-1 truncate font-medium text-sm">
+                  Session Ended
+                </span>
+                <span className="shrink-0 text-muted-foreground text-xs">
+                  {formatTime(session.lastActivityAt)}
+                </span>
+              </motion.div>
+
+              {eventsData.events.length > 0 && (
+                <AnimatePresence mode="popLayout">
+                  {eventsData.events.map((event) => (
+                    <EventRow
+                      event={event}
+                      key={event.eventId}
+                      onClick={() => {
+                        router.push(
+                          `/dashboard/analytics/events/${event.eventId}?app=${appId}`
+                        );
+                      }}
+                    />
+                  ))}
+                </AnimatePresence>
+              )}
+
+              <motion.div
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-3 rounded-md bg-muted/30 px-3 py-2"
+                initial={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+              >
+                <HugeiconsIcon
+                  className="size-4 shrink-0 text-green-500"
+                  icon={PlayCircleIcon}
+                />
+                <span className="flex-1 truncate font-medium text-sm">
+                  Session Started
+                </span>
+                <span className="shrink-0 text-muted-foreground text-xs">
+                  {formatTime(session.startedAt)}
+                </span>
+              </motion.div>
+            </div>
+          )}
+
+          {!(isLoading || eventsData?.events) && (
+            <div className="flex min-h-[200px] flex-col items-center justify-center gap-2">
+              <HugeiconsIcon
+                className="size-10 text-muted-foreground opacity-40"
+                icon={FolderSearchIcon}
+              />
+              <div className="flex flex-col gap-1 text-center">
+                <p className="font-medium text-muted-foreground text-sm">
+                  No events found
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  This session has no recorded events
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

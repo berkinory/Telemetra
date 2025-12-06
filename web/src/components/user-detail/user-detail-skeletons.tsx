@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePaginationStore } from '@/stores/pagination-store';
 
@@ -66,24 +65,35 @@ export function UserSessionsTableSkeleton() {
   const skeletonCount = isMounted ? pageSize : 10;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-9 w-64" />
-        <Skeleton className="h-9 w-32" />
-      </div>
-      <div className="space-y-2">
-        {Array.from(
-          { length: skeletonCount },
-          (_, i) => `skeleton-table-${i}`
-        ).map((key) => (
-          <Skeleton className="h-10 w-full" key={key} />
-        ))}
-      </div>
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-9 w-64" />
-      </div>
-    </div>
+    <Card className="py-0">
+      <CardContent className="space-y-4 p-4">
+        <div>
+          <h2 className="font-semibold text-lg">Sessions & Events</h2>
+          <p className="text-muted-foreground text-sm">
+            User session history with events
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+          <div className="space-y-2">
+            {Array.from(
+              { length: skeletonCount },
+              (_, i) => `skeleton-table-${i}`
+            ).map((key) => (
+              <Skeleton className="h-10 w-full" key={key} />
+            ))}
+          </div>
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-9 w-64" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -145,34 +155,6 @@ export function UserActivityCalendarSkeleton() {
             <div className="size-3 rounded-sm bg-chart-2" />
           </div>
           <span className="text-muted-foreground">More</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export function UserSessionsWithEventsSkeleton() {
-  return (
-    <Card className="py-0">
-      <CardContent className="flex flex-col p-4">
-        <div className="mb-4 flex items-center gap-2">
-          <h2 className="font-semibold text-lg">Sessions & Events</h2>
-        </div>
-
-        <ScrollArea className="h-[280px]">
-          <div className="space-y-3 pr-4">
-            {Array.from({ length: 5 }, (_, i) => `skeleton-session-${i}`).map(
-              (key) => (
-                <Skeleton className="h-11 w-full rounded-lg" key={key} />
-              )
-            )}
-          </div>
-        </ScrollArea>
-
-        <div className="mt-4 flex items-center justify-between border-border border-t pt-4">
-          <Skeleton className="h-9 w-24" />
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-9 w-20" />
         </div>
       </CardContent>
     </Card>

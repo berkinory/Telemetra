@@ -4,33 +4,15 @@ import { Calendar03Icon, Time03Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { SessionDetailsDialog } from '@/components/sessions/session-details-dialog';
+import { Card, CardContent } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
-import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import type { Session } from '@/lib/api/types';
 import { formatDateTime, formatDuration } from '@/lib/date-utils';
 import { useSessions } from '@/lib/queries';
 import { usePaginationStore } from '@/stores/pagination-store';
-import { SessionDetailsDialog } from './session-details-dialog';
 
 const columns: ColumnDef<Session>[] = [
-  {
-    accessorKey: 'deviceId',
-    header: 'User',
-    size: 350,
-    cell: ({ row }) => {
-      const deviceId = row.getValue('deviceId') as string;
-      const generatedName = getGeneratedName(deviceId);
-      return (
-        <div
-          className="flex max-w-xs items-center gap-2 lg:max-w-sm"
-          title={deviceId}
-        >
-          <UserAvatar seed={deviceId} size={20} />
-          <span className="truncate text-sm">{generatedName}</span>
-        </div>
-      );
-    },
-  },
   {
     accessorKey: 'startedAt',
     header: 'Date',
@@ -76,17 +58,20 @@ const columns: ColumnDef<Session>[] = [
   },
 ];
 
-export function SessionsTable() {
+type UserSessionsTableProps = {
+  deviceId: string;
+};
+
+export function UserSessionsTable({ deviceId }: UserSessionsTableProps) {
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
-  const [search] = useQueryState('search', parseAsString.withDefault(''));
   const [sessionId, setSessionId] = useQueryState('session', parseAsString);
   const { pageSize } = usePaginationStore();
 
   const { data: sessionsData, isLoading } = useSessions(appId || '', {
     page: page.toString(),
     pageSize: pageSize.toString(),
-    deviceId: search || undefined,
+    deviceId,
   });
 
   const selectedSession =
@@ -102,22 +87,31 @@ export function SessionsTable() {
 
   return (
     <>
-      <DataTableServer
-        columns={columns}
-        data={sessionsData?.sessions || []}
-        isLoading={isLoading}
-        onRowClick={handleViewSession}
-        pagination={
-          sessionsData?.pagination || {
-            total: 0,
-            page: 1,
-            pageSize,
-            totalPages: 0,
-          }
-        }
-        searchKey="deviceId"
-        searchPlaceholder="Search User"
-      />
+      <Card className="py-0">
+        <CardContent className="space-y-4 p-4">
+          <div>
+            <h2 className="font-semibold text-lg">Sessions & Events</h2>
+            <p className="text-muted-foreground text-sm">
+              User session history with events
+            </p>
+          </div>
+
+          <DataTableServer
+            columns={columns}
+            data={sessionsData?.sessions || []}
+            isLoading={isLoading}
+            onRowClick={handleViewSession}
+            pagination={
+              sessionsData?.pagination || {
+                total: 0,
+                page: 1,
+                pageSize,
+                totalPages: 0,
+              }
+            }
+          />
+        </CardContent>
+      </Card>
       <SessionDetailsDialog
         appId={appId}
         onOpenChange={(open) => {

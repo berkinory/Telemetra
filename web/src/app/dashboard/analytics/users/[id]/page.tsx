@@ -12,9 +12,9 @@ import { UserDetailCard } from '@/components/user-detail/user-detail-card';
 import {
   UserActivityCalendarSkeleton,
   UserDetailCardSkeleton,
-  UserSessionsWithEventsSkeleton,
+  UserSessionsTableSkeleton,
 } from '@/components/user-detail/user-detail-skeletons';
-import { UserSessionsWithEvents } from '@/components/user-detail/user-sessions-with-events';
+import { UserSessionsTable } from '@/components/user-detail/user-sessions-table';
 
 type UserPageProps = {
   params: Promise<{
@@ -60,8 +60,8 @@ export default function UserPage({ params }: UserPageProps) {
         </div>
 
         <ErrorBoundary>
-          <Suspense fallback={<UserSessionsWithEventsSkeleton />}>
-            <UserSessionsWithEvents deviceId={id} />
+          <Suspense fallback={<UserSessionsTableSkeleton />}>
+            <UserSessionsTable deviceId={id} />
           </Suspense>
         </ErrorBoundary>
       </div>
