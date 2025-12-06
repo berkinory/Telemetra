@@ -10,6 +10,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useRouter } from 'next/navigation';
 import { useQueryState } from 'nuqs';
+import { useEffect, useState } from 'react';
 import { CreateAppDialog } from '@/components/create-app-dialog';
 import {
   DropdownMenu,
@@ -32,6 +33,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
   const router = useRouter();
   const [appId, setAppId] = useQueryState('app');
   const { data: appsData, isPending } = useApps();
+  const [open, setOpen] = useState(false);
 
   const apps = appsData?.apps || [];
   const selectedApp = apps.find((app) => app.id === appId);
@@ -42,13 +44,25 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
     onMobileClose?.();
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 's') {
+        e.preventDefault();
+        setOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   if (variant === 'sidebar') {
     return (
-      <DropdownMenu modal={false}>
+      <DropdownMenu modal={false} onOpenChange={setOpen} open={open}>
         <DropdownMenuTrigger asChild>
           <SidebarMenuButton
             size="lg"
-            tooltip={selectedApp ? selectedApp.name : 'Select Application'}
+            tooltip={selectedApp ? selectedApp.name : 'Select App'}
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <HugeiconsIcon className="size-4" icon={ArtboardIcon} />
@@ -61,14 +75,14 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
                 <Skeleton className="h-4 w-20" />
               ) : (
                 <span className="font-semibold">
-                  {selectedApp ? selectedApp.name : 'Select Application'}
+                  {selectedApp ? selectedApp.name : 'Select App'}
                 </span>
               )}
               {isPending ? (
                 <Skeleton className="h-3 w-16" />
               ) : (
                 <span className="text-sidebar-foreground/70 text-xs">
-                  {selectedApp ? 'Analytics' : 'Choose an application'}
+                  {selectedApp ? 'Analytics' : 'Choose an app'}
                 </span>
               )}
             </div>
@@ -120,7 +134,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
   }
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu modal={false} onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger asChild>
         <button
           className="flex h-14 items-center gap-3 rounded-lg border bg-background px-4 shadow-sm transition-colors hover:bg-accent"
@@ -136,11 +150,9 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
             {isPending ? (
               <Skeleton className="h-4 w-24" />
             ) : (
-              <span className="font-semibold text-sm">Select Application</span>
+              <span className="font-semibold text-sm">Select App</span>
             )}
-            <span className="text-muted-foreground text-xs">
-              Choose from your applications
-            </span>
+            <span className="text-muted-foreground text-xs">Choose an app</span>
           </div>
           <HugeiconsIcon className="ml-2 size-4" icon={UnfoldMoreIcon} />
         </button>

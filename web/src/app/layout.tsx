@@ -25,7 +25,7 @@ export default function RootLayout({
       <body
         className={`${GeistSans.variable} ${jetbrainsMono.variable} font-mono antialiased`}
       >
-        <ThemeProvider forceTheme="dark">{children}</ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

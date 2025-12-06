@@ -33,6 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Separator } from '@/components/ui/separator';
 import {
   Sidebar,
   SidebarContent,
@@ -321,6 +322,7 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        <Separator />
         <SidebarMenu>
           {footerNavItems.map((item) => (
             <SidebarMenuItem key={item.label}>

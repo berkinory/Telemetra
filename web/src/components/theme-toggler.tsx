@@ -196,6 +196,23 @@ function ThemeTogglerButton({
     setMounted(true);
   }, []);
 
+  const handleToggle = useCallback(() => {
+    const nextTheme = getNextTheme(theme as ThemeSelection, modes);
+    setTheme(nextTheme);
+  }, [theme, modes, setTheme]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'l') {
+        e.preventDefault();
+        handleToggle();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleToggle]);
+
   const isReady = mounted && resolvedTheme;
 
   const sizeStyles = {

@@ -8,6 +8,7 @@ import {
   CreditCardIcon,
   File02Icon,
   GithubIcon,
+  GlobalIcon,
   Key01Icon,
   PlaySquareIcon,
   QuestionIcon,
@@ -19,6 +20,7 @@ import { useQueryState } from 'nuqs';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import type { CommandItem } from '@/components/command-menu';
 import { CommandMenu, CommandMenuTrigger } from '@/components/command-menu';
+import { KeybindsDialog } from '@/components/keybinds-dialog';
 import { ThemeTogglerButton } from '@/components/theme-toggler';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -111,6 +113,15 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
         icon: Blockchain05Icon,
         keywords: ['events', 'tracking', 'analytics'],
         path: `/dashboard/analytics/events?app=${appId}`,
+      },
+      {
+        id: 'realtime',
+        name: 'Realtime',
+        description: 'View realtime analytics',
+        category: 'Analytics',
+        icon: GlobalIcon,
+        keywords: ['realtime', 'analytics', 'real-time'],
+        path: `/dashboard/analytics/realtime?app=${appId}`,
       },
       {
         id: 'feedbacks',
@@ -224,7 +235,10 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2"> </div>
           <div className="flex items-center gap-2">
             {!isMobile && (
-              <CommandMenuTrigger onClick={() => setCommandMenuOpen(true)} />
+              <>
+                <KeybindsDialog />
+                <CommandMenuTrigger onClick={() => setCommandMenuOpen(true)} />
+              </>
             )}
             <ThemeTogglerButton />
           </div>
