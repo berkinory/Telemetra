@@ -13,7 +13,9 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
+import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
+import { EventDetailsSheet } from '@/components/events/event-details-sheet';
 import { CopyButton } from '@/components/ui/copy-button';
 import {
   Dialog,
@@ -79,6 +81,7 @@ export function SessionDetailsDialog({
   onOpenChange,
 }: SessionDetailsDialogProps) {
   const router = useRouter();
+  const [, setEventId] = useQueryState('event', parseAsString);
 
   const { data: eventsData, isLoading } = useQuery({
     queryKey: queryKeys.events.list(appId, { sessionId: session?.sessionId }),
@@ -248,9 +251,7 @@ export function SessionDetailsDialog({
                       event={event}
                       key={event.eventId}
                       onClick={() => {
-                        router.push(
-                          `/dashboard/analytics/events/${event.eventId}?app=${appId}`
-                        );
+                        setEventId(event.eventId);
                       }}
                     />
                   ))}
@@ -295,6 +296,7 @@ export function SessionDetailsDialog({
           )}
         </div>
       </DialogContent>
+      <EventDetailsSheet appId={appId} />
     </Dialog>
   );
 }

@@ -191,8 +191,9 @@ export type EventListItem = {
 export type EventDetail = {
   eventId: string;
   sessionId: string;
+  deviceId: string;
   name: string;
-  params: Record<string, string | number | boolean | null> | null;
+  params: unknown;
   timestamp: string;
 };
 

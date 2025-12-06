@@ -6,6 +6,7 @@ import { sdkAuthPlugin } from '@/lib/middleware';
 import { writeEvent } from '@/lib/questdb';
 import {
   invalidateSessionCache,
+  validateEventParams,
   validateSession,
   validateTimestamp,
 } from '@/lib/validators';
@@ -38,6 +39,15 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
           return {
             code: timestampValidation.error.code,
             detail: timestampValidation.error.detail,
+          };
+        }
+
+        const paramsValidation = validateEventParams(body.params);
+        if (!paramsValidation.success) {
+          set.status = paramsValidation.error.status;
+          return {
+            code: paramsValidation.error.code,
+            detail: paramsValidation.error.detail,
           };
         }
 

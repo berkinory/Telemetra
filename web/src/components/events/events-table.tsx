@@ -6,8 +6,8 @@ import {
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { useRouter } from 'next/navigation';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { EventDetailsSheet } from '@/components/events/event-details-sheet';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import { formatDateTime } from '@/lib/date-utils';
@@ -83,10 +83,10 @@ const columns: ColumnDef<Event>[] = [
 ];
 
 export function EventsTable() {
-  const router = useRouter();
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
   const [search] = useQueryState('search', parseAsString.withDefault(''));
+  const [, setEventId] = useQueryState('event', parseAsString);
   const { pageSize } = usePaginationStore();
 
   const { data: eventsData, isLoading } = useEvents(appId || '', {
@@ -100,23 +100,26 @@ export function EventsTable() {
   }
 
   return (
-    <DataTableServer
-      columns={columns}
-      data={eventsData?.events || []}
-      isLoading={isLoading}
-      onRowClick={(row) => {
-        router.push(`/dashboard/analytics/events/${row.eventId}?app=${appId}`);
-      }}
-      pagination={
-        eventsData?.pagination || {
-          total: 0,
-          page: 1,
-          pageSize,
-          totalPages: 0,
+    <>
+      <DataTableServer
+        columns={columns}
+        data={eventsData?.events || []}
+        isLoading={isLoading}
+        onRowClick={(row) => {
+          setEventId(row.eventId);
+        }}
+        pagination={
+          eventsData?.pagination || {
+            total: 0,
+            page: 1,
+            pageSize,
+            totalPages: 0,
+          }
         }
-      }
-      searchKey="name"
-      searchPlaceholder="Search events"
-    />
+        searchKey="name"
+        searchPlaceholder="Search events"
+      />
+      <EventDetailsSheet appId={appId || ''} />
+    </>
   );
 }

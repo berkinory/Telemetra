@@ -1,9 +1,6 @@
 import { t } from 'elysia';
 
-export const EventParamsSchema = t.Record(
-  t.String(),
-  t.Union([t.String(), t.Number(), t.Boolean(), t.Null()])
-);
+export const EventParamsSchema = t.Any();
 
 export const EventListItemSchema = t.Object({
   eventId: t.String(),

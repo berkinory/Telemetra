@@ -350,3 +350,81 @@ export async function invalidateSessionCache(sessionId: string): Promise<void> {
     console.error(`[Cache] Failed to invalidate session ${sessionId}:`, error);
   }
 }
+
+const MAX_PARAMS_SIZE = 50_000;
+const MAX_PARAMS_DEPTH = 6;
+
+function getObjectDepth(obj: unknown, currentDepth = 0): number {
+  if (currentDepth > MAX_PARAMS_DEPTH) {
+    return currentDepth;
+  }
+
+  if (obj === null || typeof obj !== 'object') {
+    return currentDepth;
+  }
+
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) {
+      return currentDepth + 1;
+    }
+    return (
+      1 + Math.max(...obj.map((item) => getObjectDepth(item, currentDepth)))
+    );
+  }
+
+  const values = Object.values(obj);
+  if (values.length === 0) {
+    return currentDepth + 1;
+  }
+
+  return (
+    1 + Math.max(...values.map((value) => getObjectDepth(value, currentDepth)))
+  );
+}
+
+export function validateEventParams(
+  params: unknown
+): ValidationResult<unknown> {
+  if (params === null || params === undefined) {
+    return { success: true, data: params };
+  }
+
+  let jsonString: string;
+  try {
+    jsonString = JSON.stringify(params);
+  } catch (_error) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: 'Invalid params: must be valid JSON',
+        status: HttpStatus.BAD_REQUEST,
+      },
+    };
+  }
+
+  if (jsonString.length > MAX_PARAMS_SIZE) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `Params too large: maximum ${MAX_PARAMS_SIZE} bytes`,
+        status: HttpStatus.BAD_REQUEST,
+      },
+    };
+  }
+
+  const depth = getObjectDepth(params);
+  if (depth > MAX_PARAMS_DEPTH) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `Params nesting too deep: maximum ${MAX_PARAMS_DEPTH} levels`,
+        status: HttpStatus.BAD_REQUEST,
+      },
+    };
+  }
+
+  return { success: true, data: params };
+}
