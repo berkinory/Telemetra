@@ -1,6 +1,7 @@
 'use client';
 
 import { type HTMLMotionProps, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 
 import {
   Slot,
@@ -20,15 +21,21 @@ function Button({
   asChild = false,
   ...props
 }: ButtonProps) {
+  const [isClient, setIsClient] = useState(false);
   const Component = asChild ? Slot : motion.button;
 
-  return (
-    <Component
-      whileHover={{ scale: hoverScale, transition: { duration: 0.1 } }}
-      whileTap={{ scale: tapScale, transition: { duration: 0.1 } }}
-      {...props}
-    />
-  );
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const motionProps = isClient
+    ? {
+        whileHover: { scale: hoverScale, transition: { duration: 0.1 } },
+        whileTap: { scale: tapScale, transition: { duration: 0.1 } },
+      }
+    : {};
+
+  return <Component {...motionProps} {...props} />;
 }
 
 export { Button, type ButtonProps };
