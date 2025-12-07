@@ -81,7 +81,9 @@ export const realtimeWebRouter = new Elysia({ prefix: '/realtime' })
         const messageQueue: RealtimeMessage[] = [];
         let isConnected = true;
         let lastMessageTime = Date.now();
-        const HEARTBEAT_INTERVAL = 5000;
+        let lastOnlineUsersUpdate = Date.now();
+        const HEARTBEAT_INTERVAL = 4000;
+        const ONLINE_USERS_INTERVAL = 10_000;
 
         const cleanup = sseManager.addConnection(query.appId, (data) => {
           if (isConnected) {
@@ -92,6 +94,12 @@ export const realtimeWebRouter = new Elysia({ prefix: '/realtime' })
         try {
           while (isConnected) {
             const now = Date.now();
+
+            if (now - lastOnlineUsersUpdate >= ONLINE_USERS_INTERVAL) {
+              const freshOnlineUsers = await getOnlineUsers(query.appId);
+              sseManager.setOnlineUsers(query.appId, freshOnlineUsers);
+              lastOnlineUsersUpdate = now;
+            }
 
             if (now - lastMessageTime >= HEARTBEAT_INTERVAL) {
               yield sse({
