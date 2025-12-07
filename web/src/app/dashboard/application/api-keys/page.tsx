@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useQueryState } from 'nuqs';
 import { useEffect, useRef, useState } from 'react';
 import { useScramble } from 'use-scramble';
+import { ClientDate } from '@/components/client-date';
 import { RequireApp } from '@/components/require-app';
 import { RotateKeyDialog } from '@/components/rotate-key-dialog';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { formatDateTimeLong } from '@/lib/date-utils';
 import { useApp, useAppKeys } from '@/lib/queries';
 
 export default function ApiKeysPage() {
@@ -167,9 +167,14 @@ export default function ApiKeysPage() {
 
                   <p className="text-muted-foreground text-sm">
                     Last rotated:{' '}
-                    {keysData?.keyRotatedAt
-                      ? formatDateTimeLong(keysData.keyRotatedAt)
-                      : 'Never'}
+                    {keysData?.keyRotatedAt ? (
+                      <ClientDate
+                        date={keysData.keyRotatedAt}
+                        format="datetime-long"
+                      />
+                    ) : (
+                      'Never'
+                    )}
                   </p>
 
                   <div className="flex items-center gap-2">

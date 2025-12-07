@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
+import { ClientDate } from '@/components/client-date';
 import { CopyButton } from '@/components/ui/copy-button';
 import {
   Sheet,
@@ -21,7 +22,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import { fetchApi } from '@/lib/api/client';
 import type { EventDetail } from '@/lib/api/types';
-import { formatDateTime } from '@/lib/date-utils';
 import { cacheConfig } from '@/lib/queries/query-client';
 import { queryKeys } from '@/lib/queries/query-keys';
 
@@ -198,7 +198,7 @@ export function EventDetailsSheet({ appId }: EventDetailsSheetProps) {
                     className="size-4 text-muted-foreground"
                     icon={Calendar03Icon}
                   />
-                  <p className="text-sm">{formatDateTime(event.timestamp)}</p>
+                  <ClientDate className="text-sm" date={event.timestamp} />
                 </div>
               </div>
             </div>

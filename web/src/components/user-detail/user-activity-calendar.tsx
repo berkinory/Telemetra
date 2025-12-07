@@ -7,7 +7,8 @@ import {
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { ClientDate, ClientDuration } from '@/components/client-date';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Tooltip,
@@ -15,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { formatDate, formatDateTime, formatDuration } from '@/lib/date-utils';
+import { formatDate } from '@/lib/date-utils';
 import { useDeviceActivityTimeseries } from '@/lib/queries';
 import { cn } from '@/lib/utils';
 import { UserActivityCalendarSkeleton } from './user-detail-skeletons';
@@ -58,16 +59,11 @@ function getSessionLabel(sessionCount: number): string {
 
 export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
   const [appId] = useQueryState('app', parseAsString);
-  const [isClient, setIsClient] = useState(false);
 
   const { data, isPending } = useDeviceActivityTimeseries(
     deviceId,
     appId || ''
   );
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const calendarData = useMemo<DayData[]>(() => {
     if (!data?.data) {
@@ -131,7 +127,7 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
                 className="size-4 text-muted-foreground"
                 icon={Time03Icon}
               />
-              {formatDuration(data?.avgSessionDuration ?? null)}
+              <ClientDuration seconds={data?.avgSessionDuration ?? null} />
             </p>
           </div>
         </div>
@@ -146,11 +142,11 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
                 className="size-4 text-muted-foreground"
                 icon={Calendar03Icon}
               />
-              <span>
-                {!isClient && '—'}
-                {isClient && data?.firstSeen && formatDateTime(data.firstSeen)}
-                {isClient && !data?.firstSeen && 'Unknown'}
-              </span>
+              {data?.firstSeen ? (
+                <ClientDate date={data.firstSeen} />
+              ) : (
+                <span>Unknown</span>
+              )}
             </p>
           </div>
           <div>
@@ -162,13 +158,11 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
                 className="size-4 text-muted-foreground"
                 icon={Calendar03Icon}
               />
-              <span>
-                {!isClient && '—'}
-                {isClient &&
-                  data?.lastActivityAt &&
-                  formatDateTime(data.lastActivityAt)}
-                {isClient && !data?.lastActivityAt && 'Never'}
-              </span>
+              {data?.lastActivityAt ? (
+                <ClientDate date={data.lastActivityAt} />
+              ) : (
+                <span>Never</span>
+              )}
             </p>
           </div>
         </div>

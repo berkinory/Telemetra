@@ -4,11 +4,11 @@ import { Calendar03Icon, Time03Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { ClientDate, ClientDuration } from '@/components/client-date';
 import { SessionDetailsDialog } from '@/components/sessions/session-details-dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import type { Session } from '@/lib/api/types';
-import { formatDateTime, formatDuration } from '@/lib/date-utils';
 import { useSessions } from '@/lib/queries';
 import { usePaginationStore } from '@/stores/pagination-store';
 
@@ -26,9 +26,7 @@ const columns: ColumnDef<Session>[] = [
             icon={Calendar03Icon}
             size={16}
           />
-          <span className="text-primary text-sm">
-            {formatDateTime(timestamp)}
-          </span>
+          <ClientDate className="text-primary text-sm" date={timestamp} />
         </div>
       );
     },
@@ -43,7 +41,6 @@ const columns: ColumnDef<Session>[] = [
           new Date(row.original.startedAt).getTime()) /
           1000
       );
-      const duration = formatDuration(durationInSeconds);
       return (
         <div className="flex items-center gap-2">
           <HugeiconsIcon
@@ -51,7 +48,10 @@ const columns: ColumnDef<Session>[] = [
             icon={Time03Icon}
             size={16}
           />
-          <span className="text-primary text-sm">{duration}</span>
+          <ClientDuration
+            className="text-primary text-sm"
+            seconds={durationInSeconds}
+          />
         </div>
       );
     },

@@ -5,8 +5,8 @@ import {
   CheckmarkSquare01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { useEffect, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
+import { ClientDate } from '@/components/client-date';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -76,12 +76,6 @@ export function TimescaleChart({
   valueFormatter,
   emptyMessage = 'No data available for this period',
 }: TimescaleChartProps) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   const chartConfig = {
     [dataKey]: {
       label: dataLabel,
@@ -93,35 +87,6 @@ export function TimescaleChart({
   const currentLabel = currentOption?.label || timeRangeOptions[0]?.label;
 
   const defaultFormatter = (value: number) => value;
-
-  if (!isMounted) {
-    return (
-      <Card className="py-0">
-        <CardHeader className="space-y-0 border-b py-5">
-          {metricOptions && metric ? (
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <Skeleton className="h-9 w-64" />
-                <Skeleton className="h-9 w-24" />
-              </div>
-              <Skeleton className="h-4 w-96" />
-            </div>
-          ) : (
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <Skeleton className="h-7 w-48" />
-                <Skeleton className="mt-1 h-4 w-96" />
-              </div>
-              <Skeleton className="h-9 w-24" />
-            </div>
-          )}
-        </CardHeader>
-        <CardContent className="px-2 pt-4 pb-4 sm:px-6 sm:pt-6">
-          <Skeleton className="h-[250px] w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card className="py-0">
@@ -269,18 +234,15 @@ export function TimescaleChart({
                     }}
                     hideLabel={false}
                     indicator="dot"
-                    labelFormatter={(value) => {
-                      const formattedDate = formatDate(value);
-                      return (
-                        <span className="flex items-center gap-1.5">
-                          <HugeiconsIcon
-                            className="size-3.5"
-                            icon={Calendar03Icon}
-                          />
-                          <span>{formattedDate}</span>
-                        </span>
-                      );
-                    }}
+                    labelFormatter={(value) => (
+                      <span className="flex items-center gap-1.5">
+                        <HugeiconsIcon
+                          className="size-3.5"
+                          icon={Calendar03Icon}
+                        />
+                        <ClientDate date={value} format="date" />
+                      </span>
+                    )}
                   />
                 }
                 cursor={false}

@@ -3,9 +3,9 @@
 import { ChartDownIcon, ChartUpIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { parseAsString, useQueryState } from 'nuqs';
+import { ClientDuration } from '@/components/client-date';
 import { Card, CardContent } from '@/components/ui/card';
 import { CountingNumber } from '@/components/ui/counting-number';
-import { formatDuration } from '@/lib/date-utils';
 import { useSessionOverview } from '@/lib/queries';
 import { cn } from '@/lib/utils';
 
@@ -101,9 +101,10 @@ export function SessionsOverviewCards() {
           <p className="text-muted-foreground text-xs uppercase">
             Average Session Duration
           </p>
-          <p className="font-bold text-3xl">
-            {formatDuration(overview?.averageSessionDuration || null)}
-          </p>
+          <ClientDuration
+            className="font-bold text-3xl"
+            seconds={overview?.averageSessionDuration || null}
+          />
           <div className="mt-1 flex items-center gap-1 text-xs">
             <span className="text-muted-foreground">Avg time per session</span>
           </div>

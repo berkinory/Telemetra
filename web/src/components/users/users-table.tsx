@@ -13,10 +13,10 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useRouter } from 'next/navigation';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { ClientDate } from '@/components/client-date';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import type { Device } from '@/lib/api/types';
-import { formatDateTime } from '@/lib/date-utils';
 import { useDevices } from '@/lib/queries';
 import { usePaginationStore } from '@/stores/pagination-store';
 
@@ -148,7 +148,7 @@ const columns: ColumnDef<Device>[] = [
             className="size-3.5 text-muted-foreground"
             icon={Calendar03Icon}
           />
-          <span className="text-sm">{formatDateTime(timestamp)}</span>
+          <ClientDate className="text-sm" date={timestamp} />
         </div>
       );
     },

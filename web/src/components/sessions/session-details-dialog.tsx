@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
+import { ClientDate, ClientDuration } from '@/components/client-date';
 import { EventDetailsSheet } from '@/components/events/event-details-sheet';
 import { CopyButton } from '@/components/ui/copy-button';
 import {
@@ -31,7 +32,6 @@ import type {
   EventsListResponse,
   Session,
 } from '@/lib/api/types';
-import { formatDateTime, formatDuration, formatTime } from '@/lib/date-utils';
 import { cacheConfig } from '@/lib/queries/query-client';
 import { queryKeys } from '@/lib/queries/query-keys';
 import { cn } from '@/lib/utils';
@@ -60,9 +60,11 @@ function EventRow({
       <span className="flex-1 truncate font-medium text-sm" title={event.name}>
         {event.name}
       </span>
-      <span className="shrink-0 text-muted-foreground text-xs">
-        {formatTime(event.timestamp)}
-      </span>
+      <ClientDate
+        className="shrink-0 text-muted-foreground text-xs"
+        date={event.timestamp}
+        format="time"
+      />
     </motion.button>
   );
 }
@@ -116,7 +118,6 @@ export function SessionDetailsDialog({
       new Date(session.startedAt).getTime()) /
       1000
   );
-  const duration = formatDuration(durationInSeconds);
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
@@ -173,9 +174,10 @@ export function SessionDetailsDialog({
                     className="size-4 text-muted-foreground"
                     icon={Calendar03Icon}
                   />
-                  <p className="text-primary text-sm">
-                    {formatDateTime(session.startedAt)}
-                  </p>
+                  <ClientDate
+                    className="text-primary text-sm"
+                    date={session.startedAt}
+                  />
                 </div>
               </div>
               <div className="space-y-1">
@@ -187,7 +189,10 @@ export function SessionDetailsDialog({
                     className="size-4 text-muted-foreground"
                     icon={Time03Icon}
                   />
-                  <p className="text-primary text-sm">{duration}</p>
+                  <ClientDuration
+                    className="text-primary text-sm"
+                    seconds={durationInSeconds}
+                  />
                 </div>
               </div>
             </div>
@@ -239,9 +244,11 @@ export function SessionDetailsDialog({
                 <span className="flex-1 truncate font-medium text-sm">
                   Session Ended
                 </span>
-                <span className="shrink-0 text-muted-foreground text-xs">
-                  {formatTime(session.lastActivityAt)}
-                </span>
+                <ClientDate
+                  className="shrink-0 text-muted-foreground text-xs"
+                  date={session.lastActivityAt}
+                  format="time"
+                />
               </motion.div>
 
               {eventsData.events.length > 0 && (
@@ -271,9 +278,11 @@ export function SessionDetailsDialog({
                 <span className="flex-1 truncate font-medium text-sm">
                   Session Started
                 </span>
-                <span className="shrink-0 text-muted-foreground text-xs">
-                  {formatTime(session.startedAt)}
-                </span>
+                <ClientDate
+                  className="shrink-0 text-muted-foreground text-xs"
+                  date={session.startedAt}
+                  format="time"
+                />
               </motion.div>
             </div>
           )}

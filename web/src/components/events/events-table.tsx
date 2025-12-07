@@ -7,10 +7,10 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { ClientDate } from '@/components/client-date';
 import { EventDetailsSheet } from '@/components/events/event-details-sheet';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import { getGeneratedName, UserAvatar } from '@/components/user-profile';
-import { formatDateTime } from '@/lib/date-utils';
 import { useEvents } from '@/lib/queries';
 import { usePaginationStore } from '@/stores/pagination-store';
 
@@ -73,9 +73,7 @@ const columns: ColumnDef<Event>[] = [
             icon={Calendar03Icon}
             size={16}
           />
-          <span className="text-primary text-sm">
-            {formatDateTime(timestamp)}
-          </span>
+          <ClientDate className="text-primary text-sm" date={timestamp} />
         </div>
       );
     },
