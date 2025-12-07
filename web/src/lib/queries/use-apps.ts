@@ -24,6 +24,7 @@ export function useApps() {
     queryFn: () => fetchApi<AppsListResponse>('/web/apps'),
     ...cacheConfig.static,
     refetchOnWindowFocus: true,
+    refetchOnMount: false,
     enabled: !!session,
   });
 }
@@ -35,6 +36,7 @@ export function useApp(appId: string) {
     queryKey: queryKeys.apps.detail(appId),
     queryFn: () => fetchApi<AppDetail>(`/web/apps/${appId}`),
     ...cacheConfig.detail,
+    refetchOnMount: false,
     enabled: !!session && Boolean(appId),
   });
 }
@@ -46,6 +48,7 @@ export function useAppKeys(appId: string) {
     queryKey: queryKeys.apps.keys(appId),
     queryFn: () => fetchApi<AppKeysResponse>(`/web/apps/${appId}/keys`),
     ...cacheConfig.static,
+    refetchOnMount: false,
     enabled: !!session && Boolean(appId),
   });
 }
@@ -57,6 +60,7 @@ export function useAppTeam(appId: string) {
     queryKey: queryKeys.apps.team(appId),
     queryFn: () => fetchApi<AppTeamResponse>(`/web/apps/${appId}/team`),
     ...cacheConfig.detail,
+    refetchOnMount: false,
     enabled: !!session && Boolean(appId),
   });
 }
