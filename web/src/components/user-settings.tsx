@@ -71,8 +71,8 @@ const TIME_FORMAT_OPTIONS: Array<{ value: TimeFormat; label: string }> = [
 ];
 
 const DATE_FORMAT_OPTIONS: Array<{ value: DateFormat; label: string }> = [
-  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+  { value: 'DD/MM/YYYY', label: 'DD/MM' },
+  { value: 'MM/DD/YYYY', label: 'MM/DD' },
 ];
 
 type UserSettingsProps = {
