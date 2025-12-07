@@ -122,7 +122,7 @@ export function Globe({
   return (
     <div className={className ?? 'relative aspect-square w-full max-w-[600px]'}>
       <canvas
-        className="h-full w-full opacity-0 transition-opacity duration-500 [contain:layout_paint_size]"
+        className="contain-[layout_paint_size] h-full w-full opacity-0 transition-opacity duration-500"
         ref={canvasRef}
         style={{
           width: '100%',

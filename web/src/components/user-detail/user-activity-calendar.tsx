@@ -101,8 +101,8 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
   }
 
   return (
-    <Card className="py-0">
-      <CardContent className="space-y-4 p-4">
+    <Card className="min-w-0 py-0">
+      <CardContent className="min-w-0 space-y-4 p-4">
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-muted-foreground text-sm uppercase">
             Activity Calendar
@@ -174,41 +174,43 @@ export function UserActivityCalendar({ deviceId }: UserActivityCalendarProps) {
         </div>
 
         <TooltipProvider>
-          <div className="flex flex-wrap gap-1">
-            {calendarData.map((day) => (
-              <Tooltip key={day.date}>
-                <TooltipTrigger asChild>
-                  <div
-                    className={cn(
-                      'size-3 cursor-pointer rounded-[2px] transition-colors',
-                      getIntensityClass(day.sessionCount)
-                    )}
-                  />
-                </TooltipTrigger>
-                <TooltipContent
-                  className="border-border bg-background px-2.5 py-1.5 text-foreground"
-                  side="top"
-                >
-                  <div className="flex flex-col gap-1.5">
-                    <span className="flex items-center gap-1.5">
-                      <HugeiconsIcon
-                        className="size-3.5"
-                        icon={Calendar03Icon}
-                      />
-                      <span>{day.formattedDate}</span>
-                    </span>
-                    <div className="flex flex-col gap-0.5">
-                      <div className="font-semibold text-base tabular-nums">
-                        {day.sessionCount === 0 ? '0' : day.sessionCount}
-                      </div>
-                      <div className="text-muted-foreground text-xs">
-                        {getSessionLabel(day.sessionCount)}
+          <div className="overflow-x-auto">
+            <div className="flex flex-wrap gap-1">
+              {calendarData.map((day) => (
+                <Tooltip key={day.date}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn(
+                        'size-3 cursor-pointer rounded-[2px] transition-colors',
+                        getIntensityClass(day.sessionCount)
+                      )}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    className="border-border bg-background px-2.5 py-1.5 text-foreground"
+                    side="top"
+                  >
+                    <div className="flex flex-col gap-1.5">
+                      <span className="flex items-center gap-1.5">
+                        <HugeiconsIcon
+                          className="size-3.5"
+                          icon={Calendar03Icon}
+                        />
+                        <span>{day.formattedDate}</span>
+                      </span>
+                      <div className="flex flex-col gap-0.5">
+                        <div className="font-semibold text-base tabular-nums">
+                          {day.sessionCount === 0 ? '0' : day.sessionCount}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          {getSessionLabel(day.sessionCount)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            ))}
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
           </div>
         </TooltipProvider>
 

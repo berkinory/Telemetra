@@ -22,6 +22,7 @@ import {
 } from '@tanstack/react-table';
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
 import { type KeyboardEvent, useEffect, useState } from 'react';
+import { DateRangePicker } from '@/components/date-range-picker';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -82,6 +83,8 @@ export function DataTableServer<TData, TValue>({
       page: parseAsInteger.withDefault(1),
       search: parseAsString.withDefault(''),
       filter: parseAsString.withDefault(''),
+      startDate: parseAsString,
+      endDate: parseAsString,
     },
     {
       history: 'push',
@@ -174,8 +177,25 @@ export function DataTableServer<TData, TValue>({
           </div>
         )}
 
+        {isMounted && (
+          <div className="w-full sm:ml-auto sm:w-auto">
+            <DateRangePicker
+              endDate={params.endDate || undefined}
+              isLoading={isLoading}
+              onDateRangeChange={(startDate, endDate) => {
+                setParams({
+                  startDate,
+                  endDate,
+                  page: 1,
+                });
+              }}
+              startDate={params.startDate || undefined}
+            />
+          </div>
+        )}
+
         {filterKey && filterOptions.length > 0 && isMounted && (
-          <div className="flex w-full gap-2 sm:ml-auto sm:w-auto">
+          <div className="w-full sm:w-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

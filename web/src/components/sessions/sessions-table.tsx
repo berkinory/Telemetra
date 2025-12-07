@@ -80,6 +80,8 @@ export function SessionsTable() {
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
   const [search] = useQueryState('search', parseAsString.withDefault(''));
+  const [startDate] = useQueryState('startDate', parseAsString);
+  const [endDate] = useQueryState('endDate', parseAsString);
   const [sessionId, setSessionId] = useQueryState('session', parseAsString);
   const { pageSize } = usePaginationStore();
 
@@ -87,6 +89,8 @@ export function SessionsTable() {
     page: page.toString(),
     pageSize: pageSize.toString(),
     deviceId: search || undefined,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
   });
 
   const selectedSession =

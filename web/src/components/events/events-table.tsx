@@ -86,6 +86,8 @@ export function EventsTable() {
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
   const [search] = useQueryState('search', parseAsString.withDefault(''));
+  const [startDate] = useQueryState('startDate', parseAsString);
+  const [endDate] = useQueryState('endDate', parseAsString);
   const [, setEventId] = useQueryState('event', parseAsString);
   const { pageSize } = usePaginationStore();
 
@@ -93,6 +95,8 @@ export function EventsTable() {
     page: page.toString(),
     pageSize: pageSize.toString(),
     eventName: search || undefined,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
   });
 
   if (!appId) {

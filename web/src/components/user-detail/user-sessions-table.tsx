@@ -65,6 +65,8 @@ type UserSessionsTableProps = {
 export function UserSessionsTable({ deviceId }: UserSessionsTableProps) {
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
+  const [startDate] = useQueryState('startDate', parseAsString);
+  const [endDate] = useQueryState('endDate', parseAsString);
   const [sessionId, setSessionId] = useQueryState('session', parseAsString);
   const { pageSize } = usePaginationStore();
 
@@ -72,6 +74,8 @@ export function UserSessionsTable({ deviceId }: UserSessionsTableProps) {
     page: page.toString(),
     pageSize: pageSize.toString(),
     deviceId,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
   });
 
   const selectedSession =

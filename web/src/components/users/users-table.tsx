@@ -161,6 +161,8 @@ export function UsersTable() {
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
   const [_search] = useQueryState('search', parseAsString.withDefault(''));
   const [filter] = useQueryState('filter', parseAsString.withDefault(''));
+  const [startDate] = useQueryState('startDate', parseAsString);
+  const [endDate] = useQueryState('endDate', parseAsString);
 
   const { pageSize } = usePaginationStore();
 
@@ -168,6 +170,8 @@ export function UsersTable() {
     page: page.toString(),
     pageSize: pageSize.toString(),
     platform: filter || undefined,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
   });
 
   return (

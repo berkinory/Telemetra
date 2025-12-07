@@ -84,24 +84,24 @@ export function UserDetailCard({ deviceId }: UserDetailCardProps) {
   }
 
   return (
-    <Card className="py-0">
-      <CardContent className="space-y-4 p-4">
+    <Card className="min-w-0 py-0">
+      <CardContent className="min-w-0 space-y-4 p-4">
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-muted-foreground text-sm uppercase">
             User Information
           </h2>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full">
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full">
               <UserAvatar seed={device.deviceId} size={80} variant="marble" />
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
               <h2 className="font-semibold text-xl">{generatedName}</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <CopyButton
-                  className="size-4 text-muted-foreground [&_svg]:size-4"
+                  className="size-4 shrink-0 text-muted-foreground [&_svg]:size-4"
                   content={device.deviceId}
                   variant="ghost"
                 />
