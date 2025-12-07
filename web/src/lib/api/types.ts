@@ -287,3 +287,36 @@ export type AppDetail = {
   createdAt: string;
   role: 'owner' | 'member';
 };
+
+export type RealtimeEvent = {
+  eventId: string;
+  deviceId: string;
+  name: string;
+  timestamp: string;
+};
+
+export type RealtimeSession = {
+  sessionId: string;
+  deviceId: string;
+  startedAt: string;
+};
+
+export type RealtimeDevice = {
+  deviceId: string;
+  country: string | null;
+};
+
+export type OnlineUsers = {
+  total: number;
+  devices: string[];
+  platforms: Record<string, number>;
+  countries: Record<string, number>;
+};
+
+export type RealtimeMessage = {
+  timestamp: string;
+  events: RealtimeEvent[];
+  sessions: RealtimeSession[];
+  devices: RealtimeDevice[];
+  onlineUsers: OnlineUsers;
+};
