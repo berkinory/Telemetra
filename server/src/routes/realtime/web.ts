@@ -80,6 +80,8 @@ export const realtimeWebRouter = new Elysia({ prefix: '/realtime' })
 
         const messageQueue: RealtimeMessage[] = [];
         let isConnected = true;
+        let lastMessageTime = Date.now();
+        const HEARTBEAT_INTERVAL = 5000;
 
         const cleanup = sseManager.addConnection(query.appId, (data) => {
           if (isConnected) {
@@ -89,6 +91,16 @@ export const realtimeWebRouter = new Elysia({ prefix: '/realtime' })
 
         try {
           while (isConnected) {
+            const now = Date.now();
+
+            if (now - lastMessageTime >= HEARTBEAT_INTERVAL) {
+              yield sse({
+                event: 'ping',
+                data: { timestamp: new Date().toISOString() },
+              });
+              lastMessageTime = now;
+            }
+
             if (messageQueue.length > 0) {
               const message = messageQueue.shift();
               if (message) {
@@ -96,6 +108,7 @@ export const realtimeWebRouter = new Elysia({ prefix: '/realtime' })
                   event: 'realtime',
                   data: message,
                 });
+                lastMessageTime = now;
               }
             }
 
