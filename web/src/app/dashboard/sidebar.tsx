@@ -13,6 +13,7 @@ import {
   Logout01Icon,
   PlaySquareIcon,
   Setting07Icon,
+  TestTubeIcon,
   UnfoldMoreIcon,
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
@@ -102,6 +103,12 @@ const applicationNavItems: NavItem[] = [
     icon: UserGroupIcon,
     path: '/dashboard/application/team',
     tooltip: 'Team',
+  },
+  {
+    label: 'Test',
+    icon: TestTubeIcon,
+    path: '/dashboard/test',
+    tooltip: 'Test',
   },
 ];
 
@@ -242,16 +249,34 @@ export function DashboardSidebar() {
           <SidebarGroupLabel>APPLICATION</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {applicationNavItems.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                  {appId ? (
+              {applicationNavItems.map((item) => {
+                const isTestPage = item.path === '/dashboard/test';
+                const shouldEnable = isTestPage || appId;
+
+                if (!shouldEnable) {
+                  return (
+                    <SidebarMenuItem key={item.label}>
+                      <SidebarMenuButton disabled tooltip={item.tooltip}>
+                        <HugeiconsIcon icon={item.icon} />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                }
+
+                const href = isTestPage
+                  ? item.path
+                  : `${item.path}?app=${appId}`;
+
+                return (
+                  <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
                       asChild
                       isActive={pathname.includes(item.path)}
                       tooltip={item.tooltip}
                     >
                       <Link
-                        href={`${item.path}?app=${appId}`}
+                        href={href}
                         onClick={() => {
                           if (isMobile) {
                             setOpenMobile(false);
@@ -262,14 +287,9 @@ export function DashboardSidebar() {
                         <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
-                  ) : (
-                    <SidebarMenuButton disabled tooltip={item.tooltip}>
-                      <HugeiconsIcon icon={item.icon} />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  )}
-                </SidebarMenuItem>
-              ))}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
