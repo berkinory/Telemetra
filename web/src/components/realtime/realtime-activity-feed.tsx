@@ -7,14 +7,12 @@ import {
   PlaySquareIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { parseAsString, useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import 'flag-icons/css/flag-icons.min.css';
+import type { ActivityItem } from '@/app/dashboard/analytics/realtime/page';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getGeneratedName, UserAvatar } from '@/components/user-profile';
-import type { RealtimeMessage } from '@/lib/api/types';
-import { useRealtime } from '@/lib/queries/use-realtime';
 
 const COUNTRY_CODE_REGEX = /^[A-Za-z]{2}$/;
 
@@ -72,82 +70,62 @@ function getPlatformIcon(platform: string | null) {
   }
 }
 
-type ActivityItem = {
-  id: string;
-  type: 'event' | 'session' | 'device';
-  name: string;
-  deviceId: string;
-  country: string | null;
-  platform: string | null;
-  timestamp: string;
+type RealtimeActivityFeedProps = {
+  activities: ActivityItem[];
+  status: 'connecting' | 'connected' | 'disconnected' | 'error';
 };
 
-export function RealtimeActivityFeed() {
-  const [appId] = useQueryState('app', parseAsString);
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
+function getStatusColor(
+  status: 'connecting' | 'connected' | 'disconnected' | 'error'
+): string {
+  if (status === 'connected') {
+    return 'bg-green-500';
+  }
+  if (status === 'connecting') {
+    return 'animate-pulse bg-yellow-500';
+  }
+  if (status === 'error') {
+    return 'bg-red-500';
+  }
+  return 'bg-gray-500';
+}
 
-  const handleMessage = (data: RealtimeMessage) => {
-    const newActivities: ActivityItem[] = [];
+function getStatusMessage(
+  status: 'connecting' | 'connected' | 'disconnected' | 'error'
+): string {
+  if (status === 'connected') {
+    return 'Listening to your app';
+  }
+  if (status === 'connecting') {
+    return 'Connecting...';
+  }
+  if (status === 'error') {
+    return 'Connection error';
+  }
+  return 'Disconnected';
+}
 
-    for (const event of data.events) {
-      newActivities.push({
-        id: event.eventId,
-        type: 'event',
-        name: event.name,
-        deviceId: event.deviceId,
-        country: event.country,
-        platform: event.platform,
-        timestamp: event.timestamp,
-      });
-    }
-
-    for (const session of data.sessions) {
-      newActivities.push({
-        id: session.sessionId,
-        type: 'session',
-        name: 'New Session',
-        deviceId: session.deviceId,
-        country: session.country,
-        platform: session.platform,
-        timestamp: session.startedAt,
-      });
-    }
-
-    for (const device of data.devices) {
-      newActivities.push({
-        id: device.deviceId,
-        type: 'device',
-        name: 'New User',
-        deviceId: device.deviceId,
-        country: device.country,
-        platform: device.platform,
-        timestamp: data.timestamp,
-      });
-    }
-
-    if (newActivities.length > 0) {
-      setActivities((prev) => [...newActivities, ...prev]);
-    }
-  };
-
-  useRealtime(appId ?? undefined, {
-    enabled: Boolean(appId),
-    onMessage: handleMessage,
-  });
-
+export function RealtimeActivityFeed({
+  activities,
+  status,
+}: RealtimeActivityFeedProps) {
   const displayActivities = useMemo(
     () => activities.slice(0, 50),
     [activities]
   );
 
-  if (!appId) {
-    return null;
-  }
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Activity Feed</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Activity Feed</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className={`size-2 rounded-full ${getStatusColor(status)}`} />
+            <span className="text-muted-foreground text-xs capitalize">
+              {status}
+            </span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px]">
@@ -159,7 +137,7 @@ export function RealtimeActivityFeed() {
                   icon={GpsSignal01Icon}
                 />
                 <p className="text-center font-medium text-muted-foreground text-sm">
-                  Listening to your app
+                  {getStatusMessage(status)}
                 </p>
               </div>
             )}

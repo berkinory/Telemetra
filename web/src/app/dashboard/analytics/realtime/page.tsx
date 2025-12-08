@@ -1,12 +1,27 @@
 'use client';
 
-import { useEffect } from 'react';
+import { parseAsString, useQueryState } from 'nuqs';
+import { useEffect, useState } from 'react';
 import { RealtimeActivityFeed } from '@/components/realtime/realtime-activity-feed';
 import { RequireApp } from '@/components/require-app';
 import { useSidebar } from '@/components/ui/sidebar';
+import type { RealtimeMessage } from '@/lib/api/types';
+import { useRealtime } from '@/lib/queries/use-realtime';
+
+export type ActivityItem = {
+  id: string;
+  type: 'event' | 'session' | 'device';
+  name: string;
+  deviceId: string;
+  country: string | null;
+  platform: string | null;
+  timestamp: string;
+};
 
 export default function RealtimePage() {
   const { setOpen, isMobile } = useSidebar();
+  const [appId] = useQueryState('app', parseAsString);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
 
   useEffect(() => {
     if (!isMobile) {
@@ -14,10 +29,59 @@ export default function RealtimePage() {
     }
   }, [isMobile, setOpen]);
 
+  const handleMessage = (data: RealtimeMessage) => {
+    const newActivities: ActivityItem[] = [];
+
+    for (const event of data.events) {
+      newActivities.push({
+        id: event.eventId,
+        type: 'event',
+        name: event.name,
+        deviceId: event.deviceId,
+        country: event.country,
+        platform: event.platform,
+        timestamp: event.timestamp,
+      });
+    }
+
+    for (const session of data.sessions) {
+      newActivities.push({
+        id: session.sessionId,
+        type: 'session',
+        name: 'New Session',
+        deviceId: session.deviceId,
+        country: session.country,
+        platform: session.platform,
+        timestamp: session.startedAt,
+      });
+    }
+
+    for (const device of data.devices) {
+      newActivities.push({
+        id: device.deviceId,
+        type: 'device',
+        name: 'New User',
+        deviceId: device.deviceId,
+        country: device.country,
+        platform: device.platform,
+        timestamp: data.timestamp,
+      });
+    }
+
+    if (newActivities.length > 0) {
+      setActivities((prev) => [...newActivities, ...prev]);
+    }
+  };
+
+  const { status } = useRealtime(appId ?? undefined, {
+    enabled: Boolean(appId),
+    onMessage: handleMessage,
+  });
+
   return (
     <RequireApp>
       <div className="flex flex-1 flex-col">
-        <RealtimeActivityFeed />
+        <RealtimeActivityFeed activities={activities} status={status} />
       </div>
     </RequireApp>
   );
