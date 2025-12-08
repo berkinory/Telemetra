@@ -104,6 +104,8 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
           deviceId: session.deviceId,
           name: body.name,
           timestamp: clientTimestamp.toISOString(),
+          country: device.country,
+          platform: device.platform,
         });
 
         set.status = HttpStatus.OK;

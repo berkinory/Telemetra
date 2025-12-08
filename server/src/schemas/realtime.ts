@@ -5,22 +5,26 @@ export const RealtimeEventSchema = t.Object({
   deviceId: t.String(),
   name: t.String(),
   timestamp: t.String({ format: 'date-time' }),
+  country: t.Union([t.String(), t.Null()]),
+  platform: t.Union([t.String(), t.Null()]),
 });
 
 export const RealtimeSessionSchema = t.Object({
   sessionId: t.String(),
   deviceId: t.String(),
   startedAt: t.String({ format: 'date-time' }),
+  country: t.Union([t.String(), t.Null()]),
+  platform: t.Union([t.String(), t.Null()]),
 });
 
 export const RealtimeDeviceSchema = t.Object({
   deviceId: t.String(),
   country: t.Union([t.String(), t.Null()]),
+  platform: t.Union([t.String(), t.Null()]),
 });
 
 export const OnlineUsersSchema = t.Object({
   total: t.Number({ minimum: 0 }),
-  devices: t.Array(t.String()),
   platforms: t.Record(t.String(), t.Number({ minimum: 1 })),
   countries: t.Record(t.String(), t.Number({ minimum: 1 })),
 });

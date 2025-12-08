@@ -198,7 +198,6 @@ export class SSEManager {
     if (!cached) {
       return {
         total: 0,
-        devices: [],
         platforms: {},
         countries: {},
       };
@@ -208,7 +207,6 @@ export class SSEManager {
       this.onlineUsersCache.delete(appId);
       return {
         total: 0,
-        devices: [],
         platforms: {},
         countries: {},
       };

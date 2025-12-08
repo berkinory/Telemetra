@@ -48,7 +48,6 @@ export async function getOnlineUsers(appId: string): Promise<OnlineUsers> {
 
   return {
     total: uniqueDevices.size,
-    devices: [...uniqueDevices.keys()],
     platforms: platformCounts,
     countries: countryCounts,
   };

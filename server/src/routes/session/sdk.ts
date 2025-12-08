@@ -76,6 +76,8 @@ export const sessionSdkRouter = new Elysia({ prefix: '/sessions' })
           sessionId: newSession.sessionId,
           deviceId: newSession.deviceId,
           startedAt: newSession.startedAt.toISOString(),
+          country: device.country,
+          platform: device.platform,
         });
 
         set.status = HttpStatus.OK;
