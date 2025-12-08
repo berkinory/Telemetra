@@ -293,22 +293,26 @@ export type RealtimeEvent = {
   deviceId: string;
   name: string;
   timestamp: string;
+  country: string | null;
+  platform: string | null;
 };
 
 export type RealtimeSession = {
   sessionId: string;
   deviceId: string;
   startedAt: string;
+  country: string | null;
+  platform: string | null;
 };
 
 export type RealtimeDevice = {
   deviceId: string;
   country: string | null;
+  platform: string | null;
 };
 
 export type OnlineUsers = {
   total: number;
-  devices: string[];
   platforms: Record<string, number>;
   countries: Record<string, number>;
 };
