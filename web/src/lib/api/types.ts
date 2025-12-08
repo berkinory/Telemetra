@@ -319,6 +319,7 @@ export type OnlineUsers = {
 
 export type RealtimeMessage = {
   timestamp: string;
+  appName?: string;
   events: RealtimeEvent[];
   sessions: RealtimeSession[];
   devices: RealtimeDevice[];

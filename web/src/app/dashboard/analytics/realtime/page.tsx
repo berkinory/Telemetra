@@ -3,6 +3,7 @@
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useState } from 'react';
 import { RealtimeActivityFeed } from '@/components/realtime/realtime-activity-feed';
+import { RealtimeHeader } from '@/components/realtime/realtime-header';
 import { RequireApp } from '@/components/require-app';
 import { useSidebar } from '@/components/ui/sidebar';
 import type { RealtimeMessage } from '@/lib/api/types';
@@ -22,6 +23,13 @@ export default function RealtimePage() {
   const { setOpen, isMobile } = useSidebar();
   const [appId] = useQueryState('app', parseAsString);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [appName, setAppName] = useState<string | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<number>(0);
+  const [platforms, setPlatforms] = useState<{
+    ios?: number;
+    android?: number;
+    web?: number;
+  }>({});
 
   useEffect(() => {
     if (!isMobile) {
@@ -30,6 +38,15 @@ export default function RealtimePage() {
   }, [isMobile, setOpen]);
 
   const handleMessage = (data: RealtimeMessage) => {
+    if (data.appName && !appName) {
+      setAppName(data.appName);
+    }
+
+    if (data.onlineUsers) {
+      setOnlineUsers(data.onlineUsers.total);
+      setPlatforms(data.onlineUsers.platforms);
+    }
+
     const newActivities: ActivityItem[] = [];
 
     for (const event of data.events) {
@@ -73,14 +90,22 @@ export default function RealtimePage() {
     }
   };
 
-  const { status } = useRealtime(appId ?? undefined, {
+  const { status, pause, resume } = useRealtime(appId ?? undefined, {
     enabled: Boolean(appId),
     onMessage: handleMessage,
   });
 
   return (
     <RequireApp>
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col gap-4">
+        <RealtimeHeader
+          appName={appName || undefined}
+          onlineUsers={onlineUsers}
+          onPause={pause}
+          onResume={resume}
+          platforms={platforms}
+          status={status}
+        />
         <RealtimeActivityFeed activities={activities} status={status} />
       </div>
     </RequireApp>

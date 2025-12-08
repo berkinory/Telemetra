@@ -52,6 +52,8 @@ type CopyButtonProps = Omit<ButtonPrimitiveProps, 'children'> &
     copied?: boolean;
     onCopiedChange?: (copied: boolean, content?: string) => void;
     delay?: number;
+    icon?: typeof Copy01Icon;
+    copiedIcon?: typeof CheckmarkSquare01Icon;
   };
 
 function CopyButton({
@@ -63,6 +65,8 @@ function CopyButton({
   variant,
   size,
   delay = 3000,
+  icon = Copy01Icon,
+  copiedIcon = CheckmarkSquare01Icon,
   ...props
 }: CopyButtonProps) {
   const [isCopied, setIsCopied] = useControlledState({
@@ -95,7 +99,7 @@ function CopyButton({
     [onClick, copied, content, setIsCopied, onCopiedChange, delay]
   );
 
-  const Icon = isCopied ? CheckmarkSquare01Icon : Copy01Icon;
+  const Icon = isCopied ? copiedIcon : icon;
 
   return (
     <ButtonPrimitive

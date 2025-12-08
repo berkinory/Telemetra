@@ -15,6 +15,8 @@ type UseRealtimeReturn = {
   status: RealtimeStatus;
   error: Event | null;
   reconnect: () => void;
+  pause: () => void;
+  resume: () => void;
 };
 
 export function useRealtime(
@@ -26,12 +28,13 @@ export function useRealtime(
   const [data, setData] = useState<RealtimeMessage | null>(null);
   const [status, setStatus] = useState<RealtimeStatus>('disconnected');
   const [error, setError] = useState<Event | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const connect = useCallback(() => {
-    if (!(appId && enabled)) {
+    if (!(appId && enabled) || isPaused) {
       return;
     }
 
@@ -72,7 +75,7 @@ export function useRealtime(
     });
 
     eventSourceRef.current = eventSource;
-  }, [appId, enabled, onMessage, onError]);
+  }, [appId, enabled, isPaused, onMessage, onError]);
 
   const reconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -82,8 +85,30 @@ export function useRealtime(
     connect();
   }, [connect]);
 
+  const pause = useCallback(() => {
+    setIsPaused(true);
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+    setStatus('disconnected');
+  }, []);
+
+  const resume = useCallback(() => {
+    setIsPaused(false);
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+    connect();
+  }, [connect]);
+
   useEffect(() => {
-    if (enabled && appId) {
+    if (enabled && appId && !isPaused) {
       connect();
     }
 
@@ -97,12 +122,14 @@ export function useRealtime(
         reconnectTimeoutRef.current = null;
       }
     };
-  }, [appId, enabled, connect]);
+  }, [appId, enabled, isPaused, connect]);
 
   return {
     data,
     status,
     error,
     reconnect,
+    pause,
+    resume,
   };
 }
