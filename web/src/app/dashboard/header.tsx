@@ -229,7 +229,9 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
               {!isMobile && (
                 <>
                   <KeybindsDialog />
-                  <CommandMenuTrigger onClick={() => setCommandMenuOpen(true)} />
+                  <CommandMenuTrigger
+                    onClick={() => setCommandMenuOpen(true)}
+                  />
                 </>
               )}
               <ThemeTogglerButton />
@@ -244,7 +246,9 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
           open={commandMenuOpen}
         />
       )}
-      <div className={`flex flex-1 flex-col ${isRealtimePage ? '' : 'gap-4 p-4'}`}>
+      <div
+        className={`flex flex-1 flex-col ${isRealtimePage ? '' : 'gap-4 p-4'}`}
+      >
         {children}
       </div>
     </>
