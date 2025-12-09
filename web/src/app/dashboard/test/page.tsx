@@ -140,8 +140,11 @@ export default function TestPage() {
       const eventCount = 15;
       addLog('info', `Sending ${eventCount} random events...`);
 
-      let cumulativeTime = 0;
+      let cumulativeTime = sessionDelay;
       for (let i = 0; i < eventCount; i++) {
+        const eventDelay = Math.random() * 1000 + 500;
+        cumulativeTime += eventDelay;
+
         const eventName =
           EVENT_NAMES[Math.floor(Math.random() * EVENT_NAMES.length)];
         const eventTimestamp = new Date(now.getTime() + cumulativeTime);
@@ -177,8 +180,6 @@ export default function TestPage() {
           `Event ${i + 1}/${eventCount} sent: ${event.name} (${event.eventId})`
         );
 
-        const eventDelay = Math.random() * 1000 + 500;
-        cumulativeTime += eventDelay;
         await new Promise((resolve) => setTimeout(resolve, eventDelay));
       }
 
