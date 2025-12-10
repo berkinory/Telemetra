@@ -218,6 +218,7 @@ export const sessionWebRouter = new Elysia({ prefix: '/sessions' })
         const fortyEightHoursAgo = new Date(
           now.getTime() - 48 * 60 * 60 * 1000
         );
+        const thirtySecondsAgo = new Date(now.getTime() - 30 * 1000);
 
         const deviceIdsSubquery = db
           .select({ deviceId: devices.deviceId })
@@ -279,7 +280,10 @@ export const sessionWebRouter = new Elysia({ prefix: '/sessions' })
             })
             .from(sessions)
             .where(
-              sql`${sessions.deviceId} IN (SELECT device_id FROM (${deviceIdsSubquery}) AS app_devices)`
+              and(
+                sql`${sessions.deviceId} IN (SELECT device_id FROM (${deviceIdsSubquery}) AS app_devices)`,
+                lt(sessions.startedAt, thirtySecondsAgo)
+              )
             ),
 
           db
