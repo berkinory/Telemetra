@@ -54,10 +54,14 @@ export function KeybindsDialog() {
     },
   ];
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="icon" variant="ghost">
+        <Button className="hidden md:inline-flex" size="icon" variant="ghost">
           <HugeiconsIcon className="size-4" icon={KeyboardIcon} />
           <span className="sr-only">Keyboard shortcuts</span>
         </Button>
@@ -71,20 +75,19 @@ export function KeybindsDialog() {
         </DialogHeader>
         <ScrollArea className="max-h-[400px] py-4">
           <div className="space-y-2 pr-4">
-            {mounted &&
-              keybinds.map((keybind) => (
-                <div
-                  className="flex items-center justify-between rounded-md border bg-card p-3"
-                  key={keybind.id}
-                >
-                  <span className="text-sm">{keybind.description}</span>
-                  <KbdGroup>
-                    {keybind.keys.map((key, index) => (
-                      <Kbd key={`${keybind.id}-${index}`}>{key}</Kbd>
-                    ))}
-                  </KbdGroup>
-                </div>
-              ))}
+            {keybinds.map((keybind) => (
+              <div
+                className="flex items-center justify-between rounded-md border bg-card p-3"
+                key={keybind.id}
+              >
+                <span className="text-sm">{keybind.description}</span>
+                <KbdGroup>
+                  {keybind.keys.map((key, index) => (
+                    <Kbd key={`${keybind.id}-${index}`}>{key}</Kbd>
+                  ))}
+                </KbdGroup>
+              </div>
+            ))}
           </div>
         </ScrollArea>
       </DialogContent>
