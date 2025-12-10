@@ -401,7 +401,7 @@ export async function initQuestDB(): Promise<void> {
           name SYMBOL CAPACITY 256 CACHE,
           params STRING,
           timestamp TIMESTAMP
-        ) TIMESTAMP(timestamp) PARTITION BY WEEK WAL DEDUP UPSERT KEYS(timestamp, event_id)
+        ) TIMESTAMP(timestamp) PARTITION BY DAY WAL DEDUP UPSERT KEYS(timestamp, event_id)
       `;
 
       const eventsResponse = await fetch(
@@ -423,6 +423,24 @@ export async function initQuestDB(): Promise<void> {
 
       tablesInitialized = true;
       console.log('[QuestDB] Events table initialized with WAL and indexes');
+
+      try {
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const partitionDate = oneYearAgo.toISOString().split('T')[0];
+
+        const dropPartitionQuery = `ALTER TABLE events DROP PARTITION WHERE timestamp < '${partitionDate}'`;
+        await fetch(`${url}?query=${encodeURIComponent(dropPartitionQuery)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log(`[QuestDB] Dropped partitions older than ${partitionDate}`);
+      } catch (cleanupError) {
+        console.warn('[QuestDB] Cleanup warning:', cleanupError);
+      }
     } catch (error) {
       console.error('[QuestDB] Initialization failed:', error);
       initPromise = null;
