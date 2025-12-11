@@ -12,9 +12,9 @@ export type BufferedEvent = {
 
 const BUFFER_KEY = 'events:buffer';
 const FLUSH_KEY = 'events:flushing';
-const FLUSH_INTERVAL_MS = 2500;
+const FLUSH_INTERVAL_MS = 2000;
 const FLUSH_THRESHOLD = 500;
-const BATCH_SIZE = 500;
+const BATCH_SIZE = 5000;
 const MAX_CONCURRENT_WRITES = 10;
 const QUESTDB_HTTP = 'http://questdb:9000';
 const QUESTDB_TIMEOUT_MS = 30_000;
