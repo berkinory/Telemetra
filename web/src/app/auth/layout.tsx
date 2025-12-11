@@ -5,7 +5,7 @@ import { createMetadata, siteConfig } from '@/lib/seo';
 import { ThemeProvider } from '@/lib/theme-provider';
 
 export const metadata: Metadata = createMetadata({
-  title: 'Sign In',
+  title: 'Auth',
   description: 'Sign in to your Telemetra account',
   canonical: `${siteConfig.url}/auth`,
   noIndex: true,
