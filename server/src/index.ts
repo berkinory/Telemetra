@@ -7,6 +7,7 @@ import { runMigrations } from '@/lib/migrate';
 import { initQuestDB } from '@/lib/questdb';
 import { sseManager } from '@/lib/sse-manager';
 import { appWebRouter } from '@/routes/app';
+import { batchSdkRouter } from '@/routes/batch';
 import { deviceSdkRouter, deviceWebRouter } from '@/routes/device';
 import { eventSdkRouter, eventWebRouter } from '@/routes/event';
 import health from '@/routes/health';
@@ -17,6 +18,7 @@ import { sessionSdkRouter, sessionWebRouter } from '@/routes/session';
 const sdkRoutes = new Elysia({ prefix: '/sdk' })
   .use(sdkCors)
   .use(pingSdkRouter)
+  .use(batchSdkRouter)
   .use(deviceSdkRouter)
   .use(eventSdkRouter)
   .use(sessionSdkRouter);

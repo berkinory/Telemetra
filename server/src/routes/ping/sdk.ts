@@ -47,7 +47,7 @@ export const pingSdkRouter = new Elysia({ prefix: '/ping' })
           set.status = HttpStatus.BAD_REQUEST;
           return {
             code: ErrorCode.VALIDATION_ERROR,
-            detail: 'Session is too old (>24h), please start a new session',
+            detail: 'Session is too old, please start a new session',
           };
         }
 

@@ -18,9 +18,24 @@ export const EventSchema = t.Object({
   timestamp: t.String({ format: 'date-time' }),
 });
 
+const SESSION_ID_MIN_LENGTH = 8;
+const SESSION_ID_MAX_LENGTH = 128;
+const SESSION_ID_PATTERN = '^[\\w-]+$';
+const EVENT_NAME_MIN_LENGTH = 1;
+const EVENT_NAME_MAX_LENGTH = 256;
+const EVENT_NAME_PATTERN = '^[\\w.-]+$';
+
 export const CreateEventRequestSchema = t.Object({
-  sessionId: t.String(),
-  name: t.String(),
+  sessionId: t.String({
+    minLength: SESSION_ID_MIN_LENGTH,
+    maxLength: SESSION_ID_MAX_LENGTH,
+    pattern: SESSION_ID_PATTERN,
+  }),
+  name: t.String({
+    minLength: EVENT_NAME_MIN_LENGTH,
+    maxLength: EVENT_NAME_MAX_LENGTH,
+    pattern: EVENT_NAME_PATTERN,
+  }),
   params: t.Optional(EventParamsSchema),
   timestamp: t.String({ format: 'date-time' }),
 });

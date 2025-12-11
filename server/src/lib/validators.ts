@@ -12,8 +12,45 @@ import { ErrorCode, HttpStatus } from '@/schemas/common';
 
 const MIN_PAGE_SIZE = 5;
 const MAX_PAGE_SIZE = 25;
-const MAX_TIMESTAMP_AGE_MS = 24 * 60 * 60 * 1000;
-const MAX_TIMESTAMP_FUTURE_MS = 5 * 60 * 1000;
+
+export type TimestampMode = 'realtime' | 'offline';
+
+const TIMESTAMP_CONFIG = {
+  realtime: {
+    maxPastMs: 1 * 60 * 60 * 1000,
+    maxFutureMs: 5 * 60 * 1000,
+  },
+  offline: {
+    maxPastMs: 7 * 24 * 60 * 60 * 1000,
+    maxFutureMs: 60 * 60 * 1000,
+  },
+} as const;
+
+export const SESSION_MAX_AGE = {
+  realtime: 1 * 60 * 60 * 1000,
+  offline: 7 * 24 * 60 * 60 * 1000,
+} as const;
+
+const ID_VALIDATION = {
+  deviceId: {
+    minLength: 8,
+    maxLength: 128,
+    pattern: /^[\w-]+$/,
+    fieldName: 'deviceId',
+  },
+  sessionId: {
+    minLength: 8,
+    maxLength: 128,
+    pattern: /^[\w-]+$/,
+    fieldName: 'sessionId',
+  },
+  eventName: {
+    minLength: 1,
+    maxLength: 256,
+    pattern: /^[\w.-]+$/,
+    fieldName: 'event name',
+  },
+} as const;
 
 export type ValidationError = {
   code: ErrorCode;
@@ -83,7 +120,8 @@ export function validatePagination(
 
 export function validateTimestamp(
   timestampStr: string,
-  fieldName = 'timestamp'
+  fieldName = 'timestamp',
+  mode: TimestampMode = 'realtime'
 ): ValidationResult<Date> {
   const clientTimestamp = new Date(timestampStr);
 
@@ -98,10 +136,11 @@ export function validateTimestamp(
     };
   }
 
+  const config = TIMESTAMP_CONFIG[mode];
   const serverTimestamp = new Date();
   const timeDiffMs = serverTimestamp.getTime() - clientTimestamp.getTime();
 
-  if (timeDiffMs < -MAX_TIMESTAMP_FUTURE_MS) {
+  if (timeDiffMs < -config.maxFutureMs) {
     return {
       success: false,
       error: {
@@ -112,12 +151,12 @@ export function validateTimestamp(
     };
   }
 
-  if (timeDiffMs > MAX_TIMESTAMP_AGE_MS) {
+  if (timeDiffMs > config.maxPastMs) {
     return {
       success: false,
       error: {
         code: ErrorCode.VALIDATION_ERROR,
-        detail: `${fieldName} is too old (max 24 hours old)`,
+        detail: `${fieldName} is too old.`,
         status: HttpStatus.BAD_REQUEST,
       },
     };
@@ -427,4 +466,91 @@ export function validateEventParams(
   }
 
   return { success: true, data: params };
+}
+
+function validateId(
+  value: string,
+  config: (typeof ID_VALIDATION)[keyof typeof ID_VALIDATION]
+): ValidationResult<string> {
+  if (value.length < config.minLength) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `${config.fieldName} must be at least ${config.minLength} characters`,
+        status: HttpStatus.BAD_REQUEST,
+      },
+    };
+  }
+
+  if (value.length > config.maxLength) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `${config.fieldName} must be at most ${config.maxLength} characters`,
+        status: HttpStatus.BAD_REQUEST,
+      },
+    };
+  }
+
+  if (!config.pattern.test(value)) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `${config.fieldName} contains invalid characters (only alphanumeric, underscore, and hyphen allowed)`,
+        status: HttpStatus.BAD_REQUEST,
+      },
+    };
+  }
+
+  return { success: true, data: value };
+}
+
+export function validateDeviceId(deviceId: string): ValidationResult<string> {
+  return validateId(deviceId, ID_VALIDATION.deviceId);
+}
+
+export function validateSessionId(sessionId: string): ValidationResult<string> {
+  return validateId(sessionId, ID_VALIDATION.sessionId);
+}
+
+export function validateEventName(name: string): ValidationResult<string> {
+  const config = ID_VALIDATION.eventName;
+
+  if (name.length < config.minLength) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `${config.fieldName} must be at least ${config.minLength} character`,
+        status: HttpStatus.BAD_REQUEST,
+      },
+    };
+  }
+
+  if (name.length > config.maxLength) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `${config.fieldName} must be at most ${config.maxLength} characters`,
+        status: HttpStatus.BAD_REQUEST,
+      },
+    };
+  }
+
+  if (!config.pattern.test(name)) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        detail: `${config.fieldName} contains invalid characters (only alphanumeric, underscore, hyphen, and dot allowed)`,
+        status: HttpStatus.BAD_REQUEST,
+      },
+    };
+  }
+
+  return { success: true, data: name };
 }

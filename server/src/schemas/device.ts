@@ -17,12 +17,29 @@ export const DeviceSchema = t.Object({
   firstSeen: t.String({ format: 'date-time' }),
 });
 
+const DEVICE_ID_MIN_LENGTH = 8;
+const DEVICE_ID_MAX_LENGTH = 128;
+const DEVICE_ID_PATTERN = '^[\\w-]+$';
+const MODEL_MAX_LENGTH = 128;
+const OS_VERSION_MAX_LENGTH = 64;
+const APP_VERSION_MAX_LENGTH = 64;
+
 export const CreateDeviceRequestSchema = t.Object({
-  deviceId: t.String(),
-  model: t.Optional(t.Union([t.String(), t.Null()])),
-  osVersion: t.Optional(t.Union([t.String(), t.Null()])),
+  deviceId: t.String({
+    minLength: DEVICE_ID_MIN_LENGTH,
+    maxLength: DEVICE_ID_MAX_LENGTH,
+    pattern: DEVICE_ID_PATTERN,
+  }),
+  model: t.Optional(
+    t.Union([t.String({ maxLength: MODEL_MAX_LENGTH }), t.Null()])
+  ),
+  osVersion: t.Optional(
+    t.Union([t.String({ maxLength: OS_VERSION_MAX_LENGTH }), t.Null()])
+  ),
   platform: t.Optional(t.Union([PlatformSchema, t.Null()])),
-  appVersion: t.Optional(t.Union([t.String(), t.Null()])),
+  appVersion: t.Optional(
+    t.Union([t.String({ maxLength: APP_VERSION_MAX_LENGTH }), t.Null()])
+  ),
 });
 
 export const DeviceListItemSchema = t.Object({

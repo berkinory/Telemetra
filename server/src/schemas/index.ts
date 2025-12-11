@@ -1,4 +1,5 @@
 export * from './app';
+export * from './batch';
 export * from './common';
 export * from './device';
 export * from './event';

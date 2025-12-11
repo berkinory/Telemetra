@@ -7,11 +7,27 @@ export const SessionSchema = t.Object({
   lastActivityAt: t.String({ format: 'date-time' }),
 });
 
+const SESSION_ID_MIN_LENGTH = 8;
+const SESSION_ID_MAX_LENGTH = 128;
+const SESSION_ID_PATTERN = '^[\\w-]+$';
+const DEVICE_ID_MIN_LENGTH = 8;
+const DEVICE_ID_MAX_LENGTH = 128;
+const DEVICE_ID_PATTERN = '^[\\w-]+$';
+const APP_VERSION_MAX_LENGTH = 64;
+
 export const CreateSessionRequestSchema = t.Object({
-  sessionId: t.String(),
-  deviceId: t.String(),
+  sessionId: t.String({
+    minLength: SESSION_ID_MIN_LENGTH,
+    maxLength: SESSION_ID_MAX_LENGTH,
+    pattern: SESSION_ID_PATTERN,
+  }),
+  deviceId: t.String({
+    minLength: DEVICE_ID_MIN_LENGTH,
+    maxLength: DEVICE_ID_MAX_LENGTH,
+    pattern: DEVICE_ID_PATTERN,
+  }),
   startedAt: t.String({ format: 'date-time' }),
-  appVersion: t.Optional(t.String()),
+  appVersion: t.Optional(t.String({ maxLength: APP_VERSION_MAX_LENGTH })),
 });
 
 export const SessionsListResponseSchema = t.Object({
