@@ -4,7 +4,6 @@ import {
   AndroidIcon,
   AnonymousIcon,
   AppleIcon,
-  BrowserIcon,
   ComputerPhoneSyncIcon,
   Flag02Icon,
   InformationCircleIcon,
@@ -26,8 +25,6 @@ function getPlatformIcon(platform: string | null) {
       return AndroidIcon;
     case 'ios':
       return AppleIcon;
-    case 'web':
-      return BrowserIcon;
     default:
       return AnonymousIcon;
   }
@@ -39,8 +36,6 @@ function getPlatformLabel(platform: string | null) {
       return 'Android';
     case 'ios':
       return 'iOS';
-    case 'web':
-      return 'Web';
     default:
       return 'Unknown';
   }

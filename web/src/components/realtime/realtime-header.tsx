@@ -3,7 +3,6 @@
 import {
   AndroidIcon,
   AppleIcon,
-  BrowserIcon,
   ComputerPhoneSyncIcon,
   FullSignalIcon,
   GpsSignal01Icon,
@@ -31,7 +30,6 @@ type RealtimeHeaderProps = {
   platforms?: {
     ios?: number;
     android?: number;
-    web?: number;
   };
   onPause?: () => void;
   onResume?: () => void;
@@ -86,7 +84,6 @@ export function RealtimeHeader({
       icon: AndroidIcon,
       value: platforms.android || 0,
     },
-    { key: 'web', label: 'Web', icon: BrowserIcon, value: platforms.web || 0 },
   ].filter((p) => p.value > 0);
 
   return (

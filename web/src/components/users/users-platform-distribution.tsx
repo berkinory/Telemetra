@@ -4,7 +4,6 @@ import {
   AndroidIcon,
   AnonymousIcon,
   AppleIcon,
-  BrowserIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { parseAsString, useQueryState } from 'nuqs';
@@ -18,8 +17,6 @@ function getPlatformIcon(platform: string) {
       return AndroidIcon;
     case 'ios':
       return AppleIcon;
-    case 'web':
-      return BrowserIcon;
     default:
       return AnonymousIcon;
   }
@@ -31,8 +28,6 @@ function getPlatformLabel(platform: string) {
       return 'Android';
     case 'ios':
       return 'iOS';
-    case 'web':
-      return 'Web';
     default:
       return 'Unknown';
   }
@@ -52,7 +47,7 @@ export function UsersPlatformDistribution() {
   >;
   const totalDevices = overview?.totalDevices || 0;
 
-  const platforms = ['android', 'ios', 'web'] as const;
+  const platforms = ['android', 'ios'] as const;
   const sortedPlatforms = [...platforms].sort((a, b) => {
     const countA = platformStats[a] || 0;
     const countB = platformStats[b] || 0;

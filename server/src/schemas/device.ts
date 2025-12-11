@@ -3,7 +3,6 @@ import { t } from 'elysia';
 export const PlatformSchema = t.Union([
   t.Literal('ios'),
   t.Literal('android'),
-  t.Literal('web'),
   t.Literal('unknown'),
 ]);
 
@@ -120,7 +119,7 @@ export const DeviceActivityTimeseriesResponseSchema = t.Object({
   lastActivityAt: t.Union([t.String({ format: 'date-time' }), t.Null()]),
 });
 
-export type Platform = 'ios' | 'android' | 'web' | 'unknown';
+export type Platform = 'ios' | 'android' | 'unknown';
 export type Device = typeof DeviceSchema.static;
 export type CreateDeviceRequest = typeof CreateDeviceRequestSchema.static;
 export type DeviceListItem = typeof DeviceListItemSchema.static;

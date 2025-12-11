@@ -48,7 +48,7 @@ function normalizePlatform(
     return null;
   }
   const lower = platform.toLowerCase();
-  if (lower === 'ios' || lower === 'android' || lower === 'web') {
+  if (lower === 'ios' || lower === 'android') {
     return lower as Platform;
   }
   return 'unknown';
@@ -665,7 +665,6 @@ export const deviceWebRouter = new Elysia({ prefix: '/devices' })
           t.Union([
             t.Literal('ios'),
             t.Literal('android'),
-            t.Literal('web'),
             t.Literal('unknown'),
           ])
         ),

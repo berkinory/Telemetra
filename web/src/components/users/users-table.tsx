@@ -4,7 +4,6 @@ import {
   AndroidIcon,
   AnonymousIcon,
   AppleIcon,
-  BrowserIcon,
   Calendar03Icon,
   ComputerPhoneSyncIcon,
   Flag02Icon,
@@ -29,8 +28,6 @@ function getPlatformIcon(platform: string) {
       return AndroidIcon;
     case 'ios':
       return AppleIcon;
-    case 'web':
-      return BrowserIcon;
     default:
       return AnonymousIcon;
   }
@@ -42,8 +39,6 @@ function getPlatformLabel(platform: string) {
       return 'Android';
     case 'ios':
       return 'iOS';
-    case 'web':
-      return 'Web';
     default:
       return 'Unknown';
   }
@@ -178,7 +173,6 @@ export function UsersTable() {
       filterOptions={[
         { label: 'Android', value: 'android', icon: AndroidIcon },
         { label: 'iOS', value: 'ios', icon: AppleIcon },
-        { label: 'Web', value: 'web', icon: BrowserIcon },
       ]}
       filterPlaceholder="Platform"
       isLoading={isLoading}
