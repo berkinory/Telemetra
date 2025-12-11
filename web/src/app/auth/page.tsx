@@ -38,6 +38,8 @@ function LoginForm() {
           {
             email: value.email,
             password: value.password,
+            rememberMe: true,
+            callbackURL: '/dashboard',
           },
           {
             onError: (ctx) => {
@@ -64,116 +66,152 @@ function LoginForm() {
     >
       <Card>
         <CardContent className="space-y-4">
-          <form.Field
-            name="email"
-            validators={{
-              onChange: ({ value }) => {
-                const trimmedValue = value.trim();
+          <form.Subscribe selector={(state) => state.submissionAttempts}>
+            {(submissionAttempts) => (
+              <>
+                <form.Field
+                  name="email"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const trimmedValue = value.trim();
 
-                if (!trimmedValue) {
-                  return 'Email is required';
-                }
+                      if (!trimmedValue) {
+                        return 'Email is required';
+                      }
 
-                if (!EMAIL_REGEX.test(trimmedValue)) {
-                  return 'Please enter a valid email address';
-                }
+                      if (!EMAIL_REGEX.test(trimmedValue)) {
+                        return 'Please enter a valid email address';
+                      }
 
-                return;
-              },
-              onChangeAsyncDebounceMs: 300,
-            }}
-          >
-            {(field) => (
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="login-email">
-                  Email
-                </label>
-                <Input
-                  autoComplete="email"
-                  id="login-email"
-                  onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  placeholder="you@example.com"
-                  type="email"
-                  value={field.state.value}
-                />
-                <AutoHeight deps={[field.state.meta.errors.length]}>
-                  {field.state.meta.errors.length > 0 && (
-                    <p className="text-destructive text-sm">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </AutoHeight>
-              </div>
+                      return;
+                    },
+                    onChangeAsyncDebounceMs: 300,
+                  }}
+                >
+                  {(field) => {
+                    const showErrors =
+                      submissionAttempts > 0 &&
+                      field.state.meta.errors.length > 0;
+                    return (
+                      <div className="space-y-2">
+                        <label
+                          className="font-medium text-sm"
+                          htmlFor="login-email"
+                        >
+                          Email
+                        </label>
+                        <Input
+                          autoComplete="email"
+                          id="login-email"
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          placeholder="you@example.com"
+                          type="text"
+                          value={field.state.value}
+                        />
+                        <AutoHeight deps={[showErrors]}>
+                          {showErrors && (
+                            <p className="text-destructive text-sm">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </AutoHeight>
+                      </div>
+                    );
+                  }}
+                </form.Field>
+
+                <form.Field
+                  name="password"
+                  validators={{
+                    onChange: ({ value }) => {
+                      if (!value) {
+                        return 'Password is required';
+                      }
+
+                      if (value.length < 8) {
+                        return 'Password must be at least 8 characters';
+                      }
+
+                      if (value.length > 64) {
+                        return 'Password must be at most 64 characters';
+                      }
+
+                      return;
+                    },
+                    onChangeAsyncDebounceMs: 300,
+                  }}
+                >
+                  {(field) => {
+                    const showErrors =
+                      submissionAttempts > 0 &&
+                      field.state.meta.errors.length > 0;
+                    return (
+                      <div className="space-y-2">
+                        <label
+                          className="font-medium text-sm"
+                          htmlFor="login-password"
+                        >
+                          Password
+                        </label>
+                        <div className="relative">
+                          <Input
+                            autoComplete="current-password"
+                            className="pr-10"
+                            id="login-password"
+                            onBlur={field.handleBlur}
+                            onChange={(event) =>
+                              field.handleChange(event.target.value)
+                            }
+                            placeholder="••••••••"
+                            type={showPassword ? 'text' : 'password'}
+                            value={field.state.value}
+                          />
+                          <button
+                            className="absolute top-0 right-0 flex h-full items-center px-3"
+                            onClick={() => setShowPassword(!showPassword)}
+                            type="button"
+                          >
+                            <HugeiconsIcon
+                              className="size-4 text-muted-foreground"
+                              icon={showPassword ? ViewOffIcon : ViewIcon}
+                            />
+                          </button>
+                        </div>
+                        <AutoHeight deps={[showErrors]}>
+                          {showErrors && (
+                            <p className="text-destructive text-sm">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </AutoHeight>
+                      </div>
+                    );
+                  }}
+                </form.Field>
+              </>
             )}
-          </form.Field>
-
-          <form.Field
-            name="password"
-            validators={{
-              onChange: ({ value }) => {
-                if (!value) {
-                  return 'Password is required';
-                }
-
-                if (value.length < 8) {
-                  return 'Password must be at least 8 characters';
-                }
-
-                if (value.length > 64) {
-                  return 'Password must be at most 64 characters';
-                }
-
-                return;
-              },
-              onChangeAsyncDebounceMs: 300,
-            }}
-          >
-            {(field) => (
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="login-password">
-                  Password
-                </label>
-                <div className="relative">
-                  <Input
-                    autoComplete="current-password"
-                    className="pr-10"
-                    id="login-password"
-                    onBlur={field.handleBlur}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    placeholder="••••••••"
-                    type={showPassword ? 'text' : 'password'}
-                    value={field.state.value}
-                  />
-                  <button
-                    className="absolute top-0 right-0 flex h-full items-center px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                    type="button"
-                  >
-                    <HugeiconsIcon
-                      className="size-4 text-muted-foreground"
-                      icon={showPassword ? ViewOffIcon : ViewIcon}
-                    />
-                  </button>
-                </div>
-                <AutoHeight deps={[field.state.meta.errors.length]}>
-                  {field.state.meta.errors.length > 0 && (
-                    <p className="text-destructive text-sm">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </AutoHeight>
-              </div>
-            )}
-          </form.Field>
+          </form.Subscribe>
 
           <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            selector={(state) =>
+              [
+                state.canSubmit,
+                state.isSubmitting,
+                state.submissionAttempts,
+              ] as const
+            }
           >
-            {([canSubmit, isSubmitting]) => (
+            {([canSubmit, isSubmitting, submissionAttempts]) => (
               <Button
                 className="w-full"
-                disabled={!canSubmit || isSubmitting || isLoading}
+                disabled={
+                  (submissionAttempts > 0 && !canSubmit) ||
+                  isSubmitting ||
+                  isLoading
+                }
                 type="submit"
               >
                 {isLoading ? (
@@ -225,6 +263,7 @@ function SignupForm() {
             name: value.name,
             email: value.email,
             password: value.password,
+            callbackURL: '/dashboard',
           },
           {
             onError: (ctx) => {
@@ -251,167 +290,210 @@ function SignupForm() {
     >
       <Card>
         <CardContent className="space-y-4">
-          <form.Field
-            name="name"
-            validators={{
-              onChange: ({ value }) => {
-                const trimmedValue = value.trim();
+          <form.Subscribe selector={(state) => state.submissionAttempts}>
+            {(submissionAttempts) => (
+              <>
+                <form.Field
+                  name="name"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const trimmedValue = value.trim();
 
-                if (!trimmedValue) {
-                  return 'Name is required';
-                }
+                      if (!trimmedValue) {
+                        return 'Name is required';
+                      }
 
-                if (trimmedValue.length < 2) {
-                  return 'Name must be at least 2 characters';
-                }
+                      if (trimmedValue.length < 2) {
+                        return 'Name must be at least 2 characters';
+                      }
 
-                if (trimmedValue.length > 14) {
-                  return 'Name must be at most 14 characters';
-                }
+                      if (trimmedValue.length > 14) {
+                        return 'Name must be at most 14 characters';
+                      }
 
-                return;
-              },
-              onChangeAsyncDebounceMs: 300,
-            }}
-          >
-            {(field) => (
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="signup-name">
-                  Name
-                </label>
-                <Input
-                  autoComplete="name"
-                  id="signup-name"
-                  onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  placeholder="John Doe"
-                  type="text"
-                  value={field.state.value}
-                />
-                <AutoHeight deps={[field.state.meta.errors.length]}>
-                  {field.state.meta.errors.length > 0 && (
-                    <p className="text-destructive text-sm">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </AutoHeight>
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field
-            name="email"
-            validators={{
-              onChange: ({ value }) => {
-                const trimmedValue = value.trim();
-
-                if (!trimmedValue) {
-                  return 'Email is required';
-                }
-
-                if (!EMAIL_REGEX.test(trimmedValue)) {
-                  return 'Please enter a valid email address';
-                }
-
-                return;
-              },
-              onChangeAsyncDebounceMs: 300,
-            }}
-          >
-            {(field) => (
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="signup-email">
-                  Email
-                </label>
-                <Input
-                  autoComplete="email"
-                  id="signup-email"
-                  onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  placeholder="you@example.com"
-                  type="email"
-                  value={field.state.value}
-                />
-                <AutoHeight deps={[field.state.meta.errors.length]}>
-                  {field.state.meta.errors.length > 0 && (
-                    <p className="text-destructive text-sm">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </AutoHeight>
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field
-            name="password"
-            validators={{
-              onChange: ({ value }) => {
-                if (!value) {
-                  return 'Password is required';
-                }
-
-                if (value.length < 8) {
-                  return 'Password must be at least 8 characters';
-                }
-
-                if (value.length > 64) {
-                  return 'Password must be at most 64 characters';
-                }
-
-                return;
-              },
-              onChangeAsyncDebounceMs: 300,
-            }}
-          >
-            {(field) => (
-              <div className="space-y-2">
-                <label
-                  className="font-medium text-sm"
-                  htmlFor="signup-password"
+                      return;
+                    },
+                    onChangeAsyncDebounceMs: 300,
+                  }}
                 >
-                  Password
-                </label>
-                <div className="relative">
-                  <Input
-                    autoComplete="new-password"
-                    className="pr-10"
-                    id="signup-password"
-                    onBlur={field.handleBlur}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    placeholder="••••••••"
-                    type={showPassword ? 'text' : 'password'}
-                    value={field.state.value}
-                  />
-                  <button
-                    className="absolute top-0 right-0 flex h-full items-center px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                    type="button"
-                  >
-                    <HugeiconsIcon
-                      className="size-4 text-muted-foreground"
-                      icon={showPassword ? ViewOffIcon : ViewIcon}
-                    />
-                  </button>
-                </div>
-                <AutoHeight deps={[field.state.meta.errors.length]}>
-                  {field.state.meta.errors.length > 0 && (
-                    <p className="text-destructive text-sm">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </AutoHeight>
-              </div>
+                  {(field) => {
+                    const showErrors =
+                      submissionAttempts > 0 &&
+                      field.state.meta.errors.length > 0;
+                    return (
+                      <div className="space-y-2">
+                        <label
+                          className="font-medium text-sm"
+                          htmlFor="signup-name"
+                        >
+                          Name
+                        </label>
+                        <Input
+                          autoComplete="name"
+                          id="signup-name"
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          placeholder="John Doe"
+                          type="text"
+                          value={field.state.value}
+                        />
+                        <AutoHeight deps={[showErrors]}>
+                          {showErrors && (
+                            <p className="text-destructive text-sm">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </AutoHeight>
+                      </div>
+                    );
+                  }}
+                </form.Field>
+
+                <form.Field
+                  name="email"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const trimmedValue = value.trim();
+
+                      if (!trimmedValue) {
+                        return 'Email is required';
+                      }
+
+                      if (!EMAIL_REGEX.test(trimmedValue)) {
+                        return 'Please enter a valid email address';
+                      }
+
+                      return;
+                    },
+                    onChangeAsyncDebounceMs: 300,
+                  }}
+                >
+                  {(field) => {
+                    const showErrors =
+                      submissionAttempts > 0 &&
+                      field.state.meta.errors.length > 0;
+                    return (
+                      <div className="space-y-2">
+                        <label
+                          className="font-medium text-sm"
+                          htmlFor="signup-email"
+                        >
+                          Email
+                        </label>
+                        <Input
+                          autoComplete="email"
+                          id="signup-email"
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          placeholder="you@example.com"
+                          type="text"
+                          value={field.state.value}
+                        />
+                        <AutoHeight deps={[showErrors]}>
+                          {showErrors && (
+                            <p className="text-destructive text-sm">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </AutoHeight>
+                      </div>
+                    );
+                  }}
+                </form.Field>
+
+                <form.Field
+                  name="password"
+                  validators={{
+                    onChange: ({ value }) => {
+                      if (!value) {
+                        return 'Password is required';
+                      }
+
+                      if (value.length < 8) {
+                        return 'Password must be at least 8 characters';
+                      }
+
+                      if (value.length > 64) {
+                        return 'Password must be at most 64 characters';
+                      }
+
+                      return;
+                    },
+                    onChangeAsyncDebounceMs: 300,
+                  }}
+                >
+                  {(field) => {
+                    const showErrors =
+                      submissionAttempts > 0 &&
+                      field.state.meta.errors.length > 0;
+                    return (
+                      <div className="space-y-2">
+                        <label
+                          className="font-medium text-sm"
+                          htmlFor="signup-password"
+                        >
+                          Password
+                        </label>
+                        <div className="relative">
+                          <Input
+                            autoComplete="new-password"
+                            className="pr-10"
+                            id="signup-password"
+                            onBlur={field.handleBlur}
+                            onChange={(event) =>
+                              field.handleChange(event.target.value)
+                            }
+                            placeholder="••••••••"
+                            type={showPassword ? 'text' : 'password'}
+                            value={field.state.value}
+                          />
+                          <button
+                            className="absolute top-0 right-0 flex h-full items-center px-3"
+                            onClick={() => setShowPassword(!showPassword)}
+                            type="button"
+                          >
+                            <HugeiconsIcon
+                              className="size-4 text-muted-foreground"
+                              icon={showPassword ? ViewOffIcon : ViewIcon}
+                            />
+                          </button>
+                        </div>
+                        <AutoHeight deps={[showErrors]}>
+                          {showErrors && (
+                            <p className="text-destructive text-sm">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </AutoHeight>
+                      </div>
+                    );
+                  }}
+                </form.Field>
+              </>
             )}
-          </form.Field>
+          </form.Subscribe>
 
           <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            selector={(state) =>
+              [
+                state.canSubmit,
+                state.isSubmitting,
+                state.submissionAttempts,
+              ] as const
+            }
           >
-            {([canSubmit, isSubmitting]) => (
+            {([canSubmit, isSubmitting, submissionAttempts]) => (
               <Button
                 className="w-full"
-                disabled={!canSubmit || isSubmitting || isLoading}
+                disabled={
+                  (submissionAttempts > 0 && !canSubmit) ||
+                  isSubmitting ||
+                  isLoading
+                }
                 type="submit"
               >
                 {isLoading ? (
@@ -504,8 +586,8 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="pointer-events-none fixed top-0 right-0 hidden h-screen w-[65%] lg:block">
-        <div className="h-full w-full [mask-image:linear-gradient(to_right,transparent_0%,black_25%,black_100%)]">
+      <div className="pointer-events-none fixed top-0 right-0 hidden h-screen w-[70%] lg:block">
+        <div className="h-full w-full [mask-image:linear-gradient(to_right,black_35%,black_100%)]">
           <PixelBlast
             enableRipples={false}
             patternScale={5}

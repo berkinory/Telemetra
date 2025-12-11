@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { AuthRedirect } from '@/components/auth-redirect';
+import { ForceDarkTheme } from '@/components/force-dark-theme';
 import { Toaster } from '@/components/ui/sonner';
 import { createMetadata, siteConfig } from '@/lib/seo';
-import { ThemeProvider } from '@/lib/theme-provider';
 
 export const metadata: Metadata = createMetadata({
   title: 'Auth',
@@ -17,14 +17,11 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthRedirect requireAuth={false}>
-      <ThemeProvider>{children}</ThemeProvider>
-      <Toaster
-        duration={5000}
-        position="top-center"
-        richColors
-        visibleToasts={3}
-      />
-    </AuthRedirect>
+    <ForceDarkTheme>
+      <AuthRedirect requireAuth={false}>
+        {children}
+        <Toaster duration={5000} position="top-center" visibleToasts={3} />
+      </AuthRedirect>
+    </ForceDarkTheme>
   );
 }
