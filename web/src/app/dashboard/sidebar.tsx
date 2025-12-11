@@ -10,8 +10,10 @@ import {
   GithubIcon,
   GlobalIcon,
   Key01Icon,
+  Layers01Icon,
   Logout01Icon,
   PlaySquareIcon,
+  PyramidStructure02Icon,
   Setting07Icon,
   TestTubeIcon,
   UnfoldMoreIcon,
@@ -82,6 +84,19 @@ const analyticsNavItems: NavItem[] = [
     icon: GlobalIcon,
     path: '/dashboard/analytics/realtime',
     tooltip: 'Realtime',
+  },
+];
+
+const comingSoonNavItems = [
+  {
+    label: 'Segments',
+    icon: Layers01Icon,
+    tooltip: 'Segments - Coming Soon',
+  },
+  {
+    label: 'Funnels',
+    icon: PyramidStructure02Icon,
+    tooltip: 'Funnels - Coming Soon',
   },
 ];
 
@@ -239,6 +254,20 @@ export function DashboardSidebar() {
                       <span className="font-sans">{item.label}</span>
                     </SidebarMenuButton>
                   )}
+                </SidebarMenuItem>
+              ))}
+              {comingSoonNavItems.map((item) => (
+                <SidebarMenuItem key={item.label}>
+                  <SidebarMenuButton
+                    className="cursor-not-allowed opacity-50"
+                    tooltip={item.tooltip}
+                  >
+                    <HugeiconsIcon icon={item.icon} />
+                    <span className="font-sans">{item.label}</span>
+                    <span className="ml-auto rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                      SOON
+                    </span>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

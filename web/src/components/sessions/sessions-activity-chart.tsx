@@ -143,7 +143,7 @@ export function SessionsActivityChartSkeleton() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
             <Tabs value="daily_sessions">
-              <TabsList>
+              <TabsList className="h-auto flex-wrap gap-1">
                 <TabsTrigger
                   className="text-muted-foreground text-xs uppercase"
                   value="daily_sessions"

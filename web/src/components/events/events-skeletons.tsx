@@ -13,9 +13,9 @@ export function EventsOverviewCardsSkeleton() {
           <p className="text-muted-foreground text-xs uppercase">
             Total Events
           </p>
-          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-8 w-24" />
           <div className="mt-1 flex items-center gap-1 text-xs">
-            <Skeleton className="h-3 w-12" />
+            <Skeleton className="h-4 w-12" />
             <span className="text-muted-foreground">from yesterday</span>
           </div>
         </CardContent>
@@ -26,9 +26,9 @@ export function EventsOverviewCardsSkeleton() {
           <p className="text-muted-foreground text-xs uppercase">
             Daily Events
           </p>
-          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-8 w-24" />
           <div className="mt-1 flex items-center gap-1 text-xs">
-            <Skeleton className="h-3 w-12" />
+            <Skeleton className="h-4 w-12" />
             <span className="text-muted-foreground">from yesterday</span>
           </div>
         </CardContent>

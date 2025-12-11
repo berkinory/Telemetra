@@ -12,8 +12,8 @@ export function UsersOverviewCardsSkeleton() {
       <Card className="py-0">
         <CardContent className="p-4">
           <p className="text-muted-foreground text-xs uppercase">Total Users</p>
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="mt-1 h-3 w-32" />
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
         </CardContent>
       </Card>
 
@@ -22,8 +22,8 @@ export function UsersOverviewCardsSkeleton() {
           <p className="text-muted-foreground text-xs uppercase">
             Daily Active Users
           </p>
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="mt-1 h-3 w-32" />
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
         </CardContent>
       </Card>
 
@@ -38,8 +38,8 @@ export function UsersOverviewCardsSkeleton() {
               <span className="relative inline-flex size-2 rounded-full bg-success" />
             </div>
           </div>
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="mt-1 h-3 w-32" />
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
         </CardContent>
       </Card>
     </div>

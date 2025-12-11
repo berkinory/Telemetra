@@ -13,8 +13,8 @@ export function SessionsOverviewCardsSkeleton() {
           <p className="text-muted-foreground text-xs uppercase">
             Total Sessions
           </p>
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="mt-1 h-3 w-32" />
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
         </CardContent>
       </Card>
 
@@ -23,16 +23,16 @@ export function SessionsOverviewCardsSkeleton() {
           <p className="text-muted-foreground text-xs uppercase">
             Daily Sessions
           </p>
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="mt-1 h-3 w-32" />
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
         </CardContent>
       </Card>
 
       <Card className="py-0">
         <CardContent className="p-4">
           <p className="text-muted-foreground text-xs uppercase">Bounce Rate</p>
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="mt-1 h-3 w-32" />
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
         </CardContent>
       </Card>
 
@@ -41,8 +41,8 @@ export function SessionsOverviewCardsSkeleton() {
           <p className="text-muted-foreground text-xs uppercase">
             Average Session Duration
           </p>
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="mt-1 h-3 w-32" />
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
         </CardContent>
       </Card>
     </div>

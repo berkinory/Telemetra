@@ -109,7 +109,7 @@ export function TimescaleChart({
           <div className="flex flex-col gap-3">
             <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
               <Tabs onValueChange={onMetricChange} value={metric}>
-                <TabsList className="gap-1">
+                <TabsList className="h-auto flex-wrap gap-1">
                   {metricOptions.map((option) => (
                     <TabsTrigger
                       className="text-muted-foreground text-xs uppercase"
