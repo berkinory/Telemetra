@@ -37,7 +37,7 @@ export const cacheConfig = {
   realtime: {
     staleTime: 0,
     gcTime: 5 * 60_000,
-    refetchInterval: 30_000,
+    refetchInterval: 15_000,
   },
   overview: {
     staleTime: 30_000,
