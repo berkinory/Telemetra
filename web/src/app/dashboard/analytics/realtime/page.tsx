@@ -221,7 +221,7 @@ export default function RealtimePage() {
             />
           </div>
 
-          <div className="order-3 flex-1 lg:flex-none">
+          <div className="order-3 flex-1 lg:flex-none lg:self-end">
             <RealtimeActivityFeed activities={activities} appId={appId || ''} />
           </div>
         </div>
