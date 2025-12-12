@@ -94,7 +94,9 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
           </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56" side="bottom">
-          <DropdownMenuLabel>Switch Application</DropdownMenuLabel>
+          <DropdownMenuLabel className="font-sans">
+            Switch Application
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {isPending && (
             <DropdownMenuItem disabled>
@@ -131,7 +133,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
               variant="success"
             >
               <HugeiconsIcon className="mr-2 size-4" icon={AddSquareIcon} />
-              <span className="font-sans">Create New</span>
+              <span className="font-mono">Create New</span>
             </DropdownMenuItem>
           </CreateAppDialog>
         </DropdownMenuContent>
