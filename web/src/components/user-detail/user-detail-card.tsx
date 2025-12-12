@@ -4,9 +4,12 @@ import {
   AndroidIcon,
   AnonymousIcon,
   AppleIcon,
-  ComputerPhoneSyncIcon,
+  ComputerIcon,
   Flag02Icon,
   InformationCircleIcon,
+  LanguageSquareIcon,
+  SmartPhone01Icon,
+  Tablet01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { parseAsString, useQueryState } from 'nuqs';
@@ -36,6 +39,32 @@ function getPlatformLabel(platform: string | null) {
       return 'Android';
     case 'ios':
       return 'iOS';
+    default:
+      return 'Unknown';
+  }
+}
+
+function getDeviceTypeIcon(deviceType: string | null) {
+  switch (deviceType) {
+    case 'phone':
+      return SmartPhone01Icon;
+    case 'tablet':
+      return Tablet01Icon;
+    case 'desktop':
+      return ComputerIcon;
+    default:
+      return AnonymousIcon;
+  }
+}
+
+function getDeviceTypeLabel(deviceType: string | null) {
+  switch (deviceType) {
+    case 'phone':
+      return 'Phone';
+    case 'tablet':
+      return 'Tablet';
+    case 'desktop':
+      return 'Desktop';
     default:
       return 'Unknown';
   }
@@ -106,8 +135,8 @@ export function UserDetailCard({ deviceId }: UserDetailCardProps) {
 
         <div className="space-y-4">
           <div>
-            <p className="text-muted-foreground text-xs uppercase">Location</p>
-            <div className="mt-1">
+            <p className="text-muted-foreground text-xs uppercase">Geo</p>
+            <div className="mt-1 space-y-2">
               {(() => {
                 const countryLabel = getCountryLabel(device.country);
                 const city = device.city;
@@ -157,6 +186,15 @@ export function UserDetailCard({ deviceId }: UserDetailCardProps) {
                   </p>
                 );
               })()}
+              {device.locale !== null && (
+                <p className="flex items-center gap-1.5 font-medium text-sm">
+                  <HugeiconsIcon
+                    className="size-4 text-muted-foreground"
+                    icon={LanguageSquareIcon}
+                  />
+                  <span>{device.locale}</span>
+                </p>
+              )}
             </div>
           </div>
 
@@ -178,28 +216,32 @@ export function UserDetailCard({ deviceId }: UserDetailCardProps) {
                   )}
                 </span>
               </p>
-              <p className="flex items-center gap-1.5 font-medium text-sm">
-                <HugeiconsIcon
-                  className="size-4 text-muted-foreground"
-                  icon={ComputerPhoneSyncIcon}
-                />
-                <span>{device.model || 'Unknown'}</span>
-              </p>
+              {device.deviceType !== null && (
+                <p className="flex items-center gap-1.5 font-medium text-sm">
+                  <HugeiconsIcon
+                    className="size-4 text-muted-foreground"
+                    icon={getDeviceTypeIcon(device.deviceType)}
+                  />
+                  <span>{getDeviceTypeLabel(device.deviceType)}</span>
+                </p>
+              )}
             </div>
           </div>
 
-          <div>
-            <p className="text-muted-foreground text-xs uppercase">
-              App Version
-            </p>
-            <p className="mt-1 flex items-center gap-1.5 font-medium text-sm">
-              <HugeiconsIcon
-                className="size-4 text-muted-foreground"
-                icon={InformationCircleIcon}
-              />
-              <span>{device.appVersion || 'Unknown'}</span>
-            </p>
-          </div>
+          {device.appVersion !== null && (
+            <div>
+              <p className="text-muted-foreground text-xs uppercase">
+                App Version
+              </p>
+              <p className="mt-1 flex items-center gap-1.5 font-medium text-sm">
+                <HugeiconsIcon
+                  className="size-4 text-muted-foreground"
+                  icon={InformationCircleIcon}
+                />
+                <span>{device.appVersion}</span>
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

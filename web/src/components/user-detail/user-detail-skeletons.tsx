@@ -32,7 +32,7 @@ export function UserDetailCardSkeleton() {
 
         <div className="space-y-4">
           <div>
-            <p className="text-muted-foreground text-xs uppercase">Location</p>
+            <p className="text-muted-foreground text-xs uppercase">Geo</p>
             <div className="mt-1 flex items-center gap-1.5">
               <Skeleton className="size-3.5" />
               <Skeleton className="h-5 w-32" />
@@ -41,25 +41,9 @@ export function UserDetailCardSkeleton() {
 
           <div>
             <p className="text-muted-foreground text-xs uppercase">Device</p>
-            <div className="mt-1 space-y-2">
-              <div className="flex items-center gap-1.5">
-                <Skeleton className="size-4" />
-                <Skeleton className="h-5 w-40" />
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Skeleton className="size-4" />
-                <Skeleton className="h-5 w-36" />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-muted-foreground text-xs uppercase">
-              App Version
-            </p>
             <div className="mt-1 flex items-center gap-1.5">
               <Skeleton className="size-4" />
-              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-5 w-40" />
             </div>
           </div>
         </div>
@@ -167,7 +151,7 @@ export function UserActivityCalendarSkeleton() {
 
         <div className="overflow-x-auto">
           <div className="flex flex-wrap gap-1">
-            <Skeleton className="h-[120px] w-full rounded-[2px]" />
+            <Skeleton className="h-[168px] w-full rounded-[2px]" />
           </div>
         </div>
 

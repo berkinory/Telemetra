@@ -6,12 +6,20 @@ export const PlatformSchema = t.Union([
   t.Literal('unknown'),
 ]);
 
+export const DeviceTypeSchema = t.Union([
+  t.Literal('phone'),
+  t.Literal('tablet'),
+  t.Literal('desktop'),
+  t.Literal('unknown'),
+]);
+
 export const DeviceSchema = t.Object({
   deviceId: t.String(),
-  model: t.Union([t.String(), t.Null()]),
+  deviceType: t.Union([DeviceTypeSchema, t.Null()]),
   osVersion: t.Union([t.String(), t.Null()]),
   platform: t.Union([PlatformSchema, t.Null()]),
   appVersion: t.Union([t.String(), t.Null()]),
+  locale: t.Union([t.String(), t.Null()]),
   country: t.Union([t.String(), t.Null()]),
   city: t.Union([t.String(), t.Null()]),
   firstSeen: t.String({ format: 'date-time' }),
@@ -20,9 +28,9 @@ export const DeviceSchema = t.Object({
 const DEVICE_ID_MIN_LENGTH = 8;
 const DEVICE_ID_MAX_LENGTH = 128;
 const DEVICE_ID_PATTERN = '^[\\w-]+$';
-const MODEL_MAX_LENGTH = 128;
 const OS_VERSION_MAX_LENGTH = 64;
 const APP_VERSION_MAX_LENGTH = 64;
+const LOCALE_MAX_LENGTH = 10;
 
 export const CreateDeviceRequestSchema = t.Object({
   deviceId: t.String({
@@ -30,15 +38,16 @@ export const CreateDeviceRequestSchema = t.Object({
     maxLength: DEVICE_ID_MAX_LENGTH,
     pattern: DEVICE_ID_PATTERN,
   }),
-  model: t.Optional(
-    t.Union([t.String({ maxLength: MODEL_MAX_LENGTH }), t.Null()])
-  ),
+  deviceType: t.Optional(t.Union([DeviceTypeSchema, t.Null()])),
   osVersion: t.Optional(
     t.Union([t.String({ maxLength: OS_VERSION_MAX_LENGTH }), t.Null()])
   ),
   platform: t.Optional(t.Union([PlatformSchema, t.Null()])),
   appVersion: t.Optional(
     t.Union([t.String({ maxLength: APP_VERSION_MAX_LENGTH }), t.Null()])
+  ),
+  locale: t.Optional(
+    t.Union([t.String({ maxLength: LOCALE_MAX_LENGTH }), t.Null()])
   ),
 });
 
@@ -52,10 +61,11 @@ export const DeviceListItemSchema = t.Object({
 
 export const DeviceDetailSchema = t.Object({
   deviceId: t.String(),
-  model: t.Union([t.String(), t.Null()]),
+  deviceType: t.Union([DeviceTypeSchema, t.Null()]),
   osVersion: t.Union([t.String(), t.Null()]),
   platform: t.Union([PlatformSchema, t.Null()]),
   appVersion: t.Union([t.String(), t.Null()]),
+  locale: t.Union([t.String(), t.Null()]),
   country: t.Union([t.String(), t.Null()]),
   city: t.Union([t.String(), t.Null()]),
   firstSeen: t.String({ format: 'date-time' }),
@@ -137,6 +147,7 @@ export const DeviceActivityTimeseriesResponseSchema = t.Object({
 });
 
 export type Platform = 'ios' | 'android' | 'unknown';
+export type DeviceType = 'phone' | 'tablet' | 'desktop' | 'unknown';
 export type Device = typeof DeviceSchema.static;
 export type CreateDeviceRequest = typeof CreateDeviceRequestSchema.static;
 export type DeviceListItem = typeof DeviceListItemSchema.static;

@@ -64,6 +64,13 @@
       "when": 1764529411342,
       "tag": "0008_complete_silver_sable",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1765571734206,
+      "tag": "0009_silent_spiral",
+      "breakpoints": true
     }
   ]
 }

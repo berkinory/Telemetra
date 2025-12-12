@@ -7,6 +7,7 @@ import { sseManager } from '@/lib/sse-manager';
 import {
   CreateDeviceRequestSchema,
   DeviceSchema,
+  type DeviceType,
   ErrorCode,
   ErrorResponseSchema,
   HttpStatus,
@@ -22,6 +23,19 @@ function normalizePlatform(
   const lower = platform.toLowerCase();
   if (lower === 'ios' || lower === 'android') {
     return lower as Platform;
+  }
+  return 'unknown';
+}
+
+function normalizeDeviceType(
+  deviceType: string | null | undefined
+): DeviceType | null {
+  if (!deviceType) {
+    return null;
+  }
+  const lower = deviceType.toLowerCase();
+  if (lower === 'phone' || lower === 'tablet' || lower === 'desktop') {
+    return lower as DeviceType;
   }
   return 'unknown';
 }
@@ -59,10 +73,11 @@ export const deviceSdkRouter = new Elysia({ prefix: '/devices' })
           [device] = await db
             .update(devices)
             .set({
-              model: body.model ?? existingDevice.model,
+              deviceType: body.deviceType ?? existingDevice.deviceType,
               osVersion: body.osVersion ?? existingDevice.osVersion,
               platform: body.platform ?? existingDevice.platform,
               appVersion: body.appVersion ?? existingDevice.appVersion,
+              locale: body.locale ?? existingDevice.locale,
             })
             .where(eq(devices.deviceId, body.deviceId))
             .returning();
@@ -78,10 +93,11 @@ export const deviceSdkRouter = new Elysia({ prefix: '/devices' })
             .values({
               deviceId: body.deviceId,
               appId: app.id,
-              model: body.model ?? null,
+              deviceType: body.deviceType ?? null,
               osVersion: body.osVersion ?? null,
               platform: body.platform ?? null,
               appVersion: body.appVersion ?? null,
+              locale: body.locale ?? null,
               country: country ?? null,
               city: city ?? null,
             })
@@ -97,10 +113,11 @@ export const deviceSdkRouter = new Elysia({ prefix: '/devices' })
         set.status = HttpStatus.OK;
         return {
           deviceId: device.deviceId,
-          model: device.model,
+          deviceType: normalizeDeviceType(device.deviceType),
           osVersion: device.osVersion,
           platform: normalizePlatform(device.platform),
           appVersion: device.appVersion,
+          locale: device.locale,
           country: device.country,
           city: device.city,
           firstSeen: device.firstSeen.toISOString(),

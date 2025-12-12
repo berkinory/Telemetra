@@ -127,10 +127,11 @@ async function processDevices(
         [device] = await db
           .update(devices)
           .set({
-            model: payload.model ?? existingDevice.model,
+            deviceType: payload.deviceType ?? existingDevice.deviceType,
             osVersion: payload.osVersion ?? existingDevice.osVersion,
             platform: payload.platform ?? existingDevice.platform,
             appVersion: payload.appVersion ?? existingDevice.appVersion,
+            locale: payload.locale ?? existingDevice.locale,
           })
           .where(eq(devices.deviceId, payload.deviceId))
           .returning();
@@ -147,10 +148,11 @@ async function processDevices(
           .values({
             deviceId: payload.deviceId,
             appId,
-            model: payload.model ?? null,
+            deviceType: payload.deviceType ?? null,
             osVersion: payload.osVersion ?? null,
             platform: payload.platform ?? null,
             appVersion: payload.appVersion ?? null,
+            locale: payload.locale ?? null,
             country: country ?? null,
             city: city ?? null,
           })

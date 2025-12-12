@@ -103,10 +103,11 @@ export const devices = pgTable(
     appId: text('app_id')
       .notNull()
       .references(() => apps.id, { onDelete: 'cascade' }),
-    model: text('model'),
+    deviceType: text('device_type'),
     osVersion: text('os_version'),
     platform: text('platform'),
     appVersion: text('app_version'),
+    locale: text('locale'),
     country: text('country'),
     city: text('city'),
     firstSeen: timestamp('first_seen').defaultNow().notNull(),

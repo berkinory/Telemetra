@@ -57,6 +57,8 @@ export type TimeRange = '7d' | '30d' | '180d' | '360d';
 
 export type Platform = 'ios' | 'android' | 'unknown';
 
+export type DeviceType = 'phone' | 'tablet' | 'desktop' | 'unknown';
+
 export type DevicesListResponse = {
   devices: Device[];
   pagination: PaginationResponse;
@@ -80,9 +82,10 @@ export type Device = {
 };
 
 export interface DeviceDetail extends Device {
-  model: string | null;
+  deviceType: DeviceType | null;
   osVersion: string | null;
   appVersion: string | null;
+  locale: string | null;
   city: string | null;
   firstSeen: string;
   lastActivityAt: string | null;
