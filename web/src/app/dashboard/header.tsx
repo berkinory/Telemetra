@@ -14,6 +14,7 @@ import {
   Setting07Icon,
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useQueryState } from 'nuqs';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
@@ -221,8 +222,26 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
   return (
     <>
       {!isRealtimePage && (
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+        <header className="flex h-14 shrink-0 items-center gap-4 border-b px-4">
           <SidebarTrigger />
+          <div className="flex items-center gap-2">
+            <Image
+              alt="Phase"
+              className="h-10 w-auto md:h-12 lg:h-14 dark:hidden"
+              height={100}
+              priority
+              src="/phase/light-typography.svg"
+              width={150}
+            />
+            <Image
+              alt="Phase"
+              className="hidden h-10 w-auto md:h-12 lg:h-14 dark:block"
+              height={100}
+              priority
+              src="/phase/dark-typography.svg"
+              width={150}
+            />
+          </div>
           <div className="flex flex-1 items-center justify-between">
             <div className="flex items-center gap-2"> </div>
             <div className="flex items-center gap-2">

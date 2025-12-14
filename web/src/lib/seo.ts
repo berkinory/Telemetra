@@ -7,19 +7,22 @@ export const siteConfig = {
   name: SITE_NAME,
   url: SITE_URL,
   description:
-    'Privacy-focused, open source mobile analytics platform. Real-time insights, event tracking, user & session tracking, screen views, and more.',
+    'Phase Analytics is a privacy first mobile analytics platform for React Native and Expo. Track events, sessions, and screen views, fully self-hostable.',
   keywords: [
+    'phase analytics',
+    'mobile analytics',
+    'open source mobile analytics',
+    'privacy focused analytics',
+    'self-hosted analytics',
+    'android analytics',
+    'ios analytics',
     'react native analytics',
     'expo analytics',
-    'privacy focused analytics',
-    'real-time analytics',
-    'mobile analytics',
-    'self-hosted analytics',
+    'real time analytics',
+    'mobile event analytics',
+    'mobile session analytics',
+    'gdpr compliant analytics',
     'open source analytics',
-    'session analytics',
-    'event analytics',
-    'GDPR compliant analytics',
-    'privacy-first analytics',
   ],
   authors: [{ name: 'Berkinory', url: 'https://mirac.dev' }],
   creator: 'Berkinory',
@@ -35,15 +38,13 @@ export const baseMetadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
     template: `%s | ${siteConfig.name}`,
-    default: `${siteConfig.name} Analytics`,
+    default:
+      'Phase Analytics – Privacy-First Open Source Mobile Analytics for Android & iOS',
   },
   icons: {
-    icon: [
-      { url: '/phase/favicon.ico', sizes: 'any' },
-      { url: '/phase/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
-    ],
+    icon: [{ url: '/phase/favicon.svg', type: 'image/svg+xml' }],
     apple: [{ url: '/phase/apple-touch-icon.png', sizes: '180x180' }],
-    shortcut: '/phase/favicon.ico',
+    shortcut: '/phase/favicon.svg',
   },
   manifest: '/manifest.webmanifest',
   appleWebApp: {
@@ -73,20 +74,22 @@ export const baseMetadata: Metadata = {
     locale: 'en_US',
     url: siteConfig.url,
     siteName: siteConfig.name,
-    title: `${siteConfig.name} - Analytics Platform`,
+    title:
+      'Phase Analytics – Privacy-First Open Source Mobile Analytics for Android & iOS',
     description: siteConfig.description,
     images: [
       {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} - Analytics Platform`,
+        alt: 'Phase Analytics – Privacy-First Open Source Mobile Analytics for Android & iOS',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${siteConfig.name} - Analytics Platform`,
+    title:
+      'Phase Analytics – Privacy-First Open Source Mobile Analytics for Android & iOS',
     description: siteConfig.description,
     images: [siteConfig.ogImage],
     creator: siteConfig.twitter.handle,
