@@ -1,6 +1,5 @@
 {
   "name": "server",
-  "version": "0.0.1",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "build": "bun build --compile --minify --sourcemap --outfile server src/index.ts",

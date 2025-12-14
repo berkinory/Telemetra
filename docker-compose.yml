@@ -54,9 +54,7 @@ services:
     restart: unless-stopped
 
   geoip:
-    build:
-      context: ./geoip
-      dockerfile: Dockerfile
+    image: ${TELEMETRA_GEOIP_IMAGE:-ghcr.io/berkinory/telemetra-geoip:latest}
     container_name: telemetra-geoip
     volumes:
       - geoip-data:/app/geoip
@@ -65,9 +63,7 @@ services:
     restart: "no"
 
   cron:
-    build:
-      context: ./cron
-      dockerfile: Dockerfile
+    image: ${TELEMETRA_CRON_IMAGE:-ghcr.io/berkinory/telemetra-cron:latest}
     container_name: telemetra-cron
     volumes:
       - geoip-data:/app/geoip
@@ -132,9 +128,7 @@ services:
     restart: unless-stopped
 
   server:
-    build:
-      context: .
-      dockerfile: ./server/Dockerfile
+    image: ${TELEMETRA_SERVER_IMAGE:-ghcr.io/berkinory/telemetra-server:latest}
     container_name: telemetra-server
     volumes:
       - geoip-data:/app/geoip
@@ -173,14 +167,7 @@ services:
     restart: unless-stopped
 
   web:
-    build:
-      context: .
-      dockerfile: ./web/Dockerfile
-      args:
-        - NODE_ENV=production
-        - NEXT_TELEMETRY_DISABLED=1
-        - BETTER_AUTH_TELEMETRY=0
-        - NEXT_PUBLIC_SERVER_URL=${SERVER_URL}
+    image: ${TELEMETRA_WEB_IMAGE:-ghcr.io/berkinory/telemetra-web:latest}
     container_name: telemetra-web
     environment:
       - NODE_ENV=production
