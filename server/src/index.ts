@@ -79,9 +79,6 @@ const shutdown = async () => {
   try {
     console.log('[Server] Shutting down...');
     app.server?.stop();
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
     sseManager.stop();
     shutdownGeoIP();
 
@@ -94,8 +91,6 @@ const shutdown = async () => {
     }
 
     await pool.end();
-
-    console.log('[Server] Shutdown complete');
     process.exit(0);
   } catch (error) {
     console.error('[Server] Shutdown error:', error);
@@ -106,28 +101,8 @@ const shutdown = async () => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-process.on('uncaughtException', async (error) => {
-  console.error('[Server] Uncaught Exception:', error);
-  await shutdown();
-});
+app.listen(3001);
 
-process.on('unhandledRejection', async (reason) => {
-  console.error('[Server] Unhandled Rejection:', reason);
-  await shutdown();
-});
-
-app.listen({
-  port: 3001,
-  hostname: '0.0.0.0',
-  reusePort: true,
-});
-
-setTimeout(() => {
-  if (app.server) {
-    console.log(
-      `🦊 Elysia is running at ${app.server.hostname}:${app.server.port}`
-    );
-  }
-}, 100);
-
-export default app;
+console.log(
+  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+);
