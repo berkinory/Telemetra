@@ -436,14 +436,33 @@ export async function initQuestDB(): Promise<void> {
         const partitionDate = oneYearAgo.toISOString().split('T')[0];
 
         const dropPartitionQuery = `ALTER TABLE events DROP PARTITION WHERE timestamp < '${partitionDate}'`;
-        await fetch(`${url}?query=${encodeURIComponent(dropPartitionQuery)}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const response = await fetch(
+          `${url}?query=${encodeURIComponent(dropPartitionQuery)}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
-        console.log(`[QuestDB] Dropped partitions older than ${partitionDate}`);
+        const result = await response.json();
+
+        if (result.error) {
+          if (result.error.includes('-104')) {
+            console.log(
+              '[QuestDB] No old partitions to drop (table is empty or recent)'
+            );
+          } else {
+            console.warn(
+              `[QuestDB] Partition cleanup warning: ${result.error}`
+            );
+          }
+        } else {
+          console.log(
+            `[QuestDB] Dropped partitions older than ${partitionDate}`
+          );
+        }
       } catch (cleanupError) {
         console.warn('[QuestDB] Cleanup warning:', cleanupError);
       }
