@@ -124,11 +124,11 @@ services:
         aliases:
           - questdb
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/exec?query=SELECT%201 >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     restart: unless-stopped
 
   server:
