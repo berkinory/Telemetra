@@ -190,6 +190,7 @@ export type EventListItem = {
   eventId: string;
   name: string;
   deviceId: string;
+  isScreen: boolean;
   timestamp: string;
 };
 
@@ -199,6 +200,7 @@ export type EventDetail = {
   deviceId: string;
   name: string;
   params: unknown;
+  isScreen: boolean;
   timestamp: string;
 };
 
@@ -216,6 +218,18 @@ export type TopEvent = {
 
 export type TopEventsResponse = {
   events: TopEvent[];
+  appId: string;
+  startDate: string | null;
+  endDate: string | null;
+};
+
+export type TopScreen = {
+  name: string;
+  count: number;
+};
+
+export type TopScreensResponse = {
+  screens: TopScreen[];
   appId: string;
   startDate: string | null;
   endDate: string | null;

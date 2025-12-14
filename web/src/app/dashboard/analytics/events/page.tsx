@@ -11,9 +11,11 @@ import {
   EventsOverviewCardsSkeleton,
   EventsTableSkeleton,
   TopEventsCardSkeleton,
+  TopScreensCardSkeleton,
 } from '@/components/events/events-skeletons';
 import { EventsTable } from '@/components/events/events-table';
 import { TopEventsCard } from '@/components/events/top-events-card';
+import { TopScreensCard } from '@/components/events/top-screens-card';
 import { RequireApp } from '@/components/require-app';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -37,6 +39,12 @@ export default function EventsPage() {
         <ErrorBoundary>
           <Suspense fallback={<TopEventsCardSkeleton />}>
             <TopEventsCard />
+          </Suspense>
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          <Suspense fallback={<TopScreensCardSkeleton />}>
+            <TopScreensCard />
           </Suspense>
         </ErrorBoundary>
 

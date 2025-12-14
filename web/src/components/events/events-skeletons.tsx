@@ -60,6 +60,29 @@ export function TopEventsCardSkeleton() {
   );
 }
 
+export function TopScreensCardSkeleton() {
+  return (
+    <Card className="py-0">
+      <CardContent className="space-y-4 p-4">
+        <div>
+          <h2 className="font-semibold text-lg">Top Screens</h2>
+          <p className="text-muted-foreground text-sm">
+            Most frequently viewed screens
+          </p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          {Array.from({ length: 6 }, (_, i) => `top-screens-skeleton-${i}`).map(
+            (key) => (
+              <Skeleton className="h-9 w-full" key={key} />
+            )
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function EventsTableSkeleton() {
   const [isMounted, setIsMounted] = useState(false);
   const { pageSize } = usePaginationStore();
