@@ -2,6 +2,7 @@ import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
 import { JetBrains_Mono } from 'next/font/google';
 import './global.css';
+import { ServiceWorkerRegister } from '@/components/sw-register';
 import { baseMetadata } from '@/lib/seo';
 import { ThemeProvider } from '@/lib/theme-provider';
 
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body
         className={`${GeistSans.variable} ${jetbrainsMono.variable} flex min-h-screen flex-col font-mono antialiased`}
       >
+        <ServiceWorkerRegister />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

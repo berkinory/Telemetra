@@ -37,6 +37,24 @@ export const baseMetadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
     default: `${siteConfig.name} Analytics`,
   },
+  icons: {
+    icon: [
+      { url: '/phase/favicon.ico', sizes: 'any' },
+      { url: '/phase/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+    ],
+    apple: [{ url: '/phase/apple-touch-icon.png', sizes: '180x180' }],
+    shortcut: '/phase/favicon.ico',
+  },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Telemetra',
+  },
+  other: {
+    'theme-color': '#000000',
+    'msapplication-TileColor': '#000000',
+  },
   alternates: {
     canonical: siteConfig.url,
   },
@@ -179,7 +197,7 @@ export const jsonLd = {
     '@type': 'Organization',
     name: siteConfig.name,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/logo.png`,
+    logo: `${siteConfig.url}/phase/logo.svg`,
     sameAs: ['https://github.com/telemetra', 'https://x.com/telemetra.dev'],
   }),
 
