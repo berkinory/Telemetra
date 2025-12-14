@@ -100,15 +100,20 @@ const shutdown = async () => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-try {
-  await app.listen(3001);
-  console.log(
-    `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-  );
-} catch (error) {
-  console.error('[Server] Failed to start Elysia server:', error);
-  console.error('[Server] Port 3001 may already be in use. Shutting down...');
+process.on('uncaughtException', async (error) => {
+  console.error('[Server] Uncaught Exception:', error);
   await shutdown();
-}
+});
+
+process.on('unhandledRejection', async (reason) => {
+  console.error('[Server] Unhandled Rejection:', reason);
+  await shutdown();
+});
+
+app.listen(3001, (server) => {
+  if (server) {
+    console.log(`🦊 Elysia is running at ${server.hostname}:${server.port}`);
+  }
+});
 
 export default app;
