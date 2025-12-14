@@ -13,6 +13,7 @@ import type {
 import { ErrorCode } from '@/schemas/common';
 import { getEventBuffer } from './event-buffer';
 import { getLocationFromIP } from './geolocation';
+import { normalizePath } from './path-normalizer';
 import { sseManager } from './sse-manager';
 import {
   SESSION_MAX_AGE,
@@ -485,6 +486,9 @@ async function processEvents(
       }
 
       const eventId = ulid();
+      const eventName = payload.isScreen
+        ? normalizePath(payload.name)
+        : payload.name;
 
       validatedEvents.push({
         clientOrder,
@@ -492,7 +496,7 @@ async function processEvents(
         sessionId: payload.sessionId,
         deviceId: sessionData.session.deviceId,
         appId: sessionData.device.appId,
-        name: payload.name,
+        name: eventName,
         params: payload.params ?? null,
         isScreen: payload.isScreen,
         timestamp: clientTimestamp,

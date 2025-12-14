@@ -4,6 +4,7 @@ import { ulid } from 'ulid';
 import { db, sessions } from '@/db';
 import { getEventBuffer } from '@/lib/event-buffer';
 import { sdkAuthPlugin } from '@/lib/middleware';
+import { normalizePath } from '@/lib/path-normalizer';
 import { sseManager } from '@/lib/sse-manager';
 import {
   invalidateSessionCache,
@@ -81,13 +82,14 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
         }
 
         const eventId = ulid();
+        const eventName = body.isScreen ? normalizePath(body.name) : body.name;
 
         await getEventBuffer().push({
           eventId,
           sessionId: body.sessionId,
           deviceId: session.deviceId,
           appId: device.appId,
-          name: body.name,
+          name: eventName,
           params: body.params ?? null,
           isScreen: body.isScreen,
           timestamp: clientTimestamp.toISOString(),
@@ -103,7 +105,7 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
         sseManager.pushEvent(device.appId, {
           eventId,
           deviceId: session.deviceId,
-          name: body.name,
+          name: eventName,
           timestamp: clientTimestamp.toISOString(),
           country: device.country,
           platform: device.platform,
@@ -114,7 +116,7 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
           eventId,
           sessionId: body.sessionId,
           deviceId: session.deviceId,
-          name: body.name,
+          name: eventName,
           params: body.params ?? null,
           isScreen: body.isScreen,
           timestamp: clientTimestamp.toISOString(),

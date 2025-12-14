@@ -6,6 +6,7 @@ export const EventListItemSchema = t.Object({
   eventId: t.String(),
   name: t.String(),
   deviceId: t.String(),
+  isScreen: t.Boolean(),
   timestamp: t.String({ format: 'date-time' }),
 });
 

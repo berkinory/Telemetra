@@ -149,7 +149,7 @@ export const eventWebRouter = new Elysia({ prefix: '/events' })
             eventId: event.event_id,
             name: event.name,
             deviceId: event.device_id,
-            isScreen: event.is_screen,
+            isScreen: Boolean(event.is_screen),
             timestamp,
           };
         });

@@ -8,6 +8,7 @@ import {
   PlayCircleIcon,
   StopCircleIcon,
   Time03Icon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from '@tanstack/react-query';
@@ -43,6 +44,7 @@ function EventRow({
   event: EventListItem;
   onClick: () => void;
 }) {
+  const displayName = event.isScreen ? `View ${event.name}` : event.name;
   return (
     <motion.button
       animate={{ opacity: 1, scale: 1 }}
@@ -56,9 +58,12 @@ function EventRow({
       transition={{ duration: 0.15, ease: 'easeOut' }}
       type="button"
     >
-      <HugeiconsIcon className="size-4 shrink-0" icon={CursorPointer02Icon} />
-      <span className="flex-1 truncate font-medium text-sm" title={event.name}>
-        {event.name}
+      <HugeiconsIcon
+        className="size-4 shrink-0"
+        icon={event.isScreen ? ViewIcon : CursorPointer02Icon}
+      />
+      <span className="flex-1 truncate font-medium text-sm" title={displayName}>
+        {displayName}
       </span>
       <ClientDate
         className="shrink-0 text-muted-foreground text-xs"

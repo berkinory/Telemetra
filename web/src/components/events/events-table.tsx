@@ -3,6 +3,7 @@
 import {
   Calendar03Icon,
   CursorPointer02Icon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -18,6 +19,7 @@ type Event = {
   eventId: string;
   name: string;
   deviceId: string;
+  isScreen: boolean;
   timestamp: string;
 };
 
@@ -44,21 +46,26 @@ const columns: ColumnDef<Event>[] = [
     accessorKey: 'name',
     header: 'Event',
     size: 350,
-    cell: ({ row }) => (
-      <div
-        className="flex max-w-xs items-center gap-2 lg:max-w-sm"
-        title={row.getValue('name')}
-      >
-        <HugeiconsIcon
-          className="shrink-0 text-muted-foreground"
-          icon={CursorPointer02Icon}
-          size={16}
-        />
-        <span className="truncate font-medium text-primary text-sm">
-          {row.getValue('name')}
-        </span>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const isScreen = row.original.isScreen;
+      const name = row.getValue('name') as string;
+      const displayName = isScreen ? `View ${name}` : name;
+      return (
+        <div
+          className="flex max-w-xs items-center gap-2 lg:max-w-sm"
+          title={displayName}
+        >
+          <HugeiconsIcon
+            className="shrink-0 text-muted-foreground"
+            icon={isScreen ? ViewIcon : CursorPointer02Icon}
+            size={16}
+          />
+          <span className="truncate font-medium text-primary text-sm">
+            {displayName}
+          </span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'timestamp',
