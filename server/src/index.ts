@@ -1,8 +1,10 @@
 import { Elysia } from 'elysia';
+import Redis from 'ioredis';
 import { pool } from '@/db';
 import { auth } from '@/lib/auth';
 import { authCors, sdkCors, webCors } from '@/lib/cors';
 import { initEventBuffer } from '@/lib/event-buffer';
+import { initGeoIP, shutdownGeoIP } from '@/lib/geolocation';
 import { runMigrations } from '@/lib/migrate';
 import { initQuestDB } from '@/lib/questdb';
 import { sseManager } from '@/lib/sse-manager';
@@ -48,12 +50,14 @@ const app = new Elysia()
   });
 
 let eventBuffer: ReturnType<typeof initEventBuffer> | null = null;
+let redisClient: Redis | null = null;
 
 try {
   await runMigrations();
   await initQuestDB();
 
   if (process.env.REDIS_URL) {
+    redisClient = new Redis(process.env.REDIS_URL);
     eventBuffer = initEventBuffer(process.env.REDIS_URL);
     eventBuffer.start();
   } else {
@@ -61,6 +65,9 @@ try {
       '[Server] REDIS_URL not set, event buffering disabled - events will not be persisted'
     );
   }
+
+  const geoip = initGeoIP(redisClient || undefined);
+  await geoip.initialize();
 
   sseManager.start();
 } catch (error) {
@@ -72,9 +79,14 @@ const shutdown = async () => {
   try {
     console.log('[Server] Shutting down...');
     sseManager.stop();
+    shutdownGeoIP();
 
     if (eventBuffer) {
       await eventBuffer.flushAndClose();
+    }
+
+    if (redisClient) {
+      await redisClient.quit();
     }
 
     await pool.end();
