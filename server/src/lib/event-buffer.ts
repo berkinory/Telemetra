@@ -7,6 +7,7 @@ export type BufferedEvent = {
   appId: string;
   name: string;
   params: Record<string, string | number | boolean | null> | null;
+  isScreen: boolean;
   timestamp: string;
 };
 
@@ -296,6 +297,7 @@ export class EventBuffer {
         const fields = [
           `event_id="${escapeILPString(event.eventId)}"`,
           paramsField,
+          `is_screen=${event.isScreen ? 't' : 'f'}`,
         ]
           .filter(Boolean)
           .join(',');

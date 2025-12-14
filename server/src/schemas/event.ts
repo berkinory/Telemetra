@@ -15,6 +15,7 @@ export const EventSchema = t.Object({
   deviceId: t.String(),
   name: t.String(),
   params: t.Union([EventParamsSchema, t.Null()]),
+  isScreen: t.Boolean(),
   timestamp: t.String({ format: 'date-time' }),
 });
 
@@ -23,7 +24,7 @@ const SESSION_ID_MAX_LENGTH = 128;
 const SESSION_ID_PATTERN = '^[\\w-]+$';
 const EVENT_NAME_MIN_LENGTH = 1;
 const EVENT_NAME_MAX_LENGTH = 256;
-const EVENT_NAME_PATTERN = '^[\\w.-]+$';
+const EVENT_NAME_PATTERN = '^[\\w./-]+$';
 
 export const CreateEventRequestSchema = t.Object({
   sessionId: t.String({
@@ -37,6 +38,7 @@ export const CreateEventRequestSchema = t.Object({
     pattern: EVENT_NAME_PATTERN,
   }),
   params: t.Optional(EventParamsSchema),
+  isScreen: t.Boolean(),
   timestamp: t.String({ format: 'date-time' }),
 });
 

@@ -217,7 +217,7 @@ export async function getTopEvents(
 
   const conditions: string[] = [
     `app_id = '${escapeSqlString(options.appId)}'`,
-    'is_screen = false', // Only regular events, not screens
+    'is_screen = false',
   ];
 
   if (options.startDate) {
@@ -264,7 +264,7 @@ export async function getTopScreens(
 
   const conditions: string[] = [
     `app_id = '${escapeSqlString(options.appId)}'`,
-    'is_screen = true', // Only screen views
+    'is_screen = true',
   ];
 
   if (options.startDate) {
@@ -278,7 +278,7 @@ export async function getTopScreens(
   }
 
   const whereClause = `WHERE ${conditions.join(' AND ')}`;
-  const limit = sanitizeNumeric(options.limit, 6, 1, 6); // Top 6 screens max
+  const limit = sanitizeNumeric(options.limit, 6, 1, 6);
 
   const topScreensQuery = `
     SELECT name, COUNT(*) as count
@@ -397,15 +397,6 @@ export async function initQuestDB(): Promise<void> {
     const url = `${QUESTDB_HTTP}/exec`;
 
     try {
-      // TEMPORARY: Drop table to apply schema changes (remove after first deployment)
-      const dropTableQuery = 'DROP TABLE IF EXISTS events';
-      await fetch(`${url}?query=${encodeURIComponent(dropTableQuery)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
       const eventsTableQuery = `
         CREATE TABLE IF NOT EXISTS events (
           event_id SYMBOL CAPACITY 256 CACHE,

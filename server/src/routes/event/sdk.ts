@@ -89,6 +89,7 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
           appId: device.appId,
           name: body.name,
           params: body.params ?? null,
+          isScreen: body.isScreen,
           timestamp: clientTimestamp.toISOString(),
         });
 
@@ -115,6 +116,7 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
           deviceId: session.deviceId,
           name: body.name,
           params: body.params ?? null,
+          isScreen: body.isScreen,
           timestamp: clientTimestamp.toISOString(),
         };
       } catch (error) {

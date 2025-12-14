@@ -336,6 +336,7 @@ type ValidatedEvent = {
   appId: string;
   name: string;
   params: Record<string, string | number | boolean | null> | null;
+  isScreen: boolean;
   timestamp: Date;
   country: string | null;
   platform: string | null;
@@ -493,6 +494,7 @@ async function processEvents(
         appId: sessionData.device.appId,
         name: payload.name,
         params: payload.params ?? null,
+        isScreen: payload.isScreen,
         timestamp: clientTimestamp,
         country: sessionData.device.country,
         platform: sessionData.device.platform,
@@ -520,6 +522,7 @@ async function processEvents(
       appId: e.appId,
       name: e.name,
       params: e.params,
+      isScreen: e.isScreen,
       timestamp: e.timestamp.toISOString(),
     }));
 
