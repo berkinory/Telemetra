@@ -31,7 +31,7 @@ fi
 
 if [ "$UPDATE_NEEDED" -eq 1 ]; then
   echo "[$(date)] Downloading GeoIP database..."
-  wget -q --show-progress -O "$DB_FILE.tmp" "$DB_URL"
+  wget -O "$DB_FILE.tmp" "$DB_URL"
   mv "$DB_FILE.tmp" "$DB_FILE"
   chown 65532:65532 "$DB_FILE"
   echo "$CURRENT_TIME" > "$TIMESTAMP_FILE"
