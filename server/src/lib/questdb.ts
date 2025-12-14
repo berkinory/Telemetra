@@ -107,6 +107,7 @@ export type EventQueryResult = {
   device_id: string;
   name: string;
   params: string | null;
+  is_screen: boolean;
   timestamp: string;
 };
 
@@ -116,6 +117,7 @@ export type EventDetailResult = {
   device_id: string;
   name: string;
   params: string | null;
+  is_screen: boolean;
   timestamp: string;
 };
 
@@ -172,7 +174,7 @@ export async function getEvents(
     offset > 0 ? `LIMIT ${offset},${offset + limit}` : `LIMIT ${limit}`;
 
   const eventsQuery = `
-    SELECT event_id, session_id, device_id, name, params, to_str(timestamp, 'yyyy-MM-ddTHH:mm:ss.SSSUUUZ') as timestamp
+    SELECT event_id, session_id, device_id, name, params, is_screen, to_str(timestamp, 'yyyy-MM-ddTHH:mm:ss.SSSUUUZ') as timestamp
     FROM events
     ${whereClause}
     ORDER BY timestamp DESC
@@ -213,7 +215,10 @@ export async function getTopEvents(
 ): Promise<TopEventQueryResult[]> {
   validateIdentifier(options.appId, 'appId');
 
-  const conditions: string[] = [`app_id = '${escapeSqlString(options.appId)}'`];
+  const conditions: string[] = [
+    `app_id = '${escapeSqlString(options.appId)}'`,
+    'is_screen = false', // Only regular events, not screens
+  ];
 
   if (options.startDate) {
     validateTimestamp(options.startDate, 'startDate');
@@ -240,6 +245,53 @@ export async function getTopEvents(
   return await executeQuery<TopEventQueryResult>(topEventsQuery);
 }
 
+export type TopScreenQueryResult = {
+  name: string;
+  count: number;
+};
+
+export type GetTopScreensOptions = {
+  appId: string;
+  startDate?: string;
+  endDate?: string;
+  limit?: number;
+};
+
+export async function getTopScreens(
+  options: GetTopScreensOptions
+): Promise<TopScreenQueryResult[]> {
+  validateIdentifier(options.appId, 'appId');
+
+  const conditions: string[] = [
+    `app_id = '${escapeSqlString(options.appId)}'`,
+    'is_screen = true', // Only screen views
+  ];
+
+  if (options.startDate) {
+    validateTimestamp(options.startDate, 'startDate');
+    conditions.push(`timestamp >= '${escapeSqlString(options.startDate)}'`);
+  }
+
+  if (options.endDate) {
+    validateTimestamp(options.endDate, 'endDate');
+    conditions.push(`timestamp <= '${escapeSqlString(options.endDate)}'`);
+  }
+
+  const whereClause = `WHERE ${conditions.join(' AND ')}`;
+  const limit = sanitizeNumeric(options.limit, 6, 1, 6); // Top 6 screens max
+
+  const topScreensQuery = `
+    SELECT name, COUNT(*) as count
+    FROM events
+    ${whereClause}
+    GROUP BY name
+    ORDER BY count DESC
+    LIMIT ${limit}
+  `;
+
+  return await executeQuery<TopScreenQueryResult>(topScreensQuery);
+}
+
 export type GetEventByIdOptions = {
   eventId: string;
   appId: string;
@@ -252,7 +304,7 @@ export async function getEventById(
   validateIdentifier(options.appId, 'appId');
 
   const query = `
-    SELECT event_id, session_id, device_id, name, params, to_str(timestamp, 'yyyy-MM-ddTHH:mm:ss.SSSUUUZ') as timestamp
+    SELECT event_id, session_id, device_id, name, params, is_screen, to_str(timestamp, 'yyyy-MM-ddTHH:mm:ss.SSSUUUZ') as timestamp
     FROM events
     WHERE event_id = '${escapeSqlString(options.eventId)}'
     AND app_id = '${escapeSqlString(options.appId)}'
