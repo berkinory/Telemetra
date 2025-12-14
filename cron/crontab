@@ -1,0 +1,2 @@
+# Run GeoIP update check daily at 3 AM
+0 3 * * * /app/jobs/geoip-update.sh >> /var/log/cron.log 2>&1

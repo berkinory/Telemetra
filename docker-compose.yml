@@ -54,14 +54,29 @@ services:
     restart: unless-stopped
 
   geoip:
-    image: busybox:1.36-musl
+    build:
+      context: ./geoip
+      dockerfile: Dockerfile
     container_name: telemetra-geoip
     volumes:
       - geoip-data:/app/geoip
-    command: sh -c "mkdir -p /app/geoip && chown -R 65532:65532 /app/geoip && chmod -R 755 /app/geoip && echo 'GeoIP volume ready'"
     networks:
       - telemetra-network
     restart: "no"
+
+  cron:
+    build:
+      context: ./cron
+      dockerfile: Dockerfile
+    container_name: telemetra-cron
+    volumes:
+      - geoip-data:/app/geoip
+    networks:
+      - telemetra-network
+    restart: unless-stopped
+    depends_on:
+      geoip:
+        condition: service_completed_successfully
 
   questdb:
     image: questdb/questdb:9.1.1

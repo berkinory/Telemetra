@@ -66,7 +66,7 @@ try {
     );
   }
 
-  const geoip = initGeoIP(redisClient || undefined);
+  const geoip = initGeoIP();
   await geoip.initialize();
 
   sseManager.start();
