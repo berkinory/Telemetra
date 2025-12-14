@@ -100,10 +100,15 @@ const shutdown = async () => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-app.listen(3001);
-
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+try {
+  await app.listen(3001);
+  console.log(
+    `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  );
+} catch (error) {
+  console.error('[Server] Failed to start Elysia server:', error);
+  console.error('[Server] Port 3001 may already be in use. Shutting down...');
+  await shutdown();
+}
 
 export default app;
