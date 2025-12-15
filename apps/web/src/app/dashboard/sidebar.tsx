@@ -21,11 +21,11 @@ import {
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { minidenticon } from 'minidenticons';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
-import { AppSwitcher } from '@/components/app-switcher';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -208,17 +208,50 @@ export function DashboardSidebar() {
       side="left"
       variant="inset"
     >
-      <SidebarHeader>
+      <SidebarHeader className="py-1">
         <SidebarMenu>
           <SidebarMenuItem>
-            <AppSwitcher
-              onMobileClose={() => {
-                if (isMobile) {
-                  setOpenMobile(false);
-                }
-              }}
-              variant="sidebar"
-            />
+            <SidebarMenuButton
+              className="h-10 hover:bg-transparent active:bg-transparent group-data-[collapsible=icon]:ml-2"
+              size="lg"
+            >
+              <div className="hidden items-center justify-center group-data-[collapsible=icon]:flex">
+                <Image
+                  alt="Phase"
+                  className="h-6 w-auto dark:hidden"
+                  height={40}
+                  priority
+                  src="/phase/light-logo.svg"
+                  width={40}
+                />
+                <Image
+                  alt="Phase"
+                  className="hidden h-6 w-auto dark:block"
+                  height={40}
+                  priority
+                  src="/phase/logo.svg"
+                  width={40}
+                />
+              </div>
+              <div className="flex items-center group-data-[collapsible=icon]:hidden">
+                <Image
+                  alt="Phase"
+                  className="h-12 w-auto dark:hidden"
+                  height={100}
+                  priority
+                  src="/phase/light-typography.svg"
+                  width={150}
+                />
+                <Image
+                  alt="Phase"
+                  className="hidden h-14 w-auto dark:block"
+                  height={100}
+                  priority
+                  src="/phase/typography.svg"
+                  width={150}
+                />
+              </div>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

@@ -145,26 +145,20 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
     <DropdownMenu modal={false} onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger asChild>
         <button
-          className="flex h-14 items-center gap-3 rounded-lg border bg-background px-4 shadow-sm transition-colors hover:bg-accent"
+          className="flex h-10 items-center gap-3 rounded-lg border bg-background px-3 shadow-sm transition-colors hover:bg-accent"
           type="button"
         >
-          <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <HugeiconsIcon className="size-5" icon={ArtboardIcon} />
+          <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <HugeiconsIcon className="size-4" icon={ArtboardIcon} />
           </div>
-          <div
-            className="flex flex-col items-start gap-0.5 leading-none"
-            suppressHydrationWarning
-          >
+          <div suppressHydrationWarning>
             {isPending ? (
               <Skeleton className="h-4 w-24" />
             ) : (
               <span className="font-sans font-semibold text-sm">
-                Select App
+                {selectedApp ? selectedApp.name : 'Select App'}
               </span>
             )}
-            <span className="font-sans text-muted-foreground text-xs">
-              Choose an app
-            </span>
           </div>
           <HugeiconsIcon className="ml-2 size-4" icon={UnfoldMoreIcon} />
         </button>
