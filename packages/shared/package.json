@@ -10,10 +10,14 @@
     "./constants": "./src/constants/index.ts",
     "./constants/*": "./src/constants/*.ts"
   },
+  "scripts": {
+    "typecheck": "tsgo --noEmit"
+  },
   "dependencies": {
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@typescript/native-preview": "^7.0.0-dev.20251214.1",
     "typescript": "^5"
   }
 }

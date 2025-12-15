@@ -18,7 +18,7 @@
     "db:migrate": "bun run --filter server db:migrate",
     "db:push": "bun run --filter server db:push",
     "check": "bunx ultracite fix --unsafe",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "bun run --filter './apps/*' --filter './packages/*' typecheck"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.5",

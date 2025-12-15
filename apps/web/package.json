@@ -67,6 +67,7 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.182.0",
+    "@typescript/native-preview": "^7.0.0-dev.20251214.1",
     "babel-plugin-react-compiler": "1.0.0",
     "tailwindcss": "^4",
     "typescript": "^5",
