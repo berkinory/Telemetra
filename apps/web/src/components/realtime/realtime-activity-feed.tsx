@@ -4,6 +4,7 @@ import {
   ComputerPhoneSyncIcon,
   CursorPointer02Icon,
   PlaySquareIcon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -96,7 +97,7 @@ export function RealtimeActivityFeed({
                   {activity.type === 'event' && (
                     <HugeiconsIcon
                       className="size-3.5 text-muted-foreground"
-                      icon={CursorPointer02Icon}
+                      icon={activity.isScreen ? ViewIcon : CursorPointer02Icon}
                     />
                   )}
                   {activity.type === 'session' && (
@@ -111,7 +112,11 @@ export function RealtimeActivityFeed({
                       icon={ComputerPhoneSyncIcon}
                     />
                   )}
-                  <span className="font-medium text-xs">{activity.name}</span>
+                  <span className="font-medium text-xs">
+                    {activity.type === 'event' && activity.isScreen
+                      ? `View ${activity.name}`
+                      : activity.name}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between gap-1.5 text-xs">

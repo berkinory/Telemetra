@@ -19,6 +19,7 @@ export type ActivityItem = {
   country: string | null;
   platform: string | null;
   timestamp: string;
+  isScreen?: boolean;
 };
 
 type CountryData = {
@@ -140,6 +141,7 @@ export default function RealtimePage() {
         country: event.country,
         platform: event.platform,
         timestamp: event.timestamp,
+        isScreen: event.isScreen,
       });
     }
 

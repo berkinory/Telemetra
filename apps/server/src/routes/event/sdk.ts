@@ -106,6 +106,7 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
           eventId,
           deviceId: session.deviceId,
           name: eventName,
+          isScreen: body.isScreen,
           timestamp: clientTimestamp.toISOString(),
           country: device.country,
           platform: device.platform,

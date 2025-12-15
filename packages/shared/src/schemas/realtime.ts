@@ -4,6 +4,7 @@ export const RealtimeEventSchema = z.object({
   eventId: z.string(),
   deviceId: z.string(),
   name: z.string(),
+  isScreen: z.boolean(),
   timestamp: z.string().datetime(),
   country: z.string().nullable(),
   platform: z.string().nullable(),
