@@ -4,6 +4,7 @@ import {
   Calendar03Icon,
   CursorPointer02Icon,
   LinkSquare01Icon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useQuery } from '@tanstack/react-query';
@@ -140,9 +141,11 @@ export function EventsSheet({ appId }: EventsSheetProps) {
                 <div className="flex items-center gap-2">
                   <HugeiconsIcon
                     className="size-4 text-muted-foreground"
-                    icon={CursorPointer02Icon}
+                    icon={event.isScreen ? ViewIcon : CursorPointer02Icon}
                   />
-                  <p className="font-medium text-sm">{event.name}</p>
+                  <p className="font-medium text-sm">
+                    {event.isScreen ? `View ${event.name}` : event.name}
+                  </p>
                 </div>
               </div>
 
