@@ -209,58 +209,59 @@ export function DashboardSidebar() {
       side="left"
       variant="inset"
     >
-      {/* Desktop only: Brand logo */}
       {!isMobile && (
         <SidebarHeader className="py-1">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
-                className="h-10 hover:bg-transparent active:bg-transparent group-data-[collapsible=icon]:ml-2"
+                asChild
+                className="h-10 hover:bg-transparent! active:bg-transparent! data-highlight:bg-transparent!"
                 size="lg"
               >
-                <div className="hidden items-center justify-center group-data-[collapsible=icon]:flex">
-                  <Image
-                    alt="Phase"
-                    className="h-6 w-auto dark:hidden"
-                    height={40}
-                    priority
-                    src="/phase/light-logo.svg"
-                    width={40}
-                  />
-                  <Image
-                    alt="Phase"
-                    className="hidden h-6 w-auto dark:block"
-                    height={40}
-                    priority
-                    src="/phase/logo.svg"
-                    width={40}
-                  />
-                </div>
-                <div className="flex items-center group-data-[collapsible=icon]:hidden">
-                  <Image
-                    alt="Phase"
-                    className="h-12 w-auto dark:hidden"
-                    height={100}
-                    priority
-                    src="/phase/light-typography.svg"
-                    width={150}
-                  />
-                  <Image
-                    alt="Phase"
-                    className="hidden h-14 w-auto dark:block"
-                    height={100}
-                    priority
-                    src="/phase/typography.svg"
-                    width={150}
-                  />
-                </div>
+                <Link href="https://phase.sh" target="_blank">
+                  <div className="hidden size-8 items-center justify-center group-data-[collapsible=icon]:flex">
+                    <Image
+                      alt="Phase"
+                      className="size-7 dark:hidden"
+                      height={28}
+                      priority
+                      src="/light-logo.svg"
+                      width={28}
+                    />
+                    <Image
+                      alt="Phase"
+                      className="hidden size-7 dark:block"
+                      height={28}
+                      priority
+                      src="/logo.svg"
+                      width={28}
+                    />
+                  </div>
+                  <div className="flex items-center group-data-[collapsible=icon]:hidden">
+                    <Image
+                      alt="Phase"
+                      className="h-12 w-auto dark:hidden"
+                      height={100}
+                      priority
+                      src="/light-typography.svg"
+                      width={150}
+                    />
+                    <Image
+                      alt="Phase"
+                      className="hidden h-14 w-auto dark:block"
+                      height={100}
+                      priority
+                      src="/typography.svg"
+                      width={150}
+                    />
+                  </div>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
       )}
 
-      {/* Mobile only: App Switcher */}
       {isMobile && (
         <div className="px-2 pb-2">
           <AppSwitcher

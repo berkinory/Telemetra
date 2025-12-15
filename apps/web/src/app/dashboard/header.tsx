@@ -15,6 +15,7 @@ import {
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useQueryState } from 'nuqs';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
@@ -228,14 +229,17 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
           <SidebarTrigger />
           <div className="flex flex-1 items-center justify-between">
             <div className="flex items-center gap-2">
-              {/* Mobile: Typography logo */}
-              <div className="md:hidden">
+              <Link
+                className="md:hidden"
+                href="https://phase.sh"
+                target="_blank"
+              >
                 <Image
                   alt="Phase"
                   className="h-12 w-auto dark:hidden"
                   height={100}
                   priority
-                  src="/phase/light-typography.svg"
+                  src="/light-typography.svg"
                   width={150}
                 />
                 <Image
@@ -243,11 +247,10 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
                   className="hidden h-12 w-auto dark:block"
                   height={100}
                   priority
-                  src="/phase/typography.svg"
+                  src="/typography.svg"
                   width={150}
                 />
-              </div>
-              {/* Desktop: App Switcher */}
+              </Link>
               <div className="hidden md:block">
                 <AppSwitcher
                   onMobileClose={() => {

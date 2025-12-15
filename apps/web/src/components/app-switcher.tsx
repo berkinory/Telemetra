@@ -146,6 +146,7 @@ export function AppSwitcher({ variant, onMobileClose }: AppSwitcherProps) {
       <DropdownMenuTrigger asChild>
         <button
           className="flex h-10 items-center gap-3 rounded-lg border bg-background px-3 shadow-sm transition-colors hover:bg-accent"
+          suppressHydrationWarning
           type="button"
         >
           <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">

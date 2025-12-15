@@ -42,9 +42,9 @@ export const baseMetadata: Metadata = {
       'Phase Analytics – Privacy-First Open Source Mobile Analytics for Android & iOS',
   },
   icons: {
-    icon: [{ url: '/phase/favicon.svg', type: 'image/svg+xml' }],
-    apple: [{ url: '/phase/apple-touch-icon.png', sizes: '180x180' }],
-    shortcut: '/phase/favicon.svg',
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+    shortcut: '/favicon.svg',
   },
   manifest: '/manifest.webmanifest',
   appleWebApp: {
@@ -200,7 +200,7 @@ export const jsonLd = {
     '@type': 'Organization',
     name: siteConfig.name,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/phase/logo.svg`,
+    logo: `${siteConfig.url}/logo.svg`,
     sameAs: ['https://github.com/phase-analytics'],
   }),
 
