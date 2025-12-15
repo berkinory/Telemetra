@@ -5,10 +5,9 @@ import {
   PingSessionRequestSchema,
   PingSessionResponseSchema,
 } from '@phase/shared';
-import { eq } from 'drizzle-orm';
 import { Elysia } from 'elysia';
-import { db, sessions } from '@/db';
 import { sdkAuthPlugin } from '@/lib/middleware';
+import { getSessionActivityBuffer } from '@/lib/session-activity-buffer';
 import {
   invalidateSessionCache,
   validateSession,
@@ -40,7 +39,7 @@ export const pingSdkRouter = new Elysia({ prefix: '/ping' })
         }
 
         const clientTimestamp = timestampValidation.data;
-        const { session } = sessionValidation.data;
+        const { session, device } = sessionValidation.data;
 
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         if (session.startedAt < oneDayAgo) {
@@ -51,7 +50,12 @@ export const pingSdkRouter = new Elysia({ prefix: '/ping' })
           };
         }
 
-        if (clientTimestamp <= session.lastActivityAt) {
+        const bufferedActivity = getSessionActivityBuffer().getLastActivityAt(
+          session.sessionId
+        );
+        const lastActivity = bufferedActivity || session.lastActivityAt;
+
+        if (clientTimestamp <= lastActivity) {
           set.status = HttpStatus.BAD_REQUEST;
           return {
             code: ErrorCode.VALIDATION_ERROR,
@@ -59,10 +63,11 @@ export const pingSdkRouter = new Elysia({ prefix: '/ping' })
           };
         }
 
-        await db
-          .update(sessions)
-          .set({ lastActivityAt: clientTimestamp })
-          .where(eq(sessions.sessionId, session.sessionId));
+        getSessionActivityBuffer().push(
+          session.sessionId,
+          clientTimestamp,
+          device.appId
+        );
 
         await invalidateSessionCache(session.sessionId);
 

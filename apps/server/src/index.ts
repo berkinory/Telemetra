@@ -7,6 +7,7 @@ import { initEventBuffer } from '@/lib/event-buffer';
 import { initGeoIP, shutdownGeoIP } from '@/lib/geolocation';
 import { runMigrations } from '@/lib/migrate';
 import { initQuestDB } from '@/lib/questdb';
+import { initSessionActivityBuffer } from '@/lib/session-activity-buffer';
 import { sseManager } from '@/lib/sse-manager';
 import { appWebRouter } from '@/routes/app';
 import { batchSdkRouter } from '@/routes/batch';
@@ -50,6 +51,8 @@ const app = new Elysia()
   });
 
 let eventBuffer: ReturnType<typeof initEventBuffer> | null = null;
+let sessionActivityBuffer: ReturnType<typeof initSessionActivityBuffer> | null =
+  null;
 let redisClient: Redis | null = null;
 
 try {
@@ -66,6 +69,9 @@ try {
     );
   }
 
+  sessionActivityBuffer = initSessionActivityBuffer();
+  sessionActivityBuffer.start();
+
   const geoip = initGeoIP();
   await geoip.initialize();
 
@@ -81,6 +87,10 @@ const shutdown = async () => {
     app.server?.stop();
     sseManager.stop();
     shutdownGeoIP();
+
+    if (sessionActivityBuffer) {
+      await sessionActivityBuffer.flushAndClose();
+    }
 
     if (eventBuffer) {
       await eventBuffer.flushAndClose();

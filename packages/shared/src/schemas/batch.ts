@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { BATCH } from '../constants/validation';
 import { CreateDeviceRequestSchema } from './device';
 import { CreateEventRequestSchema } from './event';
+import { PingSessionRequestSchema } from './ping';
 import { CreateSessionRequestSchema } from './session';
 
 export const BatchDeviceItemSchema = z.object({
@@ -22,10 +23,17 @@ export const BatchEventItemSchema = z.object({
   clientOrder: z.number().min(0),
 });
 
+export const BatchPingItemSchema = z.object({
+  type: z.literal('ping'),
+  payload: PingSessionRequestSchema,
+  clientOrder: z.number().min(0),
+});
+
 export const BatchItemSchema = z.union([
   BatchDeviceItemSchema,
   BatchSessionItemSchema,
   BatchEventItemSchema,
+  BatchPingItemSchema,
 ]);
 
 export const BatchRequestSchema = z.object({
@@ -40,7 +48,7 @@ export const BatchErrorSchema = z.object({
 
 export const BatchResultItemSchema = z.object({
   clientOrder: z.number(),
-  type: z.enum(['device', 'session', 'event']),
+  type: z.enum(['device', 'session', 'event', 'ping']),
   id: z.string(),
 });
 
@@ -54,6 +62,7 @@ export const BatchResponseSchema = z.object({
 export type BatchDeviceItem = z.infer<typeof BatchDeviceItemSchema>;
 export type BatchSessionItem = z.infer<typeof BatchSessionItemSchema>;
 export type BatchEventItem = z.infer<typeof BatchEventItemSchema>;
+export type BatchPingItem = z.infer<typeof BatchPingItemSchema>;
 export type BatchItem = z.infer<typeof BatchItemSchema>;
 export type BatchRequest = z.infer<typeof BatchRequestSchema>;
 export type BatchError = z.infer<typeof BatchErrorSchema>;

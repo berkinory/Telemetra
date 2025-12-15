@@ -5,13 +5,12 @@ import {
   EventSchema,
   HttpStatus,
 } from '@phase/shared';
-import { eq } from 'drizzle-orm';
 import { Elysia } from 'elysia';
 import { ulid } from 'ulid';
-import { db, sessions } from '@/db';
 import { getEventBuffer } from '@/lib/event-buffer';
 import { sdkAuthPlugin } from '@/lib/middleware';
 import { normalizePath } from '@/lib/path-normalizer';
+import { getSessionActivityBuffer } from '@/lib/session-activity-buffer';
 import { sseManager } from '@/lib/sse-manager';
 import {
   invalidateSessionCache,
@@ -73,7 +72,12 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
           };
         }
 
-        if (clientTimestamp <= session.lastActivityAt) {
+        const bufferedActivity = getSessionActivityBuffer().getLastActivityAt(
+          session.sessionId
+        );
+        const lastActivity = bufferedActivity || session.lastActivityAt;
+
+        if (clientTimestamp <= lastActivity) {
           set.status = HttpStatus.BAD_REQUEST;
           return {
             code: ErrorCode.VALIDATION_ERROR,
@@ -95,10 +99,11 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
           timestamp: clientTimestamp.toISOString(),
         });
 
-        await db
-          .update(sessions)
-          .set({ lastActivityAt: clientTimestamp })
-          .where(eq(sessions.sessionId, session.sessionId));
+        getSessionActivityBuffer().push(
+          session.sessionId,
+          clientTimestamp,
+          device.appId
+        );
 
         await invalidateSessionCache(session.sessionId);
 

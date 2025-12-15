@@ -3,6 +3,7 @@ import type {
   BatchError,
   BatchEventItem,
   BatchItem,
+  BatchPingItem,
   BatchResponse,
   BatchResultItem,
   BatchSessionItem,
@@ -14,6 +15,7 @@ import { db, devices, sessions } from '@/db';
 import { getEventBuffer } from './event-buffer';
 import { getLocationFromIP } from './geolocation';
 import { normalizePath } from './path-normalizer';
+import { getSessionActivityBuffer } from './session-activity-buffer';
 import { sseManager } from './sse-manager';
 import {
   SESSION_MAX_AGE,
@@ -28,6 +30,7 @@ type SortedItems = {
   devices: BatchDeviceItem[];
   sessions: BatchSessionItem[];
   events: BatchEventItem[];
+  pings: BatchPingItem[];
 };
 
 type ProcessResult = {
@@ -40,6 +43,7 @@ function sortBatchItems(items: BatchItem[]): SortedItems {
     devices: [],
     sessions: [],
     events: [],
+    pings: [],
   };
 
   for (const item of items) {
@@ -56,6 +60,10 @@ function sortBatchItems(items: BatchItem[]): SortedItems {
         sorted.events.push(item);
         break;
       }
+      case 'ping': {
+        sorted.pings.push(item);
+        break;
+      }
       default: {
         const _exhaustive: never = item;
         break;
@@ -66,6 +74,7 @@ function sortBatchItems(items: BatchItem[]): SortedItems {
   sorted.devices.sort((a, b) => a.clientOrder - b.clientOrder);
   sorted.sessions.sort((a, b) => a.clientOrder - b.clientOrder);
   sorted.events.sort((a, b) => a.clientOrder - b.clientOrder);
+  sorted.pings.sort((a, b) => a.clientOrder - b.clientOrder);
 
   return sorted;
 }
@@ -564,21 +573,156 @@ async function processEvents(
       });
     }
 
-    const updatePromises: Promise<unknown>[] = [];
+    const sessionBuffer = getSessionActivityBuffer();
     for (const [sessionId, maxTimestamp] of sessionMaxTimestamps) {
       const sessionData = sessionCache.get(sessionId);
       if (sessionData && maxTimestamp > sessionData.session.lastActivityAt) {
-        updatePromises.push(
-          db
-            .update(sessions)
-            .set({ lastActivityAt: maxTimestamp })
-            .where(eq(sessions.sessionId, sessionId))
-        );
+        sessionBuffer.push(sessionId, maxTimestamp, sessionData.device.appId);
       }
     }
+  }
 
-    if (updatePromises.length > 0) {
-      await Promise.all(updatePromises);
+  return { results, errors };
+}
+
+async function processPings(
+  items: BatchPingItem[],
+  appId: string,
+  processedSessionIds: Set<string>
+): Promise<ProcessResult> {
+  const results: BatchResultItem[] = [];
+  const errors: BatchError[] = [];
+
+  const sessionBuffer = getSessionActivityBuffer();
+  const sessionCache = new Map<
+    string,
+    {
+      session: typeof sessions.$inferSelect;
+      device: typeof devices.$inferSelect;
+    }
+  >();
+
+  for (const item of items) {
+    const { payload, clientOrder } = item;
+
+    try {
+      const sessionIdValidation = validateSessionId(payload.sessionId);
+      if (!sessionIdValidation.success) {
+        errors.push({
+          clientOrder,
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: sessionIdValidation.error.detail,
+        });
+        continue;
+      }
+
+      const timestampValidation = validateTimestamp(
+        payload.timestamp,
+        'timestamp',
+        'offline'
+      );
+      if (!timestampValidation.success) {
+        errors.push({
+          clientOrder,
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: timestampValidation.error.detail,
+        });
+        continue;
+      }
+
+      let sessionData = sessionCache.get(payload.sessionId);
+
+      if (!sessionData) {
+        const result = await db
+          .select({
+            session: sessions,
+            device: devices,
+          })
+          .from(sessions)
+          .innerJoin(devices, eq(sessions.deviceId, devices.deviceId))
+          .where(eq(sessions.sessionId, payload.sessionId))
+          .limit(1);
+
+        if (result.length === 0) {
+          if (processedSessionIds.has(payload.sessionId)) {
+            const freshResult = await db
+              .select({
+                session: sessions,
+                device: devices,
+              })
+              .from(sessions)
+              .innerJoin(devices, eq(sessions.deviceId, devices.deviceId))
+              .where(eq(sessions.sessionId, payload.sessionId))
+              .limit(1);
+
+            if (freshResult.length > 0) {
+              sessionData = freshResult[0];
+              sessionCache.set(payload.sessionId, sessionData);
+            }
+          }
+
+          if (!sessionData) {
+            errors.push({
+              clientOrder,
+              code: ErrorCode.NOT_FOUND,
+              detail: 'Session not found',
+            });
+            continue;
+          }
+        } else {
+          sessionData = result[0];
+          sessionCache.set(payload.sessionId, sessionData);
+        }
+      }
+
+      if (sessionData.device.appId !== appId) {
+        errors.push({
+          clientOrder,
+          code: ErrorCode.FORBIDDEN,
+          detail: 'You do not have permission to access this session',
+        });
+        continue;
+      }
+
+      const clientTimestamp = timestampValidation.data;
+
+      const sessionAge = Date.now() - sessionData.session.startedAt.getTime();
+      if (sessionAge > SESSION_MAX_AGE.offline) {
+        errors.push({
+          clientOrder,
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'Session is too old, please start a new session',
+        });
+        continue;
+      }
+
+      if (clientTimestamp < sessionData.session.startedAt) {
+        errors.push({
+          clientOrder,
+          code: ErrorCode.VALIDATION_ERROR,
+          detail: 'Ping timestamp cannot be before session startedAt',
+        });
+        continue;
+      }
+
+      sessionBuffer.push(
+        payload.sessionId,
+        clientTimestamp,
+        sessionData.device.appId
+      );
+
+      results.push({
+        clientOrder,
+        type: 'ping',
+        id: payload.sessionId,
+      });
+    } catch (error) {
+      console.error('[BatchProcessor.Ping] Error:', error);
+      errors.push({
+        clientOrder,
+        code: ErrorCode.INTERNAL_SERVER_ERROR,
+        detail: 'Failed to process ping',
+      });
     }
   }
 
@@ -630,6 +774,16 @@ export async function processBatch(
     );
     allResults.push(...eventResult.results);
     allErrors.push(...eventResult.errors);
+  }
+
+  if (sorted.pings.length > 0) {
+    const pingResult = await processPings(
+      sorted.pings,
+      appId,
+      processedSessionIds
+    );
+    allResults.push(...pingResult.results);
+    allErrors.push(...pingResult.errors);
   }
 
   return {
