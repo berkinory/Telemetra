@@ -1,0 +1,45 @@
+{
+  "formatter": "language_server",
+  "format_on_save": "on",
+  "lsp": {
+    "biome": {
+      "binary": {
+        "path": "./node_modules/@biomejs/biome/bin/biome"
+      },
+      "settings": {
+        "require_config_file": true
+      }
+    }
+  },
+  "languages": {
+    "JavaScript": {
+      "formatter": "language_server",
+      "format_on_save": "on"
+    },
+    "TypeScript": {
+      "formatter": "language_server",
+      "format_on_save": "on",
+      "enable_language_server": true
+    },
+    "TSX": {
+      "formatter": "language_server",
+      "format_on_save": "on"
+    },
+    "JSX": {
+      "formatter": "language_server",
+      "format_on_save": "on"
+    },
+    "JSON": {
+      "formatter": "language_server",
+      "format_on_save": "on"
+    },
+    "CSS": {
+      "formatter": "language_server",
+      "format_on_save": "on"
+    },
+    "GraphQL": {
+      "formatter": "language_server",
+      "format_on_save": "on"
+    }
+  }
+}
