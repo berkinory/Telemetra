@@ -241,31 +241,42 @@ export function formatDuration(seconds: number | null): string {
     return '—';
   }
 
-  if (totalSeconds < 60) {
-    return totalSeconds === 1 ? '1 sec' : `${totalSeconds} secs`;
-  }
-
-  if (totalSeconds < 3600) {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-
-    if (secs === 0) {
-      return mins === 1 ? '1 min' : `${mins} mins`;
-    }
-
-    const minsPart = `${mins} ${mins === 1 ? 'min' : 'mins'}`;
-    const secsPart = `${secs} ${secs === 1 ? 'sec' : 'secs'}`;
-    return `${minsPart} ${secsPart}`;
-  }
-
   const hours = Math.floor(totalSeconds / 3600);
   const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
 
-  const hoursPart = `${hours} hrs`;
-  if (mins === 0) {
-    return hoursPart;
+  const parts: string[] = [];
+
+  if (hours > 0) {
+    parts.push(hours.toString());
+  }
+  if (mins > 0) {
+    parts.push(mins.toString());
+  }
+  if (secs > 0) {
+    parts.push(secs.toString());
   }
 
-  const minsPart = `${mins} ${mins === 1 ? 'min' : 'mins'}`;
-  return `${hoursPart} ${minsPart}`;
+  if (parts.length === 1) {
+    if (hours > 0) {
+      return hours === 1 ? '1 hour' : `${hours} hours`;
+    }
+    if (mins > 0) {
+      return mins === 1 ? '1 minute' : `${mins} minutes`;
+    }
+    return secs === 1 ? '1 second' : `${secs} seconds`;
+  }
+
+  const result: string[] = [];
+  if (hours > 0) {
+    result.push(`${hours} hr`);
+  }
+  if (mins > 0) {
+    result.push(`${mins} m`);
+  }
+  if (secs > 0) {
+    result.push(`${secs} s`);
+  }
+
+  return result.join(' ');
 }
