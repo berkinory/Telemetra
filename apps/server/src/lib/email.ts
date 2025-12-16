@@ -10,15 +10,15 @@ type SendEmailParams = {
 
 type PlunkResponse = {
   success: boolean;
-  data?: {
-    contact: string;
-    event: string;
-    timestamp: string;
-  };
-  error?: {
-    code: string;
-    message: string;
-  };
+  emails?: Array<{
+    contact: {
+      id: string;
+      email: string;
+    };
+    email: string;
+  }>;
+  timestamp?: string;
+  error?: string;
 };
 
 export async function sendEmail(params: SendEmailParams): Promise<void> {
@@ -48,21 +48,30 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Plunk API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      });
       throw new Error(
-        `Plunk API returned ${response.status}: ${response.statusText}`
+        `Plunk API returned ${response.status}: ${response.statusText}. Body: ${errorText}`
       );
     }
 
     const data = (await response.json()) as PlunkResponse;
 
     if (!data.success) {
-      const errorMessage = data.error
-        ? `[${data.error.code}] ${data.error.message}`
-        : 'Unknown error occurred';
-      throw new Error(errorMessage);
+      const errorMessage = data.error || 'Unknown error occurred';
+      console.error('Plunk API unsuccessful response:', data);
+      throw new Error(`Plunk API error: ${errorMessage}`);
     }
   } catch (error) {
-    console.error('Failed to send email:', error);
+    console.error('Failed to send email:', {
+      error,
+      to,
+      subject,
+    });
     throw error;
   }
 }

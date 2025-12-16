@@ -18,13 +18,20 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     async sendResetPassword({ user: userAccount, url }) {
-      await sendReactEmail({
-        to: userAccount.email,
-        subject: 'Reset your password',
-        react: PasswordResetEmail({
-          resetUrl: url,
-        }),
-      });
+      try {
+        await sendReactEmail({
+          to: userAccount.email,
+          subject: 'Reset your password',
+          react: PasswordResetEmail({
+            resetUrl: url,
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to send password reset email:', error);
+        if (process.env.NODE_ENV === 'production') {
+          throw error;
+        }
+      }
     },
   },
   baseURL: process.env.SERVER_URL || 'http://localhost:3001',
