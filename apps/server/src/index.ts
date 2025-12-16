@@ -10,6 +10,7 @@ import { initQuestDB } from '@/lib/questdb';
 import { initSessionActivityBuffer } from '@/lib/session-activity-buffer';
 import { sseManager } from '@/lib/sse-manager';
 import { appWebRouter } from '@/routes/app';
+import { authRouter } from '@/routes/auth';
 import { batchSdkRouter } from '@/routes/batch';
 import { deviceSdkRouter, deviceWebRouter } from '@/routes/device';
 import { eventSdkRouter, eventWebRouter } from '@/routes/event';
@@ -36,6 +37,7 @@ const webRoutes = new Elysia({ prefix: '/web' })
 
 const app = new Elysia()
   .use(authCors)
+  .use(authRouter)
   .mount(auth.handler)
   .use(health)
   .use(sdkRoutes)
