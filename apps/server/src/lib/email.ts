@@ -29,7 +29,7 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
     return;
   }
 
-  const { to, subject, body, from = 'Phase <no-reply@phase.sh>' } = params;
+  const { to, subject, body, from = 'Phase Analytics <no-reply@phase.sh>' } = params;
 
   try {
     const controller = new AbortController();
