@@ -102,7 +102,7 @@ export async function sendPasswordResetEmail(params: {
 
   await sendEmail({
     to: params.to,
-    subject: 'Reset your password',
+    subject: 'Reset your password | Phase Analytics',
     body: html,
   });
 }
