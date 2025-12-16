@@ -4,7 +4,7 @@ type SendEmailParams = {
   to: string;
   subject: string;
   body: string;
-  from?: string;
+  from?: string | { name: string; email: string };
 };
 
 type PlunkResponse = {
@@ -32,7 +32,7 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
     to,
     subject,
     body,
-    from = 'Phase Analytics <no-reply@phase.sh>',
+    from = { name: 'Phase Analytics', email: 'no-reply@phase.sh' },
   } = params;
 
   try {
