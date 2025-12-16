@@ -3,6 +3,7 @@
 import { GithubIcon, ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useForm } from '@tanstack/react-form';
+import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -22,12 +23,20 @@ import { authClient } from '@/lib/auth';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function LoginForm() {
+type LoginFormProps = {
+  defaultValues?: {
+    email: string;
+    password: string;
+  };
+  onValuesChange?: (values: { email: string; password: string }) => void;
+};
+
+function LoginForm({ defaultValues, onValuesChange }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm({
-    defaultValues: {
+    defaultValues: defaultValues || {
       email: '',
       password: '',
     },
@@ -58,6 +67,7 @@ function LoginForm() {
 
   return (
     <form
+      aria-label="Login form"
       onSubmit={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -65,7 +75,7 @@ function LoginForm() {
       }}
     >
       <Card>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           <form.Subscribe selector={(state) => state.submissionAttempts}>
             {(submissionAttempts) => (
               <>
@@ -100,19 +110,32 @@ function LoginForm() {
                           Email
                         </label>
                         <Input
+                          aria-describedby={
+                            showErrors ? 'login-email-error' : undefined
+                          }
+                          aria-invalid={showErrors}
                           autoComplete="email"
+                          autoFocus
                           id="login-email"
                           onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
+                          onChange={(event) => {
+                            field.handleChange(event.target.value);
+                            onValuesChange?.({
+                              email: event.target.value,
+                              password: form.state.values.password,
+                            });
+                          }}
                           placeholder="you@example.com"
                           type="text"
                           value={field.state.value}
                         />
                         <AutoHeight deps={[showErrors]}>
                           {showErrors && (
-                            <p className="text-destructive text-sm">
+                            <p
+                              className="text-destructive text-sm"
+                              id="login-email-error"
+                              role="alert"
+                            >
                               {field.state.meta.errors[0]}
                             </p>
                           )}
@@ -156,18 +179,29 @@ function LoginForm() {
                         </label>
                         <div className="relative">
                           <Input
+                            aria-describedby={
+                              showErrors ? 'login-password-error' : undefined
+                            }
+                            aria-invalid={showErrors}
                             autoComplete="current-password"
                             className="pr-10"
                             id="login-password"
                             onBlur={field.handleBlur}
-                            onChange={(event) =>
-                              field.handleChange(event.target.value)
-                            }
+                            onChange={(event) => {
+                              field.handleChange(event.target.value);
+                              onValuesChange?.({
+                                email: form.state.values.email,
+                                password: event.target.value,
+                              });
+                            }}
                             placeholder="••••••••"
                             type={showPassword ? 'text' : 'password'}
                             value={field.state.value}
                           />
                           <button
+                            aria-label={
+                              showPassword ? 'Hide password' : 'Show password'
+                            }
                             className="absolute top-0 right-0 flex h-full items-center px-3"
                             onClick={() => setShowPassword(!showPassword)}
                             type="button"
@@ -180,7 +214,11 @@ function LoginForm() {
                         </div>
                         <AutoHeight deps={[showErrors]}>
                           {showErrors && (
-                            <p className="text-destructive text-sm">
+                            <p
+                              className="text-destructive text-sm"
+                              id="login-password-error"
+                              role="alert"
+                            >
                               {field.state.meta.errors[0]}
                             </p>
                           )}
@@ -192,6 +230,19 @@ function LoginForm() {
               </>
             )}
           </form.Subscribe>
+
+          <div className="flex justify-end">
+            <button
+              aria-label="Reset your password"
+              className="text-primary text-sm hover:underline"
+              onClick={() => {
+                toast.info('Forgot password functionality coming soon');
+              }}
+              type="button"
+            >
+              Forgot Password?
+            </button>
+          </div>
 
           <form.Subscribe
             selector={(state) =>
@@ -233,7 +284,12 @@ function LoginForm() {
             </div>
           </div>
 
-          <Button className="w-full" type="button" variant="outline">
+          <Button
+            aria-label="Sign in with Github"
+            className="w-full"
+            type="button"
+            variant="outline"
+          >
             <HugeiconsIcon className="mr-2 h-4 w-4" icon={GithubIcon} />
             Sign in with Github
           </Button>
@@ -243,12 +299,25 @@ function LoginForm() {
   );
 }
 
-function SignupForm() {
+type SignupFormProps = {
+  defaultValues?: {
+    name: string;
+    email: string;
+    password: string;
+  };
+  onValuesChange?: (values: {
+    name: string;
+    email: string;
+    password: string;
+  }) => void;
+};
+
+function SignupForm({ defaultValues, onValuesChange }: SignupFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm({
-    defaultValues: {
+    defaultValues: defaultValues || {
       name: '',
       email: '',
       password: '',
@@ -280,6 +349,7 @@ function SignupForm() {
 
   return (
     <form
+      aria-label="Sign up form"
       onSubmit={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -287,7 +357,7 @@ function SignupForm() {
       }}
     >
       <Card>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           <form.Subscribe selector={(state) => state.submissionAttempts}>
             {(submissionAttempts) => (
               <>
@@ -326,19 +396,33 @@ function SignupForm() {
                           Name
                         </label>
                         <Input
+                          aria-describedby={
+                            showErrors ? 'signup-name-error' : undefined
+                          }
+                          aria-invalid={showErrors}
                           autoComplete="name"
+                          autoFocus
                           id="signup-name"
                           onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
+                          onChange={(event) => {
+                            field.handleChange(event.target.value);
+                            onValuesChange?.({
+                              name: event.target.value,
+                              email: form.state.values.email,
+                              password: form.state.values.password,
+                            });
+                          }}
                           placeholder="John Doe"
                           type="text"
                           value={field.state.value}
                         />
                         <AutoHeight deps={[showErrors]}>
                           {showErrors && (
-                            <p className="text-destructive text-sm">
+                            <p
+                              className="text-destructive text-sm"
+                              id="signup-name-error"
+                              role="alert"
+                            >
                               {field.state.meta.errors[0]}
                             </p>
                           )}
@@ -379,19 +463,32 @@ function SignupForm() {
                           Email
                         </label>
                         <Input
+                          aria-describedby={
+                            showErrors ? 'signup-email-error' : undefined
+                          }
+                          aria-invalid={showErrors}
                           autoComplete="email"
                           id="signup-email"
                           onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
+                          onChange={(event) => {
+                            field.handleChange(event.target.value);
+                            onValuesChange?.({
+                              name: form.state.values.name,
+                              email: event.target.value,
+                              password: form.state.values.password,
+                            });
+                          }}
                           placeholder="you@example.com"
                           type="text"
                           value={field.state.value}
                         />
                         <AutoHeight deps={[showErrors]}>
                           {showErrors && (
-                            <p className="text-destructive text-sm">
+                            <p
+                              className="text-destructive text-sm"
+                              id="signup-email-error"
+                              role="alert"
+                            >
                               {field.state.meta.errors[0]}
                             </p>
                           )}
@@ -435,18 +532,30 @@ function SignupForm() {
                         </label>
                         <div className="relative">
                           <Input
+                            aria-describedby={
+                              showErrors ? 'signup-password-error' : undefined
+                            }
+                            aria-invalid={showErrors}
                             autoComplete="new-password"
                             className="pr-10"
                             id="signup-password"
                             onBlur={field.handleBlur}
-                            onChange={(event) =>
-                              field.handleChange(event.target.value)
-                            }
+                            onChange={(event) => {
+                              field.handleChange(event.target.value);
+                              onValuesChange?.({
+                                name: form.state.values.name,
+                                email: form.state.values.email,
+                                password: event.target.value,
+                              });
+                            }}
                             placeholder="••••••••"
                             type={showPassword ? 'text' : 'password'}
                             value={field.state.value}
                           />
                           <button
+                            aria-label={
+                              showPassword ? 'Hide password' : 'Show password'
+                            }
                             className="absolute top-0 right-0 flex h-full items-center px-3"
                             onClick={() => setShowPassword(!showPassword)}
                             type="button"
@@ -459,7 +568,11 @@ function SignupForm() {
                         </div>
                         <AutoHeight deps={[showErrors]}>
                           {showErrors && (
-                            <p className="text-destructive text-sm">
+                            <p
+                              className="text-destructive text-sm"
+                              id="signup-password-error"
+                              role="alert"
+                            >
                               {field.state.meta.errors[0]}
                             </p>
                           )}
@@ -512,27 +625,69 @@ function SignupForm() {
             </div>
           </div>
 
-          <Button className="w-full" type="button" variant="outline">
+          <Button
+            aria-label="Sign up with Github"
+            className="w-full"
+            type="button"
+            variant="outline"
+          >
             <HugeiconsIcon className="mr-2 h-4 w-4" icon={GithubIcon} />
             Sign up with Github
           </Button>
         </CardContent>
       </Card>
+
+      <p className="mt-2 px-3 text-center text-muted-foreground text-xs">
+        By signing up you agree to{' '}
+        <a
+          className="underline hover:text-foreground"
+          href="/terms"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Terms of Service
+        </a>{' '}
+        &{' '}
+        <a
+          className="underline hover:text-foreground"
+          href="/privacy"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Privacy Policy
+        </a>
+      </p>
     </form>
   );
 }
 
 export default function AuthPage() {
+  const [loginValues, setLoginValues] = useState({
+    email: '',
+    password: '',
+  });
+
+  const [signupValues, setSignupValues] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
+
   return (
     <div className="flex h-screen w-full">
       <div className="flex w-full items-center justify-center lg:w-1/2">
-        <div className="flex w-full max-w-md flex-col items-center gap-6 px-8">
+        <div className="fade-in slide-in-from-bottom-4 flex w-full max-w-md animate-in flex-col items-center gap-6 fill-mode-both px-8 delay-300 duration-700">
           <div className="flex flex-col items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10">
-              <span className="font-bold text-2xl text-primary">T</span>
-            </div>
+            <Image
+              alt="Phase Logo"
+              className="h-16 w-16"
+              height={64}
+              priority
+              src="/logo.svg"
+              width={64}
+            />
             <h1 className="text-center font-semibold text-2xl">
-              Welcome Back!
+              Welcome to Phase
             </h1>
           </div>
 
@@ -548,33 +703,17 @@ export default function AuthPage() {
 
             <TabsContents>
               <TabsContent value="login">
-                <LoginForm />
+                <LoginForm
+                  defaultValues={loginValues}
+                  onValuesChange={setLoginValues}
+                />
               </TabsContent>
 
               <TabsContent value="signup">
-                <div className="space-y-4">
-                  <SignupForm />
-                  <p className="text-center text-muted-foreground text-xs">
-                    By signing up you agree to{' '}
-                    <a
-                      className="underline hover:text-foreground"
-                      href="/terms"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      Terms of Service
-                    </a>{' '}
-                    &{' '}
-                    <a
-                      className="underline hover:text-foreground"
-                      href="/privacy"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      Privacy Policy
-                    </a>
-                  </p>
-                </div>
+                <SignupForm
+                  defaultValues={signupValues}
+                  onValuesChange={setSignupValues}
+                />
               </TabsContent>
             </TabsContents>
           </Tabs>
