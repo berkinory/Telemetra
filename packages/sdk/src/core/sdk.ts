@@ -1,5 +1,5 @@
-import NetInfo from '@react-native-community/netinfo';
 import { AppState } from 'react-native';
+import type { NetworkAdapter } from './adapters/network-adapter';
 import { HttpClient } from './client/http-client';
 import { DeviceManager } from './managers/device-manager';
 import { EventManager } from './managers/event-manager';
@@ -21,10 +21,12 @@ export class PhaseSDK {
   private unsubscribeNetInfo: (() => void) | null = null;
   private appStateSubscription: { remove: () => void } | null = null;
   private trackNavigationEvents = true;
+  private networkAdapter: NetworkAdapter | null = null;
 
   async init(
     config: PhaseConfig,
-    getDeviceInfo: () => DeviceInfo
+    getDeviceInfo: () => DeviceInfo,
+    networkAdapter: NetworkAdapter
   ): Promise<void> {
     if (this.isInitialized) {
       logger.debug('SDK already initialized, skipping init');
@@ -57,7 +59,8 @@ export class PhaseSDK {
 
     try {
       logger.info('Initializing Phase SDK', { baseUrl: config.baseUrl });
-      const netState = await NetInfo.fetch();
+      this.networkAdapter = networkAdapter;
+      const netState = await networkAdapter.fetchNetworkState();
       const isOnline = netState.isConnected ?? false;
 
       this.httpClient = new HttpClient(
@@ -140,29 +143,36 @@ export class PhaseSDK {
   }
 
   private setupNetworkListener(): void {
-    this.unsubscribeNetInfo = NetInfo.addEventListener((state) => {
-      const isOnline = state.isConnected ?? false;
+    if (!this.networkAdapter) {
+      logger.error('Network adapter not initialized');
+      return;
+    }
 
-      if (this.sessionManager) {
-        this.sessionManager.updateNetworkState(isOnline);
-      }
+    this.unsubscribeNetInfo = this.networkAdapter.addNetworkListener(
+      (state) => {
+        const isOnline = state.isConnected ?? false;
 
-      if (this.eventManager) {
-        this.eventManager.updateNetworkState(isOnline);
-      }
+        if (this.sessionManager) {
+          this.sessionManager.updateNetworkState(isOnline);
+        }
 
-      if (
-        isOnline &&
-        this.batchSender &&
-        this.offlineQueue &&
-        this.offlineQueue.getSize() > 0
-      ) {
-        logger.info('Network restored, flushing offline queue');
-        this.batchSender.flush().catch(() => {
-          logger.error('Failed to flush offline queue');
-        });
+        if (this.eventManager) {
+          this.eventManager.updateNetworkState(isOnline);
+        }
+
+        if (
+          isOnline &&
+          this.batchSender &&
+          this.offlineQueue &&
+          this.offlineQueue.getSize() > 0
+        ) {
+          logger.info('Network restored, flushing offline queue');
+          this.batchSender.flush().catch(() => {
+            logger.error('Failed to flush offline queue');
+          });
+        }
       }
-    });
+    );
   }
 
   private cleanup(): void {

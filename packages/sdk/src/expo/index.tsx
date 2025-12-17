@@ -1,10 +1,14 @@
+import './polyfills';
 import { usePathname, useSegments } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PhaseSDK } from '../core/sdk';
+import { setStorageAdapter } from '../core/storage/storage';
 import type { EventParams, PhaseConfig } from '../core/types';
 import { logger } from '../core/utils/logger';
 import { getExpoDeviceInfo } from './device/expo-device-info';
+import { addNetworkListener, fetchNetworkState } from './network/expo-network';
+import { clear, getItem, removeItem, setItem } from './storage/expo-storage';
 
 let sdk: PhaseSDK | null = null;
 
@@ -49,7 +53,19 @@ async function initSDK(config: PhaseConfig): Promise<boolean> {
       );
     }
 
-    await ensureSDK().init(config, getExpoDeviceInfo);
+    setStorageAdapter({
+      getItem,
+      setItem,
+      removeItem,
+      clear,
+    });
+
+    const networkAdapter = {
+      fetchNetworkState,
+      addNetworkListener,
+    };
+
+    await ensureSDK().init(config, getExpoDeviceInfo, networkAdapter);
     return true;
   } catch (error) {
     logger.error('Initialization failed', error);

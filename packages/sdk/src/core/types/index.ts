@@ -47,6 +47,10 @@ export type CreateSessionRequest = {
   startedAt: string;
 };
 
+/**
+ * Event parameters (optional, max depth 6, max size 50KB)
+ * @example { button_id: 'submit', screen: 'login' }
+ */
 export type EventParams = Record<string, unknown>;
 
 export type CreateEventRequest = {
@@ -155,11 +159,35 @@ export type PingSessionResponse = {
 export type LogLevel = 'debug' | 'info' | 'error' | 'none';
 
 export type PhaseConfig = {
+  /**
+   * Your Phase API key (required, starts with "phase_")
+   * @example "phase_xxx"
+   */
   apiKey: string;
+  /**
+   * Custom API endpoint for self-hosting (optional)
+   * @default "https://api.phase.sh"
+   */
   baseUrl?: string;
+  /**
+   * Logging level: 'debug' | 'info' | 'error' | 'none' (optional)
+   * @default "none"
+   */
   logLevel?: LogLevel;
+  /**
+   * Auto-track screen navigation (optional)
+   * @default true
+   */
   trackNavigation?: boolean;
+  /**
+   * Collect device metadata (optional)
+   * @default true
+   */
   deviceInfo?: boolean;
+  /**
+   * Collect user locale + geolocation (optional)
+   * @default true
+   */
   userLocale?: boolean;
 };
 

@@ -1,3 +1,4 @@
+import './polyfills';
 import {
   NavigationContainer,
   useNavigationContainerRef,
@@ -5,9 +6,12 @@ import {
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { PhaseSDK } from '../core/sdk';
+import { setStorageAdapter } from '../core/storage/storage';
 import type { EventParams, PhaseConfig } from '../core/types';
 import { logger } from '../core/utils/logger';
 import { getRNDeviceInfo } from './device/rn-device-info';
+import { addNetworkListener, fetchNetworkState } from './network/rn-network';
+import { clear, getItem, removeItem, setItem } from './storage/rn-storage';
 
 let sdk: PhaseSDK | null = null;
 
@@ -24,7 +28,19 @@ function ensureSDK(): PhaseSDK {
 
 async function initSDK(config: PhaseConfig): Promise<boolean> {
   try {
-    await ensureSDK().init(config, getRNDeviceInfo);
+    setStorageAdapter({
+      getItem,
+      setItem,
+      removeItem,
+      clear,
+    });
+
+    const networkAdapter = {
+      fetchNetworkState,
+      addNetworkListener,
+    };
+
+    await ensureSDK().init(config, getRNDeviceInfo, networkAdapter);
     return true;
   } catch (error) {
     logger.error('Initialization failed', error);
