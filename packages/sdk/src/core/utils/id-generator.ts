@@ -1,4 +1,4 @@
-import { ulid } from 'ulid';
+import { ulid } from 'ulidx';
 
 export function generateDeviceId(): string {
   return ulid();
