@@ -1,4 +1,3 @@
-import './polyfills';
 import { usePathname, useSegments } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';

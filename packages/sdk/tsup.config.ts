@@ -18,7 +18,6 @@ export default defineConfig({
     'react-native',
     '@react-native-async-storage/async-storage',
     '@react-native-community/netinfo',
-    'react-native-get-random-values',
     '@react-navigation/native',
     'expo-application',
     'expo-constants',
@@ -26,6 +25,5 @@ export default defineConfig({
     'expo-router',
     'expo-file-system',
     'expo-network',
-    'expo-crypto',
   ],
 });

@@ -1,4 +1,3 @@
-import './polyfills';
 import {
   NavigationContainer,
   useNavigationContainerRef,
