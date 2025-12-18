@@ -1,7 +1,3 @@
-import {
-  NavigationContainer,
-  useNavigationContainerRef,
-} from '@react-navigation/native';
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { PhaseSDK } from '../core/sdk';
@@ -11,6 +7,23 @@ import { logger } from '../core/utils/logger';
 import { getRNDeviceInfo } from './device/rn-device-info';
 import { addNetworkListener, fetchNetworkState } from './network/rn-network';
 import { clear, getItem, removeItem, setItem } from './storage/rn-storage';
+
+let NavigationContainer:
+  | typeof import('@react-navigation/native').NavigationContainer
+  | null = null;
+let useNavigationContainerRef:
+  | typeof import('@react-navigation/native').useNavigationContainerRef
+  | null = null;
+let reactNavigationAvailable = false;
+
+try {
+  const reactNavigation = require('@react-navigation/native');
+  NavigationContainer = reactNavigation.NavigationContainer;
+  useNavigationContainerRef = reactNavigation.useNavigationContainerRef;
+  reactNavigationAvailable = true;
+} catch {
+  reactNavigationAvailable = false;
+}
 
 let sdk: PhaseSDK | null = null;
 
@@ -47,104 +60,39 @@ async function initSDK(config: PhaseConfig): Promise<boolean> {
   }
 }
 
-type NavigationContainerProps = React.ComponentProps<
-  typeof NavigationContainer
->;
+type NavigationContainerType =
+  typeof import('@react-navigation/native').NavigationContainer;
+type NavigationContainerProps = React.ComponentProps<NavigationContainerType>;
 
 type PhaseProps = PhaseConfig &
   Omit<NavigationContainerProps, 'ref'> & {
     children: ReactNode;
   };
 
-/**
- * Phase Analytics Provider for React Native
- *
- * Replaces NavigationContainer - wrap your navigators with this component.
- * Automatically initializes the SDK and tracks screen navigation.
- *
- * @param apiKey - Your Phase API key (required, starts with "phase_")
- * @param children - Your navigation stack
- * @param trackNavigation - Auto-track screen navigation (optional, default: true)
- * @param deviceInfo - Collect device metadata (default: true)
- * @param userLocale - Collect user locale + geolocation (optional, default: true)
- * @param baseUrl - Custom API endpoint for self-hosting (optional)
- * @param logLevel - Logging: 'debug' | 'info' | 'error' | 'none' (optional, default: 'none')
- *
- * All NavigationContainer props are also supported (theme, linking, etc.)
- *
- * @example
- * ```tsx
- * // App.tsx
- * import { Phase } from 'phase-analytics/react-native';
- *
- * export default function App() {
- *   return (
- *     <Phase apiKey="phase_xxx">
- *       <Stack.Navigator>
- *         <Stack.Screen name="Home" component={HomeScreen} />
- *       </Stack.Navigator>
- *     </Phase>
- *   );
- * }
- *
- * // With NavigationContainer options
- * <Phase
- *   apiKey="phase_xxx"
- *   theme={MyTheme}
- *   linking={linkingConfig}
- *   logLevel="debug"
- * >
- *   <Stack.Navigator>...</Stack.Navigator>
- * </Phase>
- * ```
- */
-function Phase({
+function PhaseWithNavigation({
   children,
-  apiKey,
-  baseUrl,
-  logLevel,
-  trackNavigation = true,
-  deviceInfo,
-  userLocale,
+  initialized,
   onReady,
   onStateChange,
   ...navigationProps
-}: PhaseProps): ReactNode {
-  const navigationRef = useNavigationContainerRef();
-  const [initialized, setInitialized] = useState(false);
-  const initStarted = useRef(false);
+}: {
+  children: ReactNode;
+  initialized: boolean;
+  onReady?: () => void;
+  onStateChange?: NavigationContainerProps['onStateChange'];
+} & Omit<NavigationContainerProps, 'ref' | 'onReady' | 'onStateChange'>) {
+  const useNavRef = useNavigationContainerRef as NonNullable<
+    typeof useNavigationContainerRef
+  >;
+  const NavContainer = NavigationContainer as NonNullable<
+    typeof NavigationContainer
+  >;
+
+  const navigationRef = useNavRef();
   const routeNameRef = useRef<string | undefined>(undefined);
 
-  useEffect(() => {
-    if (initStarted.current) {
-      return;
-    }
-    initStarted.current = true;
-
-    const config: PhaseConfig = {
-      apiKey,
-      baseUrl,
-      logLevel,
-      trackNavigation,
-      deviceInfo,
-      userLocale,
-    };
-
-    let isMounted = true;
-    initSDK(config).then((success) => {
-      if (isMounted) {
-        setInitialized(success);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      initStarted.current = false;
-    };
-  }, [apiKey, baseUrl, deviceInfo, logLevel, trackNavigation, userLocale]);
-
   const handleReady = () => {
-    if (trackNavigation && initialized) {
+    if (initialized) {
       const currentRoute = navigationRef.getCurrentRoute();
       routeNameRef.current = currentRoute?.name;
 
@@ -160,7 +108,7 @@ function Phase({
   const handleStateChange: NavigationContainerProps['onStateChange'] = (
     state
   ) => {
-    if (trackNavigation && initialized) {
+    if (initialized) {
       const currentRoute = navigationRef.getCurrentRoute();
       const previousRouteName = routeNameRef.current;
       const currentRouteName = currentRoute?.name;
@@ -177,14 +125,130 @@ function Phase({
   };
 
   return (
-    <NavigationContainer
+    <NavContainer
       onReady={handleReady}
       onStateChange={handleStateChange}
       ref={navigationRef}
       {...navigationProps}
     >
       {children}
-    </NavigationContainer>
+    </NavContainer>
+  );
+}
+
+/**
+ * Phase Analytics Provider for React Native
+ *
+ * Wrap your app with this component to enable analytics.
+ * If @react-navigation/native is installed, it replaces NavigationContainer and auto-tracks navigation.
+ * If not installed, it works as a simple provider for manual event tracking only.
+ *
+ * @param apiKey - Your Phase API key (required, starts with "phase_")
+ * @param children - Your navigation stack
+ * @param trackNavigation - Auto-track screen navigation (optional, default: true if @react-navigation/native is installed)
+ * @param deviceInfo - Collect device metadata (default: true)
+ * @param userLocale - Collect user locale + geolocation (optional, default: true)
+ * @param baseUrl - Custom API endpoint for self-hosting (optional)
+ * @param logLevel - Logging: 'debug' | 'info' | 'error' | 'none' (optional, default: 'none')
+ *
+ * All NavigationContainer props are also supported when @react-navigation/native is installed.
+ *
+ * @example
+ * ```tsx
+ * // App.tsx - With navigation tracking (requires @react-navigation/native)
+ * import { Phase } from 'phase-analytics/react-native';
+ *
+ * export default function App() {
+ *   return (
+ *     <Phase apiKey="phase_xxx">
+ *       <Stack.Navigator>
+ *         <Stack.Screen name="Home" component={HomeScreen} />
+ *       </Stack.Navigator>
+ *     </Phase>
+ *   );
+ * }
+ *
+ * // Without navigation tracking (no extra dependencies)
+ * <Phase apiKey="phase_xxx" trackNavigation={false}>
+ *   <YourApp />
+ * </Phase>
+ * ```
+ */
+function Phase({
+  children,
+  apiKey,
+  baseUrl,
+  logLevel,
+  trackNavigation,
+  deviceInfo,
+  userLocale,
+  onReady,
+  onStateChange,
+  ...navigationProps
+}: PhaseProps): ReactNode {
+  const shouldTrackNavigation = trackNavigation ?? reactNavigationAvailable;
+
+  useEffect(() => {
+    if (trackNavigation === true && !reactNavigationAvailable) {
+      logger.error(
+        'trackNavigation is enabled but @react-navigation/native is not installed.\n' +
+          'Install it with: npm install @react-navigation/native react-native-screens react-native-safe-area-context\n' +
+          'Or disable navigation tracking: <Phase trackNavigation={false}>'
+      );
+    }
+  }, [trackNavigation]);
+
+  const [initialized, setInitialized] = useState(false);
+  const initStarted = useRef(false);
+
+  useEffect(() => {
+    if (initStarted.current) {
+      return;
+    }
+    initStarted.current = true;
+
+    const config: PhaseConfig = {
+      apiKey,
+      baseUrl,
+      logLevel,
+      trackNavigation: shouldTrackNavigation,
+      deviceInfo,
+      userLocale,
+    };
+
+    let isMounted = true;
+    initSDK(config).then((success) => {
+      if (isMounted) {
+        setInitialized(success);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      initStarted.current = false;
+    };
+  }, [
+    apiKey,
+    baseUrl,
+    deviceInfo,
+    logLevel,
+    shouldTrackNavigation,
+    userLocale,
+  ]);
+
+  if (!(shouldTrackNavigation && reactNavigationAvailable)) {
+    return children;
+  }
+
+  return (
+    <PhaseWithNavigation
+      initialized={initialized}
+      onReady={onReady}
+      onStateChange={onStateChange}
+      {...navigationProps}
+    >
+      {children}
+    </PhaseWithNavigation>
   );
 }
 
