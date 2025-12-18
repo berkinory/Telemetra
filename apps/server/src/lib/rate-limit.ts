@@ -55,6 +55,11 @@ export const RATE_LIMIT_STRATEGIES = {
     ttl: 30,
     keyPrefix: 'rate:web',
   } satisfies RateLimitConfig,
+  WAITLIST: {
+    maxAttempts: 3,
+    ttl: 86_400,
+    keyPrefix: 'rate:waitlist',
+  } satisfies RateLimitConfig,
 } as const;
 
 export async function checkRateLimit(
@@ -156,6 +161,12 @@ export async function checkWebApiRateLimit(
   ip: string
 ): Promise<RateLimitResult> {
   return await checkRateLimit(RATE_LIMIT_STRATEGIES.WEB_API, { ip });
+}
+
+export async function checkWaitlistRateLimit(
+  ip: string
+): Promise<RateLimitResult> {
+  return await checkRateLimit(RATE_LIMIT_STRATEGIES.WAITLIST, { ip });
 }
 
 export function createRateLimiter(config: RateLimitConfig) {

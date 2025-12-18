@@ -80,6 +80,20 @@ export const verification = pgTable(
   })
 );
 
+export const waitlist = pgTable(
+  'waitlist',
+  {
+    id: text('id').primaryKey(),
+    emailHash: text('email_hash').notNull().unique(),
+    encryptedEmail: text('encrypted_email').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    emailHashIdx: index('waitlist_email_hash_idx').on(table.emailHash),
+    createdAtIdx: index('waitlist_created_at_idx').on(table.createdAt.desc()),
+  })
+);
+
 export const apps = pgTable(
   'apps',
   {
@@ -196,3 +210,6 @@ export type NewDevice = typeof devices.$inferInsert;
 
 export type AnalyticsSession = typeof sessions.$inferSelect;
 export type NewAnalyticsSession = typeof sessions.$inferInsert;
+
+export type Waitlist = typeof waitlist.$inferSelect;
+export type NewWaitlist = typeof waitlist.$inferInsert;

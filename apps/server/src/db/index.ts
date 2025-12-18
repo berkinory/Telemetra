@@ -9,6 +9,7 @@ import {
   sessions,
   user,
   verification,
+  waitlist,
 } from './schema';
 
 if (!process.env.DATABASE_URL) {
@@ -38,6 +39,7 @@ const schema = {
   apps,
   devices,
   sessions,
+  waitlist,
 };
 
 let cacheConfig: ReturnType<typeof redisCache> | undefined;
@@ -69,4 +71,5 @@ export {
   sessions,
   user,
   verification,
+  waitlist,
 } from './schema';

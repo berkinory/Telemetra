@@ -7,3 +7,4 @@ export * from './health';
 export * from './ping';
 export * from './realtime';
 export * from './session';
+export * from './waitlist';

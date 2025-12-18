@@ -15,6 +15,7 @@ export const auth = betterAuth({
     },
   }),
   emailAndPassword: {
+    disableSignUp: true,
     enabled: true,
     async sendResetPassword({ user: userAccount, url }) {
       try {

@@ -53,3 +53,20 @@ export const authCors = new Elysia({ name: 'auth-cors' }).use(
     credentials: true,
   })
 );
+
+export const publicCors = new Elysia({ name: 'public-cors' }).use(
+  cors({
+    origin: corsOrigins,
+    methods: ['POST', 'GET', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
+    exposeHeaders: [
+      'Content-Length',
+      'X-RateLimit-Limit',
+      'X-RateLimit-Remaining',
+      'X-RateLimit-Reset',
+      'Retry-After',
+    ],
+    maxAge: 600,
+    credentials: false,
+  })
+);

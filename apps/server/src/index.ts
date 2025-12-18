@@ -3,7 +3,7 @@ import { Elysia } from 'elysia';
 import Redis from 'ioredis';
 import { pool } from '@/db';
 import { auth } from '@/lib/auth';
-import { authCors, sdkCors, webCors } from '@/lib/cors';
+import { authCors, publicCors, sdkCors, webCors } from '@/lib/cors';
 import { initEventBuffer } from '@/lib/event-buffer';
 import { initGeoIP, shutdownGeoIP } from '@/lib/geolocation';
 import { runMigrations } from '@/lib/migrate';
@@ -20,6 +20,7 @@ import health from '@/routes/health';
 import { pingSdkRouter } from '@/routes/ping';
 import { realtimeWebRouter } from '@/routes/realtime';
 import { sessionSdkRouter, sessionWebRouter } from '@/routes/session';
+import { waitlistPublicRouter } from '@/routes/waitlist';
 
 const sdkRoutes = new Elysia({ prefix: '/sdk' })
   .use(sdkCors)
@@ -83,6 +84,10 @@ const webRoutes = new Elysia({ prefix: '/web' })
   .use(realtimeWebRouter)
   .use(sessionWebRouter);
 
+const publicRoutes = new Elysia({ prefix: '/public' })
+  .use(publicCors)
+  .use(waitlistPublicRouter);
+
 const app = new Elysia()
   .use(authCors)
   .use(authRouter)
@@ -90,6 +95,7 @@ const app = new Elysia()
   .use(health)
   .use(sdkRoutes)
   .use(webRoutes)
+  .use(publicRoutes)
   .onError(({ error, set }) => {
     console.error('[Server] Unhandled error:', error);
     set.status = 500;

@@ -85,6 +85,13 @@
       "when": 1765882976468,
       "tag": "0011_bitter_terrax",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1766097314608,
+      "tag": "0012_bumpy_ken_ellis",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,7 @@ export const siteConfig = {
   name: SITE_NAME,
   url: SITE_URL,
   description:
-    'Phase Analytics is a privacy first mobile analytics platform for React Native and Expo. Track events, sessions, and screen views, fully self-hostable.',
+    'Phase Analytics is a privacy first mobile analytics platform for React Native, Swift and Expo. Track events, sessions, and screens.',
   keywords: [
     'phase analytics',
     'mobile analytics',
