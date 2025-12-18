@@ -5,6 +5,7 @@ COPY package.json bun.lock ./
 COPY apps/server/package.json ./apps/server/
 COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
+COPY packages/sdk/package.json ./packages/sdk/
 
 RUN bun install --frozen-lockfile --filter server
 

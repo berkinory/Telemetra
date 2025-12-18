@@ -6,6 +6,7 @@ COPY package.json bun.lock ./
 COPY apps/web/package.json apps/web/source.config.ts apps/web/next.config.ts apps/web/tsconfig.json ./apps/web/
 COPY apps/server/package.json ./apps/server/
 COPY packages/shared/package.json ./packages/shared/
+COPY packages/sdk/package.json ./packages/sdk/
 RUN bun install --frozen-lockfile --filter web
 
 FROM base AS builder
