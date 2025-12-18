@@ -34,13 +34,12 @@ WORKDIR /app
 
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/apps/web/public ./public
+COPY --from=builder --chown=nextjs:bun /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:bun /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=nextjs:bun /app/apps/web/public ./apps/web/public
 
 RUN mkdir .next
 RUN chown nextjs:bun .next
-
-COPY --from=builder --chown=nextjs:bun /app/apps/web/.next/standalone ./
-COPY --from=builder --chown=nextjs:bun /app/apps/web/.next/static ./apps/web/.next/static
 
 USER nextjs
 
