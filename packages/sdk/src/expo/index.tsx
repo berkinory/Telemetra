@@ -1,3 +1,4 @@
+import { usePathname, useSegments } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PhaseSDK } from '../core/sdk';
@@ -7,21 +8,6 @@ import { logger } from '../core/utils/logger';
 import { getExpoDeviceInfo } from './device/expo-device-info';
 import { addNetworkListener, fetchNetworkState } from './network/expo-network';
 import { clear, getItem, removeItem, setItem } from './storage/expo-storage';
-
-let usePathname: typeof import('expo-router').usePathname | null = null;
-let useSegments: typeof import('expo-router').useSegments | null = null;
-let expoRouterAvailable = false;
-
-const safeRequire = (id: string) => require(id);
-
-try {
-  const expoRouter = safeRequire('expo-router');
-  usePathname = expoRouter.usePathname;
-  useSegments = expoRouter.useSegments;
-  expoRouterAvailable = true;
-} catch {
-  expoRouterAvailable = false;
-}
 
 let sdk: PhaseSDK | null = null;
 
@@ -90,19 +76,14 @@ type PhaseProps = PhaseConfig & {
   children: ReactNode;
 };
 
-// Inner component that uses expo-router hooks - only rendered when expo-router is available
+// Inner component that uses expo-router hooks
 function NavigationTracker({
   initialized,
 }: {
   initialized: boolean;
 }): ReactNode {
-  // These are guaranteed to exist when this component is rendered
-  // (parent only renders this when expoRouterAvailable is true)
-  const usePathnameHook = usePathname as NonNullable<typeof usePathname>;
-  const useSegmentsHook = useSegments as NonNullable<typeof useSegments>;
-
-  const pathname = usePathnameHook();
-  const segments = useSegmentsHook();
+  const pathname = usePathname();
+  const segments = useSegments();
   const segmentsKey = useMemo(() => segments.join('/'), [segments]);
 
   useEffect(() => {
@@ -126,12 +107,11 @@ function NavigationTracker({
  * Phase Analytics Provider for Expo Router
  *
  * Wrap your root layout with this component to enable analytics.
- * If expo-router is installed, automatically tracks screen navigation.
- * If not installed, it works as a simple provider for manual event tracking only.
+ * Set trackNavigation={true} to enable automatic screen tracking (requires expo-router).
  *
  * @param apiKey - Your Phase API key (required, starts with "phase_")
  * @param children - Your app content
- * @param trackNavigation - Auto-track screen navigation (optional, default: true if expo-router is installed)
+ * @param trackNavigation - Auto-track screen navigation (default: false, requires expo-router)
  * @param deviceInfo - Collect device metadata (optional, default: true)
  * @param userLocale - Collect user locale + geolocation (optional, default: true)
  * @param baseUrl - Custom API endpoint for self-hosting (optional)
@@ -139,20 +119,15 @@ function NavigationTracker({
  *
  * @example
  * ```tsx
- * // app/_layout.tsx - With navigation tracking (requires expo-router)
- * import { Phase } from 'phase-analytics/expo';
- *
- * export default function RootLayout() {
- *   return (
- *     <Phase apiKey="phase_xxx">
- *       <Stack />
- *     </Phase>
- *   );
- * }
- *
- * // Without navigation tracking (no extra dependencies)
- * <Phase apiKey="phase_xxx" trackNavigation={false}>
+ * // Basic usage - event tracking only
+ * <Phase apiKey="phase_xxx">
  *   <YourApp />
+ * </Phase>
+ *
+ * // With navigation tracking (requires expo-router)
+ * // app/_layout.tsx
+ * <Phase apiKey="phase_xxx" trackNavigation={true}>
+ *   <Stack />
  * </Phase>
  * ```
  */
@@ -161,22 +136,10 @@ function Phase({
   apiKey,
   baseUrl,
   logLevel,
-  trackNavigation,
+  trackNavigation = false,
   deviceInfo,
   userLocale,
 }: PhaseProps): ReactNode {
-  const shouldTrackNavigation = trackNavigation ?? expoRouterAvailable;
-
-  useEffect(() => {
-    if (trackNavigation === true && !expoRouterAvailable) {
-      logger.error(
-        'trackNavigation is enabled but expo-router is not installed.\n' +
-          'Install it with: npx expo install expo-router\n' +
-          'Or disable navigation tracking: <Phase trackNavigation={false}>'
-      );
-    }
-  }, [trackNavigation]);
-
   const [initialized, setInitialized] = useState(false);
   const initStarted = useRef(false);
 
@@ -190,7 +153,7 @@ function Phase({
       apiKey,
       baseUrl,
       logLevel,
-      trackNavigation: shouldTrackNavigation,
+      trackNavigation,
       deviceInfo,
       userLocale,
     };
@@ -206,20 +169,11 @@ function Phase({
       isMounted = false;
       initStarted.current = false;
     };
-  }, [
-    apiKey,
-    baseUrl,
-    deviceInfo,
-    logLevel,
-    shouldTrackNavigation,
-    userLocale,
-  ]);
+  }, [apiKey, baseUrl, deviceInfo, logLevel, trackNavigation, userLocale]);
 
   return (
     <>
-      {shouldTrackNavigation && expoRouterAvailable && (
-        <NavigationTracker initialized={initialized} />
-      )}
+      {trackNavigation && <NavigationTracker initialized={initialized} />}
       {children}
     </>
   );

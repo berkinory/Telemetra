@@ -1,6 +1,6 @@
 {
   "name": "phase-analytics",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Privacy first, type-safe analytics SDK for React Native and Expo",
   "author": "Phase Analytics",
   "license": "AGPL-3.0-only",
@@ -50,9 +50,6 @@
   },
   "peerDependenciesMeta": {
     "@react-native-async-storage/async-storage": {
-      "optional": true
-    },
-    "@react-native-community/netinfo": {
       "optional": true
     },
     "expo-file-system": {
