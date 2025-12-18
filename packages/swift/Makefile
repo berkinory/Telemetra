@@ -24,3 +24,4 @@ clean:
 
 test:
 	swift test
+
