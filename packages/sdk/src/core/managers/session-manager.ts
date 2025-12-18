@@ -6,12 +6,14 @@ import { logger } from '../utils/logger';
 import { validateSessionId } from '../utils/validator';
 
 const PING_INTERVAL_MS = 5000;
+const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
 
 export class SessionManager {
   private sessionId: string | null = null;
   private startPromise: Promise<string> | null = null;
   private pingInterval: ReturnType<typeof setInterval> | null = null;
   private isOnline = true;
+  private pausedAt: number | null = null;
   private readonly httpClient: HttpClient;
   private readonly offlineQueue: OfflineQueue;
   private readonly deviceId: string;
@@ -81,13 +83,35 @@ export class SessionManager {
   }
 
   pause(): void {
+    this.pausedAt = Date.now();
     this.stopPingInterval();
   }
 
-  resume(): void {
-    if (this.sessionId) {
-      this.startPingInterval();
+  async resume(): Promise<void> {
+    if (!this.sessionId) {
+      return;
     }
+
+    if (this.pausedAt) {
+      const inactiveDuration = Date.now() - this.pausedAt;
+
+      if (inactiveDuration > INACTIVITY_TIMEOUT_MS) {
+        logger.info('Session inactive for too long, starting new session', {
+          inactiveDuration: Math.round(inactiveDuration / 1000),
+          threshold: Math.round(INACTIVITY_TIMEOUT_MS / 1000),
+        });
+
+        this.sessionId = null;
+        this.pausedAt = null;
+
+        await this.start(this.isOnline);
+        return;
+      }
+
+      this.pausedAt = null;
+    }
+
+    this.startPingInterval();
   }
 
   getSessionId(): string | null {

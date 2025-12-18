@@ -137,7 +137,9 @@ export class PhaseSDK {
         this.sessionManager?.pause();
       } else if (state === 'active') {
         logger.debug('App foregrounded, resuming session ping');
-        this.sessionManager?.resume();
+        this.sessionManager?.resume().catch(() => {
+          logger.error('Failed to resume session');
+        });
       }
     });
   }
