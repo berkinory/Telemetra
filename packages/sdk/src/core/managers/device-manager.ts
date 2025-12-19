@@ -29,7 +29,7 @@ export class DeviceManager {
     this.collectLocale = config?.userLocale ?? true;
   }
 
-  async initialize(isOnline: boolean): Promise<string> {
+  async initialize(): Promise<string> {
     if (this.initPromise) {
       return this.initPromise;
     }
@@ -37,7 +37,7 @@ export class DeviceManager {
       return this.deviceId;
     }
 
-    this.initPromise = this.doInitialize(isOnline);
+    this.initPromise = this.doInitialize();
 
     try {
       return await this.initPromise;
@@ -46,7 +46,7 @@ export class DeviceManager {
     }
   }
 
-  private async doInitialize(isOnline: boolean): Promise<string> {
+  private async doInitialize(): Promise<string> {
     const result = await getItem<string>(STORAGE_KEYS.DEVICE_ID);
     const stored = result.success ? result.data : null;
 
@@ -72,14 +72,16 @@ export class DeviceManager {
       }
     }
 
-    const shouldUpdate = await this.shouldUpdateDevice();
-    if (shouldUpdate) {
-      await this.registerDevice(isOnline);
-    } else {
-      logger.debug('Device info unchanged, skipping device POST');
+    return this.deviceId;
+  }
+
+  async identify(isOnline: boolean): Promise<void> {
+    if (!this.deviceId) {
+      logger.error('Device ID not set, call initialize() first');
+      return;
     }
 
-    return this.deviceId;
+    await this.registerDevice(isOnline);
   }
 
   getDeviceId(): string | null {
@@ -102,38 +104,6 @@ export class DeviceManager {
     };
   }
 
-  private async shouldUpdateDevice(): Promise<boolean> {
-    const current = this.buildDevicePayload();
-    if (!current) {
-      logger.error('Device ID not set, cannot check for updates');
-      return false;
-    }
-
-    const result = await getItem<CreateDeviceRequest>(STORAGE_KEYS.DEVICE_INFO);
-    const cached = result.success ? result.data : null;
-
-    if (!cached) {
-      logger.debug('No cached device info, will register device');
-      return true;
-    }
-
-    const hasChanged =
-      cached.deviceType !== current.deviceType ||
-      cached.osVersion !== current.osVersion ||
-      cached.platform !== current.platform ||
-      cached.locale !== current.locale ||
-      cached.disableGeolocation !== current.disableGeolocation;
-
-    if (hasChanged) {
-      logger.debug('Device info changed, will register device', {
-        cached,
-        current,
-      });
-    }
-
-    return hasChanged;
-  }
-
   private async registerDevice(isOnline: boolean): Promise<void> {
     const payload = this.buildDevicePayload();
     if (!payload) {
@@ -147,26 +117,26 @@ export class DeviceManager {
         if (result.success) {
           await this.cacheDeviceInfo(payload);
         } else {
-          logger.error('Failed to register device, queueing');
+          logger.error('Failed to register device, queueing', result.error);
           try {
             await this.offlineQueue.enqueue({ type: 'device', payload });
-          } catch {
-            logger.error('Failed to queue device registration');
+          } catch (error) {
+            logger.error('Failed to queue device registration', error);
           }
         }
-      } catch {
-        logger.error('Exception during device registration, queueing');
+      } catch (error) {
+        logger.error('Exception during device registration, queueing', error);
         try {
           await this.offlineQueue.enqueue({ type: 'device', payload });
-        } catch {
-          logger.error('Failed to queue device registration');
+        } catch (queueError) {
+          logger.error('Failed to queue device registration', queueError);
         }
       }
     } else {
       try {
         await this.offlineQueue.enqueue({ type: 'device', payload });
-      } catch {
-        logger.error('Failed to queue device registration');
+      } catch (error) {
+        logger.error('Failed to queue device registration', error);
       }
     }
   }

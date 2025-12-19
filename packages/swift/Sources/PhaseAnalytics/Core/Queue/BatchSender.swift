@@ -32,8 +32,8 @@ internal actor BatchSender {
         for batch in batches {
             let result = await sendBatch(batch)
 
-            if case .failure = result {
-                logger.error("Failed to send batch, re-queueing")
+            if case .failure(let error) = result {
+                logger.error("Batch request failed", error)
                 await requeue(batch)
             }
         }

@@ -15,6 +15,7 @@ public final class PhaseSDK: Sendable {
     private let eventManager: ThreadSafeLock<EventManager?>
 
     private let isInitialized: ThreadSafeLock<Bool>
+    private let isIdentified: ThreadSafeLock<Bool>
     private let initializationTask: ThreadSafeLock<Task<Void, Error>?>
     private let networkUnsubscribe: ThreadSafeLock<UnsubscribeFn?>
     private let appStateObservers: ThreadSafeLock<[Any]>
@@ -31,6 +32,7 @@ public final class PhaseSDK: Sendable {
         self.sessionManager = ThreadSafeLock(nil)
         self.eventManager = ThreadSafeLock(nil)
         self.isInitialized = ThreadSafeLock(false)
+        self.isIdentified = ThreadSafeLock(false)
         self.initializationTask = ThreadSafeLock(nil)
         self.networkUnsubscribe = ThreadSafeLock(nil)
         self.appStateObservers = ThreadSafeLock([])
@@ -157,7 +159,6 @@ public final class PhaseSDK: Sendable {
             offlineQueue: queue,
             deviceID: deviceID
         )
-        _ = await sessManager.start(isOnline: isOnline)
         sessionManager.withLock { $0 = sessManager }
 
         let evtManager = EventManager(
@@ -173,18 +174,48 @@ public final class PhaseSDK: Sendable {
         setupNetworkListener()
         setupAppStateListener()
 
-        if isOnline {
-            let queueSize = await queue.getSize()
-            if queueSize > 0 {
-                logger.info("Online at startup, flushing offline queue")
-                Task {
-                    await sender.flush()
-                }
-            }
+        isInitialized.withLock { $0 = true }
+        logger.info("Phase SDK initialized successfully. Call identify() to start tracking.")
+    }
+
+    /// Identify the device and start a tracking session.
+    ///
+    /// Must be called after SDK initialization and before tracking events.
+    /// Registers the device with the backend and enables event tracking.
+    ///
+    /// - Example:
+    /// ```swift
+    /// try await PhaseSDK.shared.initialize(apiKey: "phase_xxx")
+    /// await PhaseSDK.shared.identify()
+    /// track("app_opened")
+    /// ```
+    public func identify() async {
+        guard isInitialized.withLock({ $0 }) else {
+            logger.error("SDK not initialized. Call initialize() first.")
+            return
         }
 
-        isInitialized.withLock { $0 = true }
-        logger.info("Phase SDK initialized successfully")
+        guard !isIdentified.withLock({ $0 }) else {
+            logger.debug("Device already identified, skipping")
+            return
+        }
+
+        guard let devManager = deviceManager.withLock({ $0 }),
+            let sessManager = sessionManager.withLock({ $0 }),
+            let adapter = networkAdapter.withLock({ $0 })
+        else {
+            logger.error("SDK components not ready")
+            return
+        }
+
+        let netState = await adapter.fetchNetworkState()
+        let isOnline = netState.isConnected
+
+        await devManager.identify(isOnline: isOnline)
+        _ = await sessManager.start(isOnline: isOnline)
+
+        isIdentified.withLock { $0 = true }
+        logger.info("Device identified and session started")
     }
 
     /// Track a custom event
@@ -202,6 +233,11 @@ public final class PhaseSDK: Sendable {
     public func track(_ name: String, params: EventParams? = nil) {
         guard isInitialized.withLock({ $0 }) else {
             logger.error("SDK not initialized. Call initialize() first.")
+            return
+        }
+
+        guard isIdentified.withLock({ $0 }) else {
+            logger.error("Device not identified. Call identify() first.")
             return
         }
 
@@ -230,6 +266,11 @@ public final class PhaseSDK: Sendable {
     public func trackScreen(_ name: String, params: EventParams? = nil) {
         guard isInitialized.withLock({ $0 }) else {
             logger.error("SDK not initialized. Call initialize() first.")
+            return
+        }
+
+        guard isIdentified.withLock({ $0 }) else {
+            logger.error("Device not identified. Call identify() first.")
             return
         }
 
@@ -367,12 +408,12 @@ public final class PhaseSDK: Sendable {
                 await self?.sessionManager.withLock({ $0 })?.updateNetworkState(isOnline: isOnline)
                 await self?.eventManager.withLock({ $0 })?.updateNetworkState(isOnline: isOnline)
 
-                if isOnline {
-                    if let queue = self?.offlineQueue.withLock({ $0 }) {
+                if isOnline, let self = self, self.isIdentified.withLock({ $0 }) {
+                    if let queue = self.offlineQueue.withLock({ $0 }) {
                         let queueSize = await queue.getSize()
                         if queueSize > 0 {
                             logger.info("Network restored, flushing offline queue")
-                            if let sender = self?.batchSender.withLock({ $0 }) {
+                            if let sender = self.batchSender.withLock({ $0 }) {
                                 await sender.flush()
                             }
                         }

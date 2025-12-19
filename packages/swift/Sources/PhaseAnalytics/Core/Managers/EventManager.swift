@@ -68,8 +68,8 @@ internal actor EventManager {
     private func sendEvent(_ payload: CreateEventRequest) async {
         if isOnline {
             let result = await httpClient.createEvent(payload)
-            if case .failure = result {
-                logger.error("Failed to track event, queueing")
+            if case .failure(let error) = result {
+                logger.error("Failed to track event, queueing", error)
                 await offlineQueue.enqueue(.event(payload: payload, clientOrder: 0, retryCount: nil))
             }
         } else {

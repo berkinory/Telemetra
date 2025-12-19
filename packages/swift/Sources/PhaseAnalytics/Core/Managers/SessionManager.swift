@@ -64,8 +64,8 @@ internal actor SessionManager {
 
         if isOnline {
             let result = await httpClient.createSession(payload)
-            if case .failure = result {
-                logger.error("Failed to create session, queueing")
+            if case .failure(let error) = result {
+                logger.error("Failed to create session, queueing", error)
                 await offlineQueue.enqueue(.session(payload: payload, clientOrder: 0, retryCount: nil))
             }
         } else {
@@ -146,8 +146,8 @@ internal actor SessionManager {
 
         if isOnline {
             let result = await httpClient.pingSession(payload)
-            if case .failure = result {
-                logger.error("Failed to ping session, queueing")
+            if case .failure(let error) = result {
+                logger.error("Failed to ping session, queueing", error)
                 await offlineQueue.enqueue(.ping(payload: payload, clientOrder: 0, retryCount: nil))
             }
         } else {

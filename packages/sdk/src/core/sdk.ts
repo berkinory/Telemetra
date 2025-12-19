@@ -18,6 +18,7 @@ export class PhaseSDK {
   private eventManager: EventManager | null = null;
   private isInitialized = false;
   private isInitializing = false;
+  private isIdentified = false;
   private unsubscribeNetInfo: (() => void) | null = null;
   private appStateSubscription: { remove: () => void } | null = null;
   private trackNavigationEvents = true;
@@ -60,8 +61,6 @@ export class PhaseSDK {
     try {
       logger.info('Initializing Phase SDK', { baseUrl: config.baseUrl });
       this.networkAdapter = networkAdapter;
-      const netState = await networkAdapter.fetchNetworkState();
-      const isOnline = netState.isConnected ?? false;
 
       this.httpClient = new HttpClient(
         config.apiKey,
@@ -78,14 +77,13 @@ export class PhaseSDK {
         getDeviceInfo,
         config
       );
-      const deviceId = await this.deviceManager.initialize(isOnline);
+      const deviceId = await this.deviceManager.initialize();
 
       this.sessionManager = new SessionManager(
         this.httpClient,
         this.offlineQueue,
         deviceId
       );
-      await this.sessionManager.start(isOnline);
 
       this.eventManager = new EventManager(
         this.httpClient,
@@ -96,15 +94,10 @@ export class PhaseSDK {
       this.setupNetworkListener();
       this.setupAppStateListener();
 
-      if (isOnline && this.offlineQueue.getSize() > 0) {
-        logger.info('Online at startup, flushing offline queue');
-        this.batchSender.flush().catch(() => {
-          logger.error('Failed to flush offline queue at startup');
-        });
-      }
-
       this.isInitialized = true;
-      logger.info('Phase SDK initialized successfully');
+      logger.info(
+        'Phase SDK initialized successfully. Call identify() to start tracking.'
+      );
     } catch (error) {
       this.cleanup();
       logger.error('Failed to initialize SDK');
@@ -114,9 +107,45 @@ export class PhaseSDK {
     }
   }
 
-  track(name: string, params?: EventParams): void {
-    if (!(this.isInitialized && this.eventManager)) {
+  async identify(): Promise<void> {
+    if (!this.isInitialized) {
       logger.error('SDK not initialized. Call Phase.init() first.');
+      return;
+    }
+
+    if (this.isIdentified) {
+      logger.debug('Device already identified, skipping');
+      return;
+    }
+
+    if (!(this.deviceManager && this.sessionManager && this.networkAdapter)) {
+      logger.error('SDK components not ready');
+      return;
+    }
+
+    const netState = await this.networkAdapter.fetchNetworkState();
+    const isOnline = netState.isConnected ?? false;
+
+    await this.deviceManager.identify(isOnline);
+    await this.sessionManager.start(isOnline);
+
+    this.isIdentified = true;
+    logger.info('Device identified and session started');
+  }
+
+  track(name: string, params?: EventParams): void {
+    if (!this.isInitialized) {
+      logger.error('SDK not initialized. Call Phase.init() first.');
+      return;
+    }
+
+    if (!this.isIdentified) {
+      logger.error('Device not identified. Call Phase.identify() first.');
+      return;
+    }
+
+    if (!this.eventManager) {
+      logger.error('Event manager not ready');
       return;
     }
 
@@ -129,8 +158,18 @@ export class PhaseSDK {
       return;
     }
 
-    if (!(this.isInitialized && this.eventManager)) {
+    if (!this.isInitialized) {
       logger.error('SDK not initialized. Call Phase.init() first.');
+      return;
+    }
+
+    if (!this.isIdentified) {
+      logger.error('Device not identified. Call Phase.identify() first.');
+      return;
+    }
+
+    if (!this.eventManager) {
+      logger.error('Event manager not ready');
       return;
     }
 
@@ -171,6 +210,7 @@ export class PhaseSDK {
 
         if (
           isOnline &&
+          this.isIdentified &&
           this.batchSender &&
           this.offlineQueue &&
           this.offlineQueue.getSize() > 0
@@ -203,5 +243,6 @@ export class PhaseSDK {
     this.sessionManager = null;
     this.eventManager = null;
     this.isInitialized = false;
+    this.isIdentified = false;
   }
 }

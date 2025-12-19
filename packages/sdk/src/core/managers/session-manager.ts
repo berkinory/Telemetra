@@ -70,7 +70,7 @@ export class SessionManager {
     if (isOnline) {
       const result = await this.httpClient.createSession(payload);
       if (!result.success) {
-        logger.error('Failed to create session, queueing');
+        logger.error('Failed to create session, queueing', result.error);
         await this.offlineQueue.enqueue({ type: 'session', payload });
       }
     } else {
@@ -152,7 +152,7 @@ export class SessionManager {
     if (this.isOnline) {
       const result = await this.httpClient.pingSession(payload);
       if (!result.success) {
-        logger.error('Failed to ping session, queueing');
+        logger.error('Failed to ping session, queueing', result.error);
         await this.offlineQueue.enqueue({ type: 'ping', payload });
       }
     } else {

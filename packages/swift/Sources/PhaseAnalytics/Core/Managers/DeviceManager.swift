@@ -64,14 +64,16 @@ internal actor DeviceManager {
             }
         }
 
-        let shouldUpdate = await shouldUpdateDevice()
-        if shouldUpdate {
-            await registerDevice(isOnline: isOnline)
-        } else {
-            logger.debug("Device info unchanged, skipping device POST")
+        return deviceID!
+    }
+
+    func identify(isOnline: Bool) async {
+        guard deviceID != nil else {
+            logger.error("Device ID not set, call initialize() first")
+            return
         }
 
-        return deviceID!
+        await registerDevice(isOnline: isOnline, force: true)
     }
 
     private func shouldUpdateDevice() async -> Bool {
@@ -99,7 +101,7 @@ internal actor DeviceManager {
         return true
     }
 
-    private func registerDevice(isOnline: Bool) async {
+    private func registerDevice(isOnline: Bool, force: Bool = false) async {
         guard let payload = buildDevicePayload() else {
             logger.error("Device ID not set, cannot register device")
             return
@@ -110,8 +112,8 @@ internal actor DeviceManager {
 
             if case .success = result {
                 await cacheDeviceInfo(payload)
-            } else {
-                logger.error("Failed to register device, queueing")
+            } else if case .failure(let error) = result {
+                logger.error("Failed to register device, queueing", error)
                 await offlineQueue.enqueue(.device(payload: payload, clientOrder: 0, retryCount: nil))
                 await cacheDeviceInfo(payload)
             }

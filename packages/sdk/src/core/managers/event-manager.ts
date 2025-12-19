@@ -72,18 +72,18 @@ export class EventManager {
     if (this.isOnline) {
       const result = await this.httpClient.createEvent(payload);
       if (!result.success) {
-        logger.error('Failed to track event, queueing');
+        logger.error('Failed to track event, queueing', result.error);
         try {
           await this.offlineQueue.enqueue({ type: 'event', payload });
-        } catch {
-          logger.error('Failed to queue event');
+        } catch (error) {
+          logger.error('Failed to queue event', error);
         }
       }
     } else {
       try {
         await this.offlineQueue.enqueue({ type: 'event', payload });
-      } catch {
-        logger.error('Failed to queue event');
+      } catch (error) {
+        logger.error('Failed to queue event', error);
       }
     }
   }

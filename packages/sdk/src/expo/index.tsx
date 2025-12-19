@@ -179,6 +179,30 @@ function Phase({
 }
 
 /**
+ * Identify the device and start a tracking session.
+ *
+ * Must be called after SDK initialization and before tracking events.
+ * Registers the device with the backend and enables event tracking.
+ *
+ * @example
+ * ```tsx
+ * import { identify, track } from 'phase-analytics/expo';
+ *
+ * // Call once on app startup
+ * await identify();
+ * track('app_opened');
+ * ```
+ */
+async function identify(): Promise<void> {
+  const instance = getSDK();
+  if (!instance) {
+    logger.error('SDK not initialized. Wrap your app with <Phase>.');
+    return;
+  }
+  await instance.identify();
+}
+
+/**
  * Track a custom event
  *
  * @param name - Event name (required, 1-256 chars, alphanumeric + . / - _)
@@ -200,5 +224,5 @@ function track(name: string, params?: EventParams): void {
   instance.track(name, params);
 }
 
-export { Phase, track };
+export { Phase, identify, track };
 export type { EventParams, PhaseConfig } from '../core/types';

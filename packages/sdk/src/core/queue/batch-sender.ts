@@ -37,11 +37,10 @@ export class BatchSender {
         try {
           const success = await this.sendBatch(batch);
           if (!success) {
-            logger.error('Failed to send batch, re-queueing');
             await this.requeue(batch);
           }
-        } catch {
-          logger.error('Exception during batch send, re-queueing batch');
+        } catch (error) {
+          logger.error('Exception during batch send, re-queueing batch', error);
           await this.requeue(batch);
         }
       }
@@ -65,8 +64,8 @@ export class BatchSender {
 
       try {
         await this.offlineQueue.enqueue({ ...item, retryCount });
-      } catch {
-        logger.error('Failed to re-enqueue item');
+      } catch (error) {
+        logger.error('Failed to re-enqueue item', error);
       }
     });
 
@@ -78,7 +77,7 @@ export class BatchSender {
     const result = await this.httpClient.sendBatch(request);
 
     if (!result.success) {
-      logger.error('Batch request failed');
+      logger.error('Batch request failed', result.error);
       return false;
     }
 

@@ -7,21 +7,13 @@ import Foundation
 /// - `notInitialized`: SDK methods called before `initialize()`
 /// - `validationFailed`: Event name or params don't meet requirements
 public enum PhaseError: Error, Sendable {
-    /// API key is missing or invalid format (must start with "phase_")
     case invalidAPIKey
-    /// SDK not initialized - call `initialize()` first
     case notInitialized
-    /// Validation failed (event name, params, etc.)
     case validationFailed(String)
-    /// Network request failed
     case networkError(String)
-    /// HTTP error response from server
     case httpError(statusCode: Int, message: String)
-    /// Failed to read/write from storage
     case storageError(String)
-    /// Failed to encode request data
     case encodingError
-    /// Failed to decode response data
     case decodingError
 
     public var localizedDescription: String {
