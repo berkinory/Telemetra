@@ -108,7 +108,7 @@ function NavigationTracker({
  * @param children App content (required)
  * @param trackNavigation Auto-track screens (optional, default: false)
  * @param baseUrl Custom API endpoint (optional, default: "https://api.phase.sh")
- * @param logLevel Logging level (optional, default: "none")
+ * @param logLevel Logging level (optional, info, warn, error, none, default: "none")
  * @param deviceInfo Collect device metadata (optional, default: true)
  * @param userLocale Collect locale & geolocation (optional, default: true)
  * @example

@@ -30,13 +30,13 @@ export class EventManager {
   track(name: string, params?: EventParams, isScreen = false): void {
     const nameValidation = validateEventName(name);
     if (!nameValidation.success) {
-      logger.error('Invalid event name');
+      logger.error('Invalid event name. Use alphanumeric, _, -, ., or /');
       return;
     }
 
     const paramsValidation = validateEventParams(params);
     if (!paramsValidation.success) {
-      logger.error('Invalid event params');
+      logger.error('Invalid event params. Use primitive values only.');
       return;
     }
 
@@ -45,13 +45,13 @@ export class EventManager {
     }
 
     if (this.deduplicator.isDuplicate(name, params)) {
-      logger.debug('Duplicate event ignored', { name });
+      logger.warn('Duplicate event detected. Ignoring.', { name });
       return;
     }
 
     const sessionId = this.getSessionId();
     if (!sessionId) {
-      logger.error('Session not started, cannot track event');
+      logger.error('Session not started. Cannot track event.');
       return;
     }
 
@@ -64,7 +64,7 @@ export class EventManager {
     };
 
     this.sendEvent(payload).catch(() => {
-      logger.error('Unhandled error in sendEvent');
+      logger.error('Unhandled error in sendEvent. Event may be lost.');
     });
   }
 
@@ -72,18 +72,18 @@ export class EventManager {
     if (this.isOnline) {
       const result = await this.httpClient.createEvent(payload);
       if (!result.success) {
-        logger.error('Failed to track event, queueing', result.error);
+        logger.error('Event tracking failed. Queuing for retry.', result.error);
         try {
           await this.offlineQueue.enqueue({ type: 'event', payload });
         } catch (error) {
-          logger.error('Failed to queue event', error);
+          logger.error('Failed to queue event. Data may be lost.', error);
         }
       }
     } else {
       try {
         await this.offlineQueue.enqueue({ type: 'event', payload });
       } catch (error) {
-        logger.error('Failed to queue event', error);
+        logger.error('Failed to queue event. Data may be lost.', error);
       }
     }
   }

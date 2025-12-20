@@ -21,9 +21,9 @@ internal actor OfflineQueue {
             queue = items
             let orders = items.map { $0.clientOrder }
             clientOrder = (orders.max() ?? 0) + 1
-            logger.debug("Loaded \(items.count) items from offline queue")
+            logger.info("Loaded \(items.count) items from offline queue")
         } else if case .failure(let error) = result {
-            logger.error("Failed to load offline queue from storage", error)
+            logger.error("Failed to load offline queue. Storage unavailable.", error)
         }
 
         initialized = true
@@ -31,7 +31,7 @@ internal actor OfflineQueue {
 
     func enqueue(_ item: BatchItem) async {
         guard initialized else {
-            logger.error("OfflineQueue not initialized, call initialize() first")
+            logger.error("OfflineQueue not initialized. Call initialize() first.")
             return
         }
 
@@ -74,7 +74,7 @@ internal actor OfflineQueue {
 
             let result = await persist()
             if case .failure = result {
-                logger.error("Failed to persist queue after enqueue, data may be lost on crash")
+                logger.error("Failed to persist queue. Data may be lost on app crash.")
             }
         }
 
@@ -94,7 +94,7 @@ internal actor OfflineQueue {
 
             let result = await persist()
             if case .failure = result {
-                logger.error("Failed to persist empty queue after dequeue")
+                logger.error("Failed to persist empty queue. Storage unavailable.")
             }
         }
 
@@ -110,7 +110,7 @@ internal actor OfflineQueue {
 
             let result = await storage.removeItem(key: StorageKeys.offlineQueue)
             if case .failure = result {
-                logger.error("Failed to clear queue from storage")
+                logger.error("Failed to clear queue. Check storage permissions.")
                 return
             }
 
@@ -134,7 +134,7 @@ internal actor OfflineQueue {
         guard !sessionItems.isEmpty else {
             if !queue.isEmpty {
                 queue.removeFirst()
-                logger.debug("Queue full (\(Self.maxQueueSize)), no sessions to drop, dropping oldest item")
+                logger.info("Queue full (\(Self.maxQueueSize)). No sessions to drop, dropping oldest item.")
             }
             return
         }
@@ -172,7 +172,7 @@ internal actor OfflineQueue {
         }
 
         let droppedCount = initialLength - queue.count
-        logger.debug("Queue full (\(Self.maxQueueSize)), dropped oldest session and \(droppedCount) related items")
+        logger.info("Queue full (\(Self.maxQueueSize)). Dropped oldest session and \(droppedCount) related items.")
     }
 
     private func persist() async -> Result<Void, Error> {

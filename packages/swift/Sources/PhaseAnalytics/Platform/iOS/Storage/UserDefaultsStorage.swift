@@ -28,7 +28,7 @@ internal final class UserDefaultsStorage: StorageAdapter, @unchecked Sendable {
             let value = try makeDecoder().decode(T.self, from: data)
             return .success(value)
         } catch {
-            logger.error("Failed to decode item for key: \(key), clearing corrupted data", error)
+            logger.error("Corrupted storage data for \"\(key)\". Clearing.", error)
             userDefaults.removeObject(forKey: key)
             return .success(nil)
         }
@@ -40,7 +40,7 @@ internal final class UserDefaultsStorage: StorageAdapter, @unchecked Sendable {
             userDefaults.set(data, forKey: key)
             return .success(())
         } catch {
-            logger.error("Failed to encode item for key: \(key)", error)
+            logger.error("Failed to encode storage item \"\(key)\"", error)
             return .failure(error)
         }
     }

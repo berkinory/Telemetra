@@ -18,13 +18,13 @@ public enum DeviceType: String, Codable, Sendable {
 
 /// Logging verbosity level
 ///
-/// - `debug`: All logs including internal SDK operations
 /// - `info`: Initialization and important events only
+/// - `warn`: Warnings and non-critical issues
 /// - `error`: Only errors
 /// - `none`: Silent mode (recommended for production)
 public enum LogLevel: String, Sendable {
-    case debug
     case info
+    case warn
     case error
     case none
 }

@@ -164,14 +164,14 @@ export type PingSessionResponse = {
   lastActivityAt: string;
 };
 
-export type LogLevel = 'debug' | 'info' | 'error' | 'none';
+export type LogLevel = 'info' | 'warn' | 'error' | 'none';
 
 export type PhaseConfig = {
   /** Phase API key (required, starts with `phase_`) */
   apiKey: string;
   /** Custom API endpoint (optional, default: "https://api.phase.sh") */
   baseUrl?: string;
-  /** Logging level (optional, default: "none") */
+  /** Logging level (optional, info, warn, error, none, default: "none") */
   logLevel?: LogLevel;
   /** Auto-track screens (optional, default: false) */
   trackNavigation?: boolean;

@@ -41,9 +41,6 @@ export class EventDeduplicator {
     const now = Date.now();
 
     if (lastTime && now - lastTime < DEDUP_WINDOW_MS) {
-      logger.debug(
-        `Duplicate event detected within ${DEDUP_WINDOW_MS}ms window: ${name}`
-      );
       return true;
     }
 

@@ -14,7 +14,7 @@ internal actor BatchSender {
 
     func flush() async {
         guard !isFlushing else {
-            logger.debug("Flush already in progress, skipping")
+            logger.warn("Flush already in progress. Skipping duplicate flush.")
             return
         }
 
@@ -27,13 +27,12 @@ internal actor BatchSender {
         }
 
         let batches = splitIntoBatches(items)
-        logger.debug("Flushing \(items.count) items in \(batches.count) batches")
 
         for batch in batches {
             let result = await sendBatch(batch)
 
             if case .failure(let error) = result {
-                logger.error("Batch request failed", error)
+                logger.error("Batch request failed. Will retry.", error)
                 await requeue(batch)
             }
         }
@@ -46,13 +45,13 @@ internal actor BatchSender {
         if case .success(let response) = result {
             if response.failed > 0 {
                 let total = (response.processed ?? 0) + response.failed
-                logger.error("Batch partially failed: \(response.failed)/\(total)")
+                logger.error("Batch partially failed: \(response.failed)/\(total) items")
 
                 var failedItems: [BatchItem] = []
 
                 for error in response.errors {
                     guard let clientOrder = error.clientOrder else {
-                        logger.error("Error missing clientOrder, cannot re-enqueue")
+                        logger.error("Error missing clientOrder. Cannot re-enqueue.")
                         continue
                     }
 
@@ -77,7 +76,7 @@ internal actor BatchSender {
                     let retryCount = (item.retryCount ?? 0) + 1
 
                     guard retryCount <= Self.maxRetryCount else {
-                        logger.error("Item exceeded max retry count (\(Self.maxRetryCount)), dropping")
+                        logger.error("Max retries exceeded. Dropping item.")
                         return
                     }
 

@@ -34,7 +34,7 @@ export async function clearPhaseData(): Promise<Result<void>> {
   try {
     const phaseKeys = Object.values(STORAGE_KEYS);
     await Promise.all(phaseKeys.map((key) => removeItem(key)));
-    logger.debug('Cleared Phase SDK storage', { keys: phaseKeys });
+    logger.info('Storage cleared successfully', { keys: phaseKeys });
     return { success: true, data: undefined };
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
