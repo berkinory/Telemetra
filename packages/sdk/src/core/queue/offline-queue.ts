@@ -31,7 +31,7 @@ export class OfflineQueue {
 
   enqueue(item: Omit<BatchItem, 'clientOrder'> | BatchItem): Promise<void> {
     if (!this.initialized) {
-      logger.error('OfflineQueue not initialized, call initialize() first');
+      logger.error('OfflineQueue not initialized. Call initialize() first.');
       return Promise.resolve();
     }
 
@@ -52,9 +52,7 @@ export class OfflineQueue {
 
       const result = await this.persist();
       if (!result.success) {
-        logger.error(
-          'Failed to persist queue after enqueue, data may be lost on crash'
-        );
+        logger.error('Failed to persist queue. Data may be lost on app crash.');
       }
     });
     return this.operationQueue;
@@ -65,8 +63,8 @@ export class OfflineQueue {
 
     if (sessionItems.length === 0) {
       const dropped = this.queue.shift();
-      logger.debug(
-        `Queue full (${MAX_QUEUE_SIZE}), no sessions to drop, dropping oldest item`,
+      logger.info(
+        `Queue full (${MAX_QUEUE_SIZE}). No sessions to drop, dropping oldest item.`,
         {
           type: dropped?.type,
           clientOrder: dropped?.clientOrder,
@@ -99,8 +97,8 @@ export class OfflineQueue {
     });
 
     const droppedCount = initialLength - this.queue.length;
-    logger.debug(
-      `Queue full (${MAX_QUEUE_SIZE}), dropped oldest session and related items`,
+    logger.info(
+      `Queue full (${MAX_QUEUE_SIZE}). Dropped oldest session and ${droppedCount} related items.`,
       {
         sessionId: oldestSessionId,
         droppedCount,
@@ -119,7 +117,7 @@ export class OfflineQueue {
 
       const result = await this.persist();
       if (!result.success) {
-        logger.error('Failed to persist empty queue after dequeue');
+        logger.error('Failed to persist empty queue. Storage unavailable.');
       }
     });
 
@@ -132,7 +130,7 @@ export class OfflineQueue {
     this.operationQueue = previousOp.then(async () => {
       const result = await removeItem(STORAGE_KEYS.OFFLINE_QUEUE);
       if (!result.success) {
-        logger.error('Failed to clear queue from storage');
+        logger.error('Failed to clear queue from storage. Check permissions.');
         return;
       }
       this.queue = [];

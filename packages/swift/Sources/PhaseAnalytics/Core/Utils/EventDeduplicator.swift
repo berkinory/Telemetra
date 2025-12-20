@@ -15,7 +15,6 @@ internal final class EventDeduplicator: Sendable {
 
         return recentEvents.withLock { events in
             if let lastTime = events[key], now.timeIntervalSince(lastTime) < dedupWindow {
-                logger.debug("Duplicate event detected within \(Int(dedupWindow * 1000))ms window: \(name)")
                 return true
             }
 

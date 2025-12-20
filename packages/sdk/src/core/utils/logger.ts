@@ -1,34 +1,48 @@
 import type { LogLevel } from '../types';
 
 const LOG_LEVELS: Record<LogLevel, number> = {
-  debug: 0,
-  info: 1,
+  info: 0,
+  warn: 1,
   error: 2,
   none: 3,
 };
 
 class Logger {
-  private levelValue = LOG_LEVELS.error;
+  private level = LOG_LEVELS.none;
 
   setLogLevel(level: LogLevel): void {
-    this.levelValue = LOG_LEVELS[level];
+    this.level = LOG_LEVELS[level];
   }
 
-  debug(message: string, ...args: unknown[]): void {
-    if (this.levelValue <= LOG_LEVELS.debug) {
-      console.log(`[Phase SDK] ${message}`, ...args);
+  info(message: string, metadata?: Record<string, unknown>): void {
+    if (this.level <= LOG_LEVELS.info) {
+      if (metadata && Object.keys(metadata).length > 0) {
+        console.log(`[Phase] ${message}`, metadata);
+      } else {
+        console.log(`[Phase] ${message}`);
+      }
     }
   }
 
-  info(message: string, ...args: unknown[]): void {
-    if (this.levelValue <= LOG_LEVELS.info) {
-      console.log(`[Phase SDK] ${message}`, ...args);
+  warn(message: string, metadata?: Record<string, unknown>): void {
+    if (this.level <= LOG_LEVELS.warn) {
+      if (metadata && Object.keys(metadata).length > 0) {
+        console.warn(`[Phase] ${message}`, metadata);
+      } else {
+        console.warn(`[Phase] ${message}`);
+      }
     }
   }
 
   error(message: string, error?: unknown): void {
-    if (this.levelValue <= LOG_LEVELS.error) {
-      console.error(`[Phase SDK Error] ${message}`, error);
+    if (this.level <= LOG_LEVELS.error) {
+      if (error instanceof Error) {
+        console.error(`[Phase] ${message}:`, error.message);
+      } else if (error) {
+        console.error(`[Phase] ${message}:`, error);
+      } else {
+        console.error(`[Phase] ${message}`);
+      }
     }
   }
 }

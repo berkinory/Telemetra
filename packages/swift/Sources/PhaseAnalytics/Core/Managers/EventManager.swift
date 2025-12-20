@@ -24,12 +24,12 @@ internal actor EventManager {
 
     func track(name: String, params: EventParams?, isScreen: Bool = false) async {
         guard case .success = Validator.validateEventName(name) else {
-            logger.error("Invalid event name")
+            logger.error("Invalid event name. Use alphanumeric, _, -, ., or /")
             return
         }
 
         guard case .success = Validator.validateEventParams(params) else {
-            logger.error("Invalid event params")
+            logger.error("Invalid event params. Use primitive values only.")
             return
         }
 
@@ -38,12 +38,12 @@ internal actor EventManager {
         }
 
         guard !deduplicator.isDuplicate(name: name, params: params) else {
-            logger.debug("Duplicate event ignored: \(name)")
+            logger.warn("Duplicate event detected. Ignoring: \(name)")
             return
         }
 
         guard let sessionID = await getSessionID() else {
-            logger.error("Session not started, cannot track event")
+            logger.error("Session not started. Cannot track event.")
             return
         }
 
@@ -69,7 +69,7 @@ internal actor EventManager {
         if isOnline {
             let result = await httpClient.createEvent(payload)
             if case .failure(let error) = result {
-                logger.error("Failed to track event, queueing", error)
+                logger.error("Event tracking failed. Queuing for retry.", error)
                 await offlineQueue.enqueue(.event(payload: payload, clientOrder: 0, retryCount: nil))
             }
         } else {

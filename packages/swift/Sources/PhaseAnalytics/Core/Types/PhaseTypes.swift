@@ -18,13 +18,13 @@ public enum DeviceType: String, Codable, Sendable {
 
 /// Logging verbosity level
 ///
-/// - `debug`: All logs including internal SDK operations
 /// - `info`: Initialization and important events only
+/// - `warn`: Warnings and non-critical issues
 /// - `error`: Only errors
 /// - `none`: Silent mode (recommended for production)
 public enum LogLevel: String, Sendable {
-    case debug
     case info
+    case warn
     case error
     case none
 }
@@ -62,20 +62,17 @@ public struct PhaseConfig: Sendable {
 }
 
 public struct DeviceInfo: Sendable {
-    public let deviceType: DeviceType?
     public let osVersion: String?
     public let platform: Platform?
     public let locale: String?
     public let model: String?
 
     public init(
-        deviceType: DeviceType?,
         osVersion: String?,
         platform: Platform?,
         locale: String?,
         model: String?
     ) {
-        self.deviceType = deviceType
         self.osVersion = osVersion
         self.platform = platform
         self.locale = locale
@@ -137,7 +134,6 @@ extension EventParams: ExpressibleByDictionaryLiteral {
 
 public struct CreateDeviceRequest: Codable, Sendable {
     let deviceId: String
-    let deviceType: DeviceType?
     let osVersion: String?
     let platform: Platform?
     let locale: String?

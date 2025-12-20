@@ -72,8 +72,6 @@ internal final class HTTPClient: Sendable {
             return .failure(.encodingError)
         }
 
-        logger.debug("\(operationName): \(endpoint) (\(jsonData.count) bytes)")
-
         guard let url = URL(string: baseURL + endpoint) else {
             return .failure(.networkError("Invalid URL: \(baseURL + endpoint)"))
         }
@@ -105,12 +103,12 @@ internal final class HTTPClient: Sendable {
             guard httpResponse.statusCode == 200 else {
                 let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
                 let sanitized = sanitizeError(errorMessage)
-                logger.error("\(operationName): HTTP \(httpResponse.statusCode)")
+                logger.error("\(operationName) failed with HTTP \(httpResponse.statusCode)")
                 return .failure(.httpError(statusCode: httpResponse.statusCode, message: sanitized))
             }
 
             guard !data.isEmpty else {
-                logger.error("\(operationName): Server returned empty response body")
+                logger.error("\(operationName) failed. Server returned empty response.")
                 return .failure(
                     .httpError(
                         statusCode: httpResponse.statusCode,
@@ -124,7 +122,7 @@ internal final class HTTPClient: Sendable {
         } catch let error as PhaseError {
             return .failure(error)
         } catch {
-            logger.error("\(operationName): Failed", error)
+            logger.error("\(operationName) failed. Check network connection.", error)
             return .failure(.networkError(error.localizedDescription))
         }
     }
@@ -175,19 +173,17 @@ internal final class HTTPClient: Sendable {
             } catch let error as HTTPError {
                 lastError = error
                 if !error.isRetryable() {
-                    logger.error("\(operationName): HTTP \(error.statusCode) (not retryable)")
+                    logger.error("\(operationName) failed with HTTP \(error.statusCode). Not retryable.")
                     return .failure(.httpError(statusCode: error.statusCode, message: error.message))
                 }
-                logger.debug("\(operationName): Attempt \(attempt + 1) failed, will retry")
             } catch is CancellationError {
                 return .failure(.networkError("Request cancelled"))
             } catch {
                 lastError = error
-                logger.debug("\(operationName): Attempt \(attempt + 1) failed, will retry")
             }
         }
 
-        logger.error("\(operationName): Failed after \(retryDelays.count + 1) attempts")
+        logger.error("\(operationName) failed after \(retryDelays.count + 1) attempts. Check network connection.")
         let errorMessage = lastError?.localizedDescription ?? "Unknown network error"
         return .failure(.networkError(errorMessage))
     }
@@ -206,11 +202,9 @@ internal final class HTTPClient: Sendable {
         }
 
         guard let compressed = try? jsonData.gzipped() else {
-            logger.error("\(operationName): Failed to compress data")
+            logger.error("\(operationName) failed. Could not compress request data.")
             return .failure(.encodingError)
         }
-
-        logger.debug("\(operationName): \(endpoint) compressed (\(jsonData.count) → \(compressed.count) bytes)")
 
         guard let url = URL(string: baseURL + endpoint) else {
             return .failure(.networkError("Invalid URL: \(baseURL + endpoint)"))

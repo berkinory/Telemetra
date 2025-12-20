@@ -80,7 +80,7 @@ public final class PhaseSDK: Sendable {
         #else
             try await _initialize(
                 config: config,
-                getDeviceInfo: { DeviceInfo(deviceType: nil, osVersion: nil, platform: nil, locale: nil, model: nil) },
+                getDeviceInfo: { DeviceInfo(osVersion: nil, platform: nil, locale: nil, model: nil) },
                 networkAdapter: NetworkMonitor()
             )
         #endif
@@ -92,13 +92,13 @@ public final class PhaseSDK: Sendable {
         networkAdapter: NetworkAdapter
     ) async throws {
         if isInitialized.withLock({ $0 }) {
-            logger.debug("SDK already initialized, skipping init")
+            logger.warn("SDK already initialized. Skipping duplicate initialization.")
             return
         }
 
         // If initialization is already in progress, wait for it to complete
         if let existingTask = initializationTask.withLock({ $0 }) {
-            logger.debug("SDK initialization already in progress, waiting")
+            logger.warn("SDK initialization already in progress. Waiting.")
             try await existingTask.value
             return
         }
@@ -212,7 +212,7 @@ public final class PhaseSDK: Sendable {
     /// ```
     public func identify(_ properties: DeviceProperties? = nil) async {
         guard isInitialized.withLock({ $0 }) else {
-            logger.debug("SDK not ready yet, queuing identify() call")
+            logger.warn("SDK not initialized. Queuing identify() call.")
             await withCheckedContinuation { continuation in
                 pendingCalls.withLock { calls in
                     calls.append {
@@ -225,7 +225,7 @@ public final class PhaseSDK: Sendable {
         }
 
         guard !isIdentified.withLock({ $0 }) else {
-            logger.debug("Device already identified, skipping")
+            logger.warn("Device already identified. Skipping duplicate call.")
             return
         }
 
@@ -263,7 +263,7 @@ public final class PhaseSDK: Sendable {
     /// ```
     public func track(_ name: String, params: EventParams? = nil) {
         guard isInitialized.withLock({ $0 }) else {
-            logger.debug("SDK not ready yet, queuing track() call")
+            logger.warn("SDK not initialized. Queuing track() call.")
             pendingCalls.withLock { calls in
                 calls.append {
                     self.track(name, params: params)
@@ -273,7 +273,7 @@ public final class PhaseSDK: Sendable {
         }
 
         guard isIdentified.withLock({ $0 }) else {
-            logger.debug("Device not identified yet, queuing track() call")
+            logger.warn("Device not identified. Queuing track() call.")
             pendingCalls.withLock { calls in
                 calls.append {
                     self.track(name, params: params)
@@ -304,7 +304,7 @@ public final class PhaseSDK: Sendable {
     /// ```
     public func trackScreen(_ name: String, params: EventParams? = nil) {
         guard isInitialized.withLock({ $0 }) else {
-            logger.debug("SDK not ready yet, queuing trackScreen() call")
+            logger.warn("SDK not initialized. Queuing trackScreen() call.")
             pendingCalls.withLock { calls in
                 calls.append {
                     self.trackScreen(name, params: params)
@@ -314,7 +314,7 @@ public final class PhaseSDK: Sendable {
         }
 
         guard isIdentified.withLock({ $0 }) else {
-            logger.debug("Device not identified yet, queuing trackScreen() call")
+            logger.warn("Device not identified. Queuing trackScreen() call.")
             pendingCalls.withLock { calls in
                 calls.append {
                     self.trackScreen(name, params: params)
@@ -432,7 +432,7 @@ public final class PhaseSDK: Sendable {
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
-                logger.debug("App backgrounded, pausing session ping")
+                logger.info("App backgrounded. Pausing session ping.")
                 Task {
                     await self?.sessionManager.withLock({ $0 })?.pause()
                 }
@@ -443,7 +443,7 @@ public final class PhaseSDK: Sendable {
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
-                logger.debug("App foregrounded, resuming session ping")
+                logger.info("App foregrounded. Resuming session ping.")
                 Task {
                     await self?.sessionManager.withLock({ $0 })?.resume()
                 }

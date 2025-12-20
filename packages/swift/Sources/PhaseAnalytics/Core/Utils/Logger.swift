@@ -4,31 +4,31 @@ internal final class Logger: Sendable {
     private let levelValue: ThreadSafeLock<Int>
 
     private let levels: [LogLevel: Int] = [
-        .debug: 0,
-        .info: 1,
+        .info: 0,
+        .warn: 1,
         .error: 2,
         .none: 3,
     ]
 
     init() {
-        self.levelValue = ThreadSafeLock(2)
+        self.levelValue = ThreadSafeLock(3)
     }
 
     func setLogLevel(_ level: LogLevel) {
-        levelValue.withLock { $0 = levels[level] ?? 2 }
-    }
-
-    func debug(_ message: String) {
-        levelValue.withLock { currentLevel in
-            guard currentLevel <= (levels[.debug] ?? 0) else { return }
-            print("[Phase SDK] \(message)")
-        }
+        levelValue.withLock { $0 = levels[level] ?? 3 }
     }
 
     func info(_ message: String) {
         levelValue.withLock { currentLevel in
-            guard currentLevel <= (levels[.info] ?? 1) else { return }
-            print("[Phase SDK] \(message)")
+            guard currentLevel <= (levels[.info] ?? 0) else { return }
+            print("[Phase] \(message)")
+        }
+    }
+
+    func warn(_ message: String) {
+        levelValue.withLock { currentLevel in
+            guard currentLevel <= (levels[.warn] ?? 1) else { return }
+            print("[Phase] \(message)")
         }
     }
 
@@ -36,9 +36,9 @@ internal final class Logger: Sendable {
         levelValue.withLock { currentLevel in
             guard currentLevel <= (levels[.error] ?? 2) else { return }
             if let error = error {
-                print("[Phase SDK Error] \(message): \(error.localizedDescription)")
+                print("[Phase] \(message): \(error.localizedDescription)")
             } else {
-                print("[Phase SDK Error] \(message)")
+                print("[Phase] \(message)")
             }
         }
     }

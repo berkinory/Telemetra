@@ -40,7 +40,6 @@ export type DeviceProperties = Record<string, string | number | boolean | null>;
 
 export type CreateDeviceRequest = {
   deviceId: string;
-  deviceType?: DeviceType | null;
   osVersion?: string | null;
   platform?: Platform | null;
   locale?: string | null;
@@ -165,14 +164,14 @@ export type PingSessionResponse = {
   lastActivityAt: string;
 };
 
-export type LogLevel = 'debug' | 'info' | 'error' | 'none';
+export type LogLevel = 'info' | 'warn' | 'error' | 'none';
 
 export type PhaseConfig = {
   /** Phase API key (required, starts with `phase_`) */
   apiKey: string;
   /** Custom API endpoint (optional, default: "https://api.phase.sh") */
   baseUrl?: string;
-  /** Logging level (optional, default: "none") */
+  /** Logging level (optional, info, warn, error, none, default: "none") */
   logLevel?: LogLevel;
   /** Auto-track screens (optional, default: false) */
   trackNavigation?: boolean;
@@ -187,7 +186,6 @@ export type Result<T, E = Error> =
   | { success: false; error: E };
 
 export type DeviceInfo = {
-  deviceType: DeviceType | null;
   osVersion: string | null;
   platform: Platform | null;
   locale: string | null;

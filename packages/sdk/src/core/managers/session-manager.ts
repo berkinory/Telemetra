@@ -53,11 +53,11 @@ export class SessionManager {
 
     const validation = validateSessionId(this.sessionId);
     if (!validation.success) {
-      logger.error('Generated session ID invalid, retrying');
+      logger.error('Generated session ID invalid. Retrying.');
       this.sessionId = generateSessionId();
       const retryValidation = validateSessionId(this.sessionId);
       if (!retryValidation.success) {
-        logger.error('Failed to generate valid session ID, using fallback');
+        logger.error('Failed to generate valid session ID. Using fallback.');
       }
     }
 
@@ -70,7 +70,10 @@ export class SessionManager {
     if (isOnline) {
       const result = await this.httpClient.createSession(payload);
       if (!result.success) {
-        logger.error('Failed to create session, queueing', result.error);
+        logger.error(
+          'Session creation failed. Queuing for retry.',
+          result.error
+        );
         await this.offlineQueue.enqueue({ type: 'session', payload });
       }
     } else {
@@ -127,7 +130,7 @@ export class SessionManager {
 
     this.pingInterval = setInterval(() => {
       this.sendPing().catch(() => {
-        logger.error('Unhandled error in sendPing');
+        logger.error('Unhandled error in sendPing. Session may timeout.');
       });
     }, PING_INTERVAL_MS);
   }
@@ -152,7 +155,7 @@ export class SessionManager {
     if (this.isOnline) {
       const result = await this.httpClient.pingSession(payload);
       if (!result.success) {
-        logger.error('Failed to ping session, queueing', result.error);
+        logger.error('Session ping failed. Queuing for retry.', result.error);
         await this.offlineQueue.enqueue({ type: 'ping', payload });
       }
     } else {

@@ -13,7 +13,7 @@ export async function getItem<T>(key: string): Promise<Result<T | null>> {
       return { success: true, data: JSON.parse(value) as T };
     } catch (parseError) {
       logger.error(
-        `Corrupted JSON in storage for key: ${key}, clearing`,
+        `Corrupted storage data for "${key}". Clearing.`,
         parseError
       );
       await AsyncStorage.removeItem(key);
@@ -21,7 +21,7 @@ export async function getItem<T>(key: string): Promise<Result<T | null>> {
     }
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    logger.error(`Failed to get item from storage: ${key}`, err);
+    logger.error(`Failed to read storage item "${key}"`, err);
     return { success: false, error: err };
   }
 }
@@ -33,7 +33,7 @@ export async function setItem<T>(key: string, value: T): Promise<Result<void>> {
     return { success: true, data: undefined };
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    logger.error(`Failed to set item in storage: ${key}`, err);
+    logger.error(`Failed to write storage item "${key}"`, err);
     return { success: false, error: err };
   }
 }
@@ -44,7 +44,7 @@ export async function removeItem(key: string): Promise<Result<void>> {
     return { success: true, data: undefined };
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    logger.error(`Failed to remove item from storage: ${key}`, err);
+    logger.error(`Failed to remove storage item "${key}"`, err);
     return { success: false, error: err };
   }
 }
@@ -55,7 +55,10 @@ export async function clear(): Promise<Result<void>> {
     return { success: true, data: undefined };
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    logger.error('Failed to clear storage', err);
+    logger.error(
+      'Failed to clear storage. Check AsyncStorage permissions.',
+      err
+    );
     return { success: false, error: err };
   }
 }

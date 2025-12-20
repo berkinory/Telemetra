@@ -18,7 +18,7 @@ export class BatchSender {
 
   async flush(): Promise<void> {
     if (this.isFlushing) {
-      logger.debug('Flush already in progress, skipping');
+      logger.warn('Flush already in progress. Skipping duplicate flush.');
       return;
     }
 
@@ -40,7 +40,7 @@ export class BatchSender {
             await this.requeue(batch);
           }
         } catch (error) {
-          logger.error('Exception during batch send, re-queueing batch', error);
+          logger.error('Batch send error. Re-queueing for retry.', error);
           await this.requeue(batch);
         }
       }
@@ -54,7 +54,7 @@ export class BatchSender {
       const retryCount = (item.retryCount ?? 0) + 1;
 
       if (retryCount > MAX_RETRY_COUNT) {
-        logger.error('Item exceeded max retry count, dropping', {
+        logger.error('Max retries exceeded. Dropping item.', {
           type: item.type,
           clientOrder: item.clientOrder,
           retryCount,
@@ -65,7 +65,7 @@ export class BatchSender {
       try {
         await this.offlineQueue.enqueue({ ...item, retryCount });
       } catch (error) {
-        logger.error('Failed to re-enqueue item', error);
+        logger.error('Failed to re-enqueue item. Data may be lost.', error);
       }
     });
 
@@ -77,14 +77,14 @@ export class BatchSender {
     const result = await this.httpClient.sendBatch(request);
 
     if (!result.success) {
-      logger.error('Batch request failed', result.error);
+      logger.error('Batch request failed. Will retry.', result.error);
       return false;
     }
 
     const response = result.data;
     if (response.failed && response.failed > 0) {
       logger.error(
-        `Batch partially failed: ${response.failed}/${(response.processed ?? 0) + response.failed}`
+        `Batch partially failed: ${response.failed}/${(response.processed ?? 0) + response.failed} items`
       );
 
       if (Array.isArray(response.errors)) {
@@ -92,7 +92,7 @@ export class BatchSender {
 
         for (const error of response.errors) {
           if (error.clientOrder === undefined) {
-            logger.error('Error missing clientOrder, cannot re-enqueue');
+            logger.error('Error missing clientOrder. Cannot re-enqueue.');
             continue;
           }
           const failedItem = items.find(

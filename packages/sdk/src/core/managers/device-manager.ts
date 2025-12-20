@@ -60,12 +60,12 @@ export class DeviceManager {
       if (validation.success) {
         this.deviceId = stored;
       } else {
-        logger.error('Stored device ID invalid, generating new one');
+        logger.error('Stored device ID invalid. Generating new ID.');
         this.deviceId = generateDeviceId();
         try {
           await setItem(STORAGE_KEYS.DEVICE_ID, this.deviceId);
         } catch {
-          logger.error('Failed to persist device ID');
+          logger.error('Failed to persist device ID. Storage unavailable.');
         }
       }
     } else {
@@ -73,7 +73,7 @@ export class DeviceManager {
       try {
         await setItem(STORAGE_KEYS.DEVICE_ID, this.deviceId);
       } catch {
-        logger.error('Failed to persist device ID');
+        logger.error('Failed to persist device ID. Storage unavailable.');
       }
     }
 
@@ -85,7 +85,7 @@ export class DeviceManager {
     properties?: DeviceProperties
   ): Promise<void> {
     if (!this.deviceId) {
-      logger.error('Device ID not set, call initialize() first');
+      logger.error('Device ID not set. Call initialize() first.');
       return;
     }
 
@@ -104,16 +104,13 @@ export class DeviceManager {
     }
 
     const deviceInfo = this.getDeviceInfo();
-    const model = this.collectDeviceInfo ? deviceInfo.model : null;
 
     return {
       deviceId: this.deviceId,
-      deviceType:
-        this.collectDeviceInfo && !model ? deviceInfo.deviceType : null,
       osVersion: this.collectDeviceInfo ? deviceInfo.osVersion : null,
       platform: this.collectDeviceInfo ? deviceInfo.platform : null,
       locale: this.collectLocale ? deviceInfo.locale : null,
-      model,
+      model: this.collectDeviceInfo ? deviceInfo.model : null,
       properties,
       disableGeolocation: !this.collectLocale,
     };
@@ -125,7 +122,7 @@ export class DeviceManager {
   ): Promise<void> {
     const payload = this.buildDevicePayload(properties);
     if (!payload) {
-      logger.error('Device ID not set, cannot register device');
+      logger.error('Device ID not set. Cannot register device.');
       return;
     }
 
@@ -135,26 +132,38 @@ export class DeviceManager {
         if (result.success) {
           await this.cacheDeviceInfo(payload);
         } else {
-          logger.error('Failed to register device, queueing', result.error);
+          logger.error(
+            'Device registration failed. Queuing for retry.',
+            result.error
+          );
           try {
             await this.offlineQueue.enqueue({ type: 'device', payload });
           } catch (error) {
-            logger.error('Failed to queue device registration', error);
+            logger.error(
+              'Failed to queue device registration. Data may be lost.',
+              error
+            );
           }
         }
       } catch (error) {
-        logger.error('Exception during device registration, queueing', error);
+        logger.error('Device registration error. Queuing for retry.', error);
         try {
           await this.offlineQueue.enqueue({ type: 'device', payload });
         } catch (queueError) {
-          logger.error('Failed to queue device registration', queueError);
+          logger.error(
+            'Failed to queue device registration. Data may be lost.',
+            queueError
+          );
         }
       }
     } else {
       try {
         await this.offlineQueue.enqueue({ type: 'device', payload });
       } catch (error) {
-        logger.error('Failed to queue device registration', error);
+        logger.error(
+          'Failed to queue device registration. Data may be lost.',
+          error
+        );
       }
     }
   }
@@ -162,7 +171,7 @@ export class DeviceManager {
   private async cacheDeviceInfo(payload: CreateDeviceRequest): Promise<void> {
     try {
       await setItem(STORAGE_KEYS.DEVICE_INFO, payload);
-      logger.debug('Device info cached successfully');
+      logger.info('Device info cached successfully');
     } catch {
       logger.error('Failed to cache device info');
     }

@@ -37,8 +37,6 @@ export class HttpClient {
     const url = `${this.baseUrl}${endpoint}`;
     const jsonString = JSON.stringify(body);
 
-    logger.debug(`${operationName}: ${endpoint} (${jsonString.length} bytes)`);
-
     const fetchFn = async (): Promise<T> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(
@@ -96,7 +94,7 @@ export class HttpClient {
       return { success: true, data };
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      logger.error(`${operationName}: Failed without retry`, err);
+      logger.error(`${operationName} failed. Check network connection.`, err);
       return { success: false, error: err };
     }
   }
@@ -179,10 +177,6 @@ export class HttpClient {
       const jsonString = JSON.stringify(body);
       const compressed = pako.gzip(jsonString);
 
-      logger.debug(
-        `${operationName}: ${endpoint} compressed (${jsonString.length} → ${compressed.length} bytes)`
-      );
-
       const controller = new AbortController();
       const timeoutId = setTimeout(
         () => controller.abort(),
@@ -240,7 +234,7 @@ export class HttpClient {
       return { success: true, data };
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      logger.error(`${operationName}: Failed without retry`, err);
+      logger.error(`${operationName} failed. Check network connection.`, err);
       return { success: false, error: err };
     }
   }

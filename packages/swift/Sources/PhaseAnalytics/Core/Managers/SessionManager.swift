@@ -47,11 +47,11 @@ internal actor SessionManager {
         sessionID = IDGenerator.generateSessionID()
 
         if case .failure = Validator.validateSessionID(sessionID!) {
-            logger.error("Generated session ID invalid, retrying")
+            logger.error("Generated session ID invalid. Retrying.")
             sessionID = IDGenerator.generateSessionID()
 
             if case .failure = Validator.validateSessionID(sessionID!) {
-                logger.error("Failed to generate valid session ID, using UUID fallback")
+                logger.error("Failed to generate valid session ID. Using fallback.")
                 sessionID = UUID().uuidString
             }
         }
@@ -65,7 +65,7 @@ internal actor SessionManager {
         if isOnline {
             let result = await httpClient.createSession(payload)
             if case .failure(let error) = result {
-                logger.error("Failed to create session, queueing", error)
+                logger.error("Session creation failed. Queuing for retry.", error)
                 await offlineQueue.enqueue(.session(payload: payload, clientOrder: 0, retryCount: nil))
             }
         } else {
@@ -80,7 +80,7 @@ internal actor SessionManager {
     func pause() {
         pausedAt = Date()
         stopPingInterval()
-        logger.debug("Session paused")
+        logger.info("Session paused")
     }
 
     func resume() async {
@@ -93,7 +93,7 @@ internal actor SessionManager {
 
         if inactiveDuration > Self.inactivityTimeout {
             logger.info(
-                "Session inactive for \(Int(inactiveDuration)) seconds, starting new session (threshold: \(Int(Self.inactivityTimeout)))"
+                "Session inactive for \(Int(inactiveDuration))s. Starting new session."
             )
 
             sessionID = nil
@@ -103,7 +103,7 @@ internal actor SessionManager {
         } else {
             self.pausedAt = nil
             startPingInterval()
-            logger.debug("Session resumed after \(Int(inactiveDuration)) seconds")
+            logger.info("Session resumed after \(Int(inactiveDuration))s")
         }
     }
 
@@ -147,7 +147,7 @@ internal actor SessionManager {
         if isOnline {
             let result = await httpClient.pingSession(payload)
             if case .failure(let error) = result {
-                logger.error("Failed to ping session, queueing", error)
+                logger.error("Session ping failed. Queuing for retry.", error)
                 await offlineQueue.enqueue(.ping(payload: payload, clientOrder: 0, retryCount: nil))
             }
         } else {

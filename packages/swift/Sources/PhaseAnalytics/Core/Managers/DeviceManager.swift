@@ -53,14 +53,12 @@ internal actor DeviceManager {
             case .success = Validator.validateDeviceID(stored)
         {
             deviceID = stored
-            logger.debug("Loaded existing device ID from storage")
         } else {
             deviceID = IDGenerator.generateDeviceID()
-            logger.debug("Generated new device ID")
 
             let saveResult = await storage.setItem(key: StorageKeys.deviceID, value: deviceID!)
             if case .failure(let error) = saveResult {
-                logger.error("Failed to persist device ID", error)
+                logger.error("Failed to persist device ID. Storage unavailable.", error)
             }
         }
 
@@ -69,7 +67,7 @@ internal actor DeviceManager {
 
     func identify(isOnline: Bool, properties: DeviceProperties? = nil) async {
         guard deviceID != nil else {
-            logger.error("Device ID not set, call initialize() first")
+            logger.error("Device ID not set. Call initialize() first.")
             return
         }
 
@@ -78,7 +76,7 @@ internal actor DeviceManager {
 
     private func shouldUpdateDevice() async -> Bool {
         guard let current = buildDevicePayload() else {
-            logger.error("Device ID not set, cannot check for updates")
+            logger.error("Device ID not set. Cannot check for updates.")
             return false
         }
 
@@ -86,25 +84,20 @@ internal actor DeviceManager {
 
         if case .success(let cached) = result, let cached = cached {
             let hasChanged =
-                cached.deviceType != current.deviceType || cached.osVersion != current.osVersion
+                cached.osVersion != current.osVersion
                 || cached.platform != current.platform || cached.locale != current.locale
                 || cached.model != current.model
                 || cached.disableGeolocation != current.disableGeolocation
 
-            if hasChanged {
-                logger.debug("Device info changed, will register device")
-            }
-
             return hasChanged
         }
 
-        logger.debug("No cached device info, will register device")
         return true
     }
 
     private func registerDevice(isOnline: Bool, properties: DeviceProperties? = nil, force: Bool = false) async {
         guard let payload = buildDevicePayload(properties: properties) else {
-            logger.error("Device ID not set, cannot register device")
+            logger.error("Device ID not set. Cannot register device.")
             return
         }
 
@@ -114,7 +107,7 @@ internal actor DeviceManager {
             if case .success = result {
                 await cacheDeviceInfo(payload)
             } else if case .failure(let error) = result {
-                logger.error("Failed to register device, queueing", error)
+                logger.error("Device registration failed. Queuing for retry.", error)
                 await offlineQueue.enqueue(.device(payload: payload, clientOrder: 0, retryCount: nil))
                 await cacheDeviceInfo(payload)
             }
@@ -127,7 +120,7 @@ internal actor DeviceManager {
     private func cacheDeviceInfo(_ payload: CreateDeviceRequest) async {
         let result = await storage.setItem(key: StorageKeys.deviceInfo, value: payload)
         if case .success = result {
-            logger.debug("Device info cached successfully")
+            logger.info("Device info cached successfully")
         } else if case .failure(let error) = result {
             logger.error("Failed to cache device info", error)
         }
@@ -138,15 +131,13 @@ internal actor DeviceManager {
 
         let info = getDeviceInfo()
         let propsDict: [String: AnyCodable]? = properties?.dictionary.mapValues { AnyCodable($0) }
-        let model = collectDeviceInfo ? info.model : nil
 
         return CreateDeviceRequest(
             deviceId: deviceID,
-            deviceType: collectDeviceInfo && model == nil ? info.deviceType : nil,
             osVersion: collectDeviceInfo ? info.osVersion : nil,
             platform: collectDeviceInfo ? info.platform : nil,
             locale: collectLocale ? info.locale : nil,
-            model: model,
+            model: collectDeviceInfo ? info.model : nil,
             properties: propsDict,
             disableGeolocation: !collectLocale
         )
