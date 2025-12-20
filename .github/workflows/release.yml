@@ -80,10 +80,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: phase-analytics ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
           body: |
-            ## phase-analytics v${{ steps.version.outputs.version }}
-
             📦 **npm Package:** https://www.npmjs.com/package/phase-analytics
 
             See [CHANGELOG.md](CHANGELOG.md) for detailed changes.
