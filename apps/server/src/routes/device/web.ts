@@ -622,6 +622,7 @@ export const deviceWebRouter = new Elysia({ prefix: '/devices' })
           osVersion: device.osVersion,
           platform: normalizePlatform(device.platform),
           locale: device.locale,
+          model: device.model,
           country: device.country,
           city: device.city,
           properties: device.properties,

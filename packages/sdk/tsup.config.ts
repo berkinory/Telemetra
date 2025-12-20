@@ -20,7 +20,7 @@ export default defineConfig({
     '@react-native-community/netinfo',
     '@react-navigation/native',
     'expo-application',
-    'expo-constants',
+    'expo-device',
     'expo-localization',
     'expo-router',
     'expo-file-system',

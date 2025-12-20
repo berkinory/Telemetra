@@ -27,9 +27,9 @@ async function initSDK(config: PhaseConfig): Promise<boolean> {
     const missingPackages: string[] = [];
 
     try {
-      require('expo-constants');
+      require('expo-device');
     } catch {
-      missingPackages.push('expo-constants');
+      missingPackages.push('expo-device');
     }
 
     try {

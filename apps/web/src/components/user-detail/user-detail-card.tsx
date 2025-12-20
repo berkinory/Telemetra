@@ -225,6 +225,15 @@ export function UserDetailCard({ deviceId }: UserDetailCardProps) {
                   <span>{getDeviceTypeLabel(device.deviceType)}</span>
                 </p>
               )}
+              {device.model && (
+                <p className="flex items-center gap-1.5 font-medium text-sm">
+                  <HugeiconsIcon
+                    className="size-4 text-muted-foreground"
+                    icon={SmartPhone01Icon}
+                  />
+                  <span>{device.model}</span>
+                </p>
+              )}
             </div>
           </div>
 

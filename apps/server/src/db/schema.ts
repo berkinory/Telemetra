@@ -135,6 +135,7 @@ export const devices = pgTable(
     osVersion: text('os_version'),
     platform: text('platform'),
     locale: text('locale'),
+    model: text('model'),
     country: text('country'),
     city: text('city'),
     properties: jsonb('properties').$type<Record<

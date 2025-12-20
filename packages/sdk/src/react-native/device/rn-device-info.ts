@@ -11,6 +11,7 @@ export function getRNDeviceInfo(): DeviceInfo {
     osVersion: getOsVersion(),
     platform: getPlatform(),
     locale: getLocale(),
+    model: getModel(),
   };
 }
 
@@ -59,4 +60,14 @@ function getLocale(): string | null {
   }
 
   return null;
+}
+
+function getModel(): string | null {
+  try {
+    const constants = Platform.constants as Record<string, unknown>;
+    const model = constants?.Model;
+    return typeof model === 'string' ? model : null;
+  } catch {
+    return null;
+  }
 }

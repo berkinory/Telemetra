@@ -11,6 +11,7 @@ export function getExpoDeviceInfo(): DeviceInfo {
     osVersion: getOsVersion(),
     platform: getPlatform(),
     locale: getLocale(),
+    model: getModel(),
   };
 }
 
@@ -86,4 +87,13 @@ function getLocale(): string | null {
   }
 
   return null;
+}
+
+function getModel(): string | null {
+  try {
+    const Device = require('expo-device');
+    return Device.modelName || null;
+  } catch {
+    return null;
+  }
 }

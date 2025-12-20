@@ -52,6 +52,7 @@ export const DeviceSchema = z.object({
   osVersion: z.string().nullable(),
   platform: PlatformSchema.nullable(),
   locale: z.string().nullable(),
+  model: z.string().nullable(),
   country: z.string().nullable(),
   city: z.string().nullable(),
   properties: DevicePropertiesSchema.nullable(),
@@ -72,6 +73,7 @@ export const CreateDeviceRequestSchema = z.object({
     .optional(),
   platform: PlatformSchema.nullable().optional(),
   locale: z.string().max(LOCALE.MAX_LENGTH).nullable().optional(),
+  model: z.string().max(128).nullable().optional(),
   properties: DevicePropertiesSchema.optional(),
   disableGeolocation: z.boolean().optional(),
 });
@@ -90,6 +92,7 @@ export const DeviceDetailSchema = z.object({
   osVersion: z.string().nullable(),
   platform: PlatformSchema.nullable(),
   locale: z.string().nullable(),
+  model: z.string().nullable(),
   country: z.string().nullable(),
   city: z.string().nullable(),
   properties: DevicePropertiesSchema.nullable(),

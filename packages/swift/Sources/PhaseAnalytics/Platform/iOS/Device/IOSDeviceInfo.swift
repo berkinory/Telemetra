@@ -8,7 +8,8 @@ import Foundation
             deviceType: getDeviceType(),
             osVersion: getOSVersion(),
             platform: .ios,
-            locale: getLocale()
+            locale: getLocale(),
+            model: getModel()
         )
     }
 
@@ -33,5 +34,9 @@ import Foundation
 
     private func getLocale() -> String {
         return Locale.current.identifier
+    }
+
+    private func getModel() -> String {
+        return UIDevice.current.model
     }
 #endif
