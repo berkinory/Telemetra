@@ -17,6 +17,7 @@ import { ClientDate } from '@/components/client-date';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import type { DeviceListItem } from '@/lib/api/types';
+import { parseAsPropertySearch } from '@/lib/parsers/property-search';
 import { useDevices } from '@/lib/queries';
 import { usePaginationStore } from '@/stores/pagination-store';
 
@@ -149,10 +150,13 @@ export function UsersTable() {
   const router = useRouter();
   const [appId] = useQueryState('app', parseAsString);
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
-  const [_search] = useQueryState('search', parseAsString.withDefault(''));
   const [filter] = useQueryState('filter', parseAsString.withDefault(''));
   const [startDate] = useQueryState('startDate', parseAsString);
   const [endDate] = useQueryState('endDate', parseAsString);
+  const [propertySearch] = useQueryState(
+    'propertySearch',
+    parseAsPropertySearch
+  );
 
   const { pageSize } = usePaginationStore();
 
@@ -162,12 +166,17 @@ export function UsersTable() {
     platform: filter || undefined,
     startDate: startDate || undefined,
     endDate: endDate || undefined,
+    properties:
+      propertySearch && propertySearch.length > 0
+        ? btoa(JSON.stringify(propertySearch))
+        : undefined,
   });
 
   return (
     <DataTableServer
       columns={columns}
       data={devicesData?.devices || []}
+      enablePropertySearch={true}
       filterAllIcon={ComputerPhoneSyncIcon}
       filterKey="platform"
       filterOptions={[
@@ -187,8 +196,6 @@ export function UsersTable() {
           totalPages: 0,
         }
       }
-      searchKey="deviceId"
-      searchPlaceholder="Search User"
     />
   );
 }

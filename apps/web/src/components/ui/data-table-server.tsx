@@ -13,7 +13,7 @@ import {
   ViewIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-
+import type { PropertySearchFilter } from '@phase/shared';
 import {
   type ColumnDef,
   flexRender,
@@ -40,7 +40,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { PropertySearchFilter as PropertySearchFilterComponent } from '@/components/users/property-search-filter';
 import type { PaginationMeta } from '@/lib/api/types';
+import { parseAsPropertySearch } from '@/lib/parsers/property-search';
 import { usePaginationStore } from '@/stores/pagination-store';
 
 type FilterOption = {
@@ -60,6 +62,7 @@ type DataTableServerProps<TData, TValue> = {
   filterOptions?: FilterOption[];
   filterPlaceholder?: string;
   filterAllIcon?: typeof CheckmarkSquare01Icon;
+  enablePropertySearch?: boolean;
   onRowClick?: (row: TData) => void;
 };
 
@@ -74,6 +77,7 @@ export function DataTableServer<TData, TValue>({
   filterOptions = [],
   filterPlaceholder = 'All',
   filterAllIcon,
+  enablePropertySearch = false,
   onRowClick,
 }: DataTableServerProps<TData, TValue>) {
   const { pageSize, setPageSize } = usePaginationStore();
@@ -85,6 +89,7 @@ export function DataTableServer<TData, TValue>({
       filter: parseAsString.withDefault(''),
       startDate: parseAsString,
       endDate: parseAsString,
+      propertySearch: parseAsPropertySearch,
     },
     {
       history: 'push',
@@ -143,6 +148,13 @@ export function DataTableServer<TData, TValue>({
     setParams({ filter: value, page: 1 });
   };
 
+  const handlePropertySearchChange = (value: PropertySearchFilter) => {
+    setParams({
+      propertySearch: value.length > 0 ? value : [],
+      page: 1,
+    });
+  };
+
   const currentFilterOption = params.filter
     ? filterOptions.find((opt) => opt.value === params.filter)
     : null;
@@ -152,6 +164,16 @@ export function DataTableServer<TData, TValue>({
   return (
     <div className="w-full space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        {enablePropertySearch && isMounted && (
+          <div className="w-full sm:w-auto">
+            <PropertySearchFilterComponent
+              isLoading={isLoading}
+              onChange={handlePropertySearchChange}
+              value={params.propertySearch || []}
+            />
+          </div>
+        )}
+
         {searchKey && (
           <div className="flex w-full items-center gap-2 sm:w-auto">
             <Input

@@ -31,6 +31,7 @@ type DeviceFilters = PaginationQueryParams & {
   platform?: string;
   startDate?: string;
   endDate?: string;
+  properties?: string;
 };
 
 export function useDevices(appId: string, filters?: DeviceFilters) {
