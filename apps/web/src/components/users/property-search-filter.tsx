@@ -7,7 +7,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import type { PropertyOperator, PropertySearchCondition } from '@phase/shared';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -37,15 +37,24 @@ const OPERATOR_OPTIONS: { value: PropertyOperator; label: string }[] = [
 
 const MAX_CONDITIONS = 10;
 
+type ConditionWithId = PropertySearchCondition & { _id: string };
+
 export function PropertySearchFilter({
   value,
   onChange,
   isLoading = false,
 }: PropertySearchFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [tempConditions, setTempConditions] = useState<
-    PropertySearchCondition[]
-  >(value.length > 0 ? value : []);
+  const idCounterRef = useRef(0);
+
+  const generateId = () => {
+    idCounterRef.current += 1;
+    return `condition-${idCounterRef.current}-${Date.now()}`;
+  };
+
+  const [tempConditions, setTempConditions] = useState<ConditionWithId[]>(
+    value.length > 0 ? value.map((c) => ({ ...c, _id: generateId() })) : []
+  );
 
   const handleAddCondition = () => {
     if (tempConditions.length >= MAX_CONDITIONS) {
@@ -54,7 +63,7 @@ export function PropertySearchFilter({
 
     setTempConditions([
       ...tempConditions,
-      { key: '', operator: 'eq', value: '' },
+      { key: '', operator: 'eq', value: '', _id: generateId() },
     ]);
   };
 
@@ -94,9 +103,16 @@ export function PropertySearchFilter({
   };
 
   const handleApply = () => {
-    const validConditions = tempConditions.filter(
-      (c) => c.key.trim() !== '' && c.value !== ''
-    );
+    const validConditions = tempConditions
+      .filter((c) => c.key.trim() !== '' && c.value !== '')
+      .map(({ _id, ...condition }) => ({
+        ...condition,
+        key: condition.key.trim(),
+        value:
+          typeof condition.value === 'string'
+            ? condition.value.trim()
+            : condition.value,
+      }));
     onChange(validConditions);
     setIsOpen(false);
   };
@@ -108,7 +124,7 @@ export function PropertySearchFilter({
   };
 
   const handleCancel = () => {
-    setTempConditions(value);
+    setTempConditions(value.map((c) => ({ ...c, _id: generateId() })));
     setIsOpen(false);
   };
 
@@ -125,7 +141,7 @@ export function PropertySearchFilter({
           variant={hasActiveFilters ? 'default' : 'outline'}
         >
           <HugeiconsIcon icon={FilterHorizontalIcon} />
-          Property Search
+          Search
           {hasActiveFilters && (
             <span className="ml-1 rounded-full bg-primary-foreground px-1.5 py-0.5 font-semibold text-primary text-xs">
               {value.length}
@@ -134,7 +150,7 @@ export function PropertySearchFilter({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align="end"
+        align="center"
         className="w-[min(calc(100vw-2rem),400px)]"
       >
         <DropdownMenuLabel>Search by Properties</DropdownMenuLabel>
@@ -149,7 +165,7 @@ export function PropertySearchFilter({
             tempConditions.map((condition, index) => (
               <div
                 className="flex items-start gap-2 rounded-md border p-2"
-                key={`condition-${index}-${condition.key || 'empty'}`}
+                key={condition._id}
               >
                 <div className="flex-1 space-y-2">
                   <Input
