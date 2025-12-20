@@ -267,7 +267,7 @@ export default function DashboardPage() {
 
               <Link
                 className="block"
-                href="https://github.com/phase-analytics/Phase/"
+                href="https://github.com/Phase-Analytics/Phase/"
                 target="_blank"
               >
                 <Card className="cursor-pointer py-0 transition-colors hover:bg-accent">

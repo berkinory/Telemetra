@@ -150,7 +150,7 @@ const footerNavItems: NavItem[] = [
   {
     label: 'Github',
     icon: GithubIcon,
-    path: 'https://github.com/phase-analytics/Phase/',
+    path: 'https://github.com/Phase-Analytics/Phase/',
     tooltip: 'Github',
   },
 ];

@@ -75,7 +75,7 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
           category: 'Resources',
           icon: GithubIcon,
           keywords: ['github', 'source', 'code', 'repository'],
-          path: 'https://github.com/phase-analytics/Phase/',
+          path: 'https://github.com/Phase-Analytics/Phase/',
           external: true,
         },
         {
@@ -191,7 +191,7 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
         category: 'Resources',
         icon: GithubIcon,
         keywords: ['github', 'source', 'code', 'repository'],
-        path: 'https://github.com/phase-analytics/Phase/',
+        path: 'https://github.com/Phase-Analytics/Phase/',
         external: true,
       },
       {

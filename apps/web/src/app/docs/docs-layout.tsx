@@ -28,7 +28,7 @@ export const baseOptions: Omit<DocsLayoutProps, 'tree'> = {
       type: 'icon',
       text: 'GitHub',
       icon: createElement(HugeiconsIcon, { icon: GithubIcon, size: 20 }),
-      url: 'https://github.com/phase-analytics/Phase/',
+      url: 'https://github.com/Phase-Analytics/Phase/',
       external: true,
     },
     {

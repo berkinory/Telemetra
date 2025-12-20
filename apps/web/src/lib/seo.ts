@@ -201,7 +201,7 @@ export const jsonLd = {
     name: siteConfig.name,
     url: siteConfig.url,
     logo: `${siteConfig.url}/logo.svg`,
-    sameAs: ['https://github.com/phase-analytics'],
+    sameAs: ['https://github.com/Phase-Analytics'],
   }),
 
   software: (): JsonLdSoftwareApplication => ({
