@@ -15,7 +15,6 @@ import {
   PlaySquareIcon,
   PyramidStructure02Icon,
   Setting07Icon,
-  TestTubeIcon,
   UnfoldMoreIcon,
   UserGroupIcon,
 } from '@hugeicons/core-free-icons';
@@ -119,12 +118,6 @@ const applicationNavItems: NavItem[] = [
     icon: UserGroupIcon,
     path: '/dashboard/application/team',
     tooltip: 'Team',
-  },
-  {
-    label: 'Test',
-    icon: TestTubeIcon,
-    path: '/dashboard/test',
-    tooltip: 'Test',
   },
 ];
 
@@ -327,8 +320,7 @@ export function DashboardSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {applicationNavItems.map((item) => {
-                const isTestPage = item.path === '/dashboard/test';
-                const shouldEnable = isTestPage || appId;
+                const shouldEnable = appId;
 
                 if (!shouldEnable) {
                   return (
@@ -341,9 +333,7 @@ export function DashboardSidebar() {
                   );
                 }
 
-                const href = isTestPage
-                  ? item.path
-                  : `${item.path}?app=${appId}`;
+                const href = `${item.path}?app=${appId}`;
 
                 return (
                   <SidebarMenuItem key={item.label}>

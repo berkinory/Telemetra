@@ -31,7 +31,8 @@ export class BatchSender {
         return;
       }
 
-      const batches = this.splitIntoBatches(items);
+      const deduplicatedItems = this.deduplicateByTimestamp(items);
+      const batches = this.splitIntoBatches(deduplicatedItems);
 
       for (const batch of batches) {
         try {
@@ -110,6 +111,77 @@ export class BatchSender {
     }
 
     return true;
+  }
+
+  private deduplicateByTimestamp(items: BatchItem[]): BatchItem[] {
+    const seenEvents = new Map<string, number>();
+    const dedupedItems: BatchItem[] = [];
+    const DEDUP_WINDOW_MS = 50;
+
+    for (const item of items) {
+      if (item.type === 'event') {
+        const key = this.createEventKey(item.payload.name, item.payload.params);
+
+        let timestamp: number;
+        try {
+          timestamp = new Date(item.payload.timestamp).getTime();
+          if (Number.isNaN(timestamp)) {
+            logger.warn('Invalid timestamp format. Including event anyway.');
+            dedupedItems.push(item);
+            continue;
+          }
+        } catch {
+          logger.warn('Failed to parse timestamp. Including event anyway.');
+          dedupedItems.push(item);
+          continue;
+        }
+
+        const lastTime = seenEvents.get(key);
+        if (lastTime !== undefined && timestamp - lastTime < DEDUP_WINDOW_MS) {
+          logger.warn('Duplicate event in batch detected. Dropping event.', {
+            name: item.payload.name,
+          });
+          continue;
+        }
+
+        seenEvents.set(key, timestamp);
+        dedupedItems.push(item);
+      } else {
+        dedupedItems.push(item);
+      }
+    }
+
+    const droppedCount = items.length - dedupedItems.length;
+    if (droppedCount > 0) {
+      logger.info(
+        `Dropped ${droppedCount} duplicate event(s) from batch based on timestamp.`
+      );
+    }
+
+    return dedupedItems;
+  }
+
+  private createEventKey(
+    name: string,
+    params?: Record<string, string | number | boolean | null>
+  ): string {
+    if (!params) {
+      return name;
+    }
+    try {
+      const sortedParams = Object.keys(params)
+        .sort()
+        .reduce(
+          (acc, key) => {
+            acc[key] = params[key];
+            return acc;
+          },
+          {} as Record<string, string | number | boolean | null>
+        );
+      return `${name}:${JSON.stringify(sortedParams)}`;
+    } catch {
+      return name;
+    }
   }
 
   private splitIntoBatches(items: BatchItem[]): BatchItem[][] {
