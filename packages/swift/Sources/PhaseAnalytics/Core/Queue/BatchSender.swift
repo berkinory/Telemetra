@@ -26,7 +26,8 @@ internal actor BatchSender {
             return
         }
 
-        let batches = splitIntoBatches(items)
+        let deduplicatedItems = deduplicateByTimestamp(items)
+        let batches = splitIntoBatches(deduplicatedItems)
 
         for batch in batches {
             let result = await sendBatch(batch)
@@ -96,6 +97,64 @@ internal actor BatchSender {
                 }
             }
         }
+    }
+
+    private func deduplicateByTimestamp(_ items: [BatchItem]) -> [BatchItem] {
+        var seenEvents: [String: Date] = [:]
+        var dedupedItems: [BatchItem] = []
+        let dedupWindow: TimeInterval = 0.05
+
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        for item in items {
+            if case .event(let payload, _, _) = item {
+                let key = createEventKey(name: payload.name, params: payload.params)
+
+                guard let timestamp = iso8601Formatter.date(from: payload.timestamp) else {
+                    logger.warn("Invalid timestamp format. Including event anyway.")
+                    dedupedItems.append(item)
+                    continue
+                }
+
+                if let lastTime = seenEvents[key], timestamp.timeIntervalSince(lastTime) < dedupWindow {
+                    logger.warn("Duplicate event in batch detected. Dropping event: \(payload.name)")
+                    continue
+                }
+
+                seenEvents[key] = timestamp
+                dedupedItems.append(item)
+            } else {
+                dedupedItems.append(item)
+            }
+        }
+
+        let droppedCount = items.count - dedupedItems.count
+        if droppedCount > 0 {
+            logger.info("Dropped \(droppedCount) duplicate event(s) from batch based on timestamp.")
+        }
+
+        return dedupedItems
+    }
+
+    private func createEventKey(name: String, params: [String: AnyCodable]?) -> String {
+        guard let params = params else {
+            return name
+        }
+
+        let sortedParams = params.sorted { $0.key < $1.key }
+        if let jsonData = try? JSONSerialization.data(
+            withJSONObject: sortedParams.reduce(into: [String: Any]()) { dict, pair in
+                dict[pair.key] = pair.value.value
+            },
+            options: [.sortedKeys]
+        ),
+            let jsonString = String(data: jsonData, encoding: .utf8)
+        {
+            return "\(name):\(jsonString)"
+        }
+
+        return name
     }
 
     private func splitIntoBatches(_ items: [BatchItem]) -> [[BatchItem]] {
