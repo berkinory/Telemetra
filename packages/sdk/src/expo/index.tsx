@@ -200,7 +200,6 @@ function PhaseProvider({
  * await Phase.identify({ user_id: '123', plan: 'premium' });
  */
 async function identify(properties?: DeviceProperties): Promise<void> {
-  // Wait for SDK initialization if it's in progress
   if (initializationPromise) {
     await initializationPromise;
   }
@@ -218,10 +217,9 @@ async function identify(properties?: DeviceProperties): Promise<void> {
  * @param name Event name (required, alphanumeric, `_`, `-`, `.`, `/`)
  * @param params Event parameters (optional, primitives only)
  * @example
- * Phase.track('purchase', { amount: 99.99, currency: 'USD' });
+ * await Phase.track('purchase', { amount: 99.99, currency: 'USD' });
  */
 async function track(name: string, params?: EventParams): Promise<void> {
-  // Wait for SDK initialization if it's in progress
   if (initializationPromise) {
     await initializationPromise;
   }
@@ -238,7 +236,7 @@ async function track(name: string, params?: EventParams): Promise<void> {
  * Phase Analytics SDK
  *
  * @example
- * import { Phase } from '@phase/sdk';
+ * import { Phase } from '@phase-analytics/expo';
  *
  * // Identify device
  * await Phase.identify({ user_id: '123' });

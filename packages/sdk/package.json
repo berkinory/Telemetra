@@ -1,6 +1,6 @@
 {
   "name": "phase-analytics",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "Privacy first, type-safe analytics SDK for React Native and Expo",
   "author": "Phase Analytics",
   "license": "AGPL-3.0-only",
@@ -45,8 +45,7 @@
     "expo-application": ">=5.0.0",
     "expo-device": ">=6.0.0",
     "expo-localization": ">=14.0.0",
-    "expo-router": ">=3.0.0",
-    "@react-navigation/native": ">=6.0.0"
+    "expo-router": ">=3.0.0"
   },
   "peerDependenciesMeta": {
     "@react-native-async-storage/async-storage": {
@@ -66,13 +65,9 @@
     },
     "expo-router": {
       "optional": true
-    },
-    "@react-navigation/native": {
-      "optional": true
     }
   },
   "devDependencies": {
-    "@react-navigation/native": "^7.1.25",
     "@types/pako": "^2.0.4",
     "@types/react": "^19.1.8",
     "@types/react-native": "^0.73.0",

@@ -96,7 +96,6 @@ public final class PhaseSDK: Sendable {
             return
         }
 
-        // If initialization is already in progress, wait for it to complete
         if let existingTask = initializationTask.withLock({ $0 }) {
             logger.warn("SDK initialization already in progress. Waiting.")
             try await existingTask.value
@@ -379,7 +378,6 @@ public final class PhaseSDK: Sendable {
         }
     }
 
-    // Cached regex patterns for performance
     private static let camelCaseRegex = try? NSRegularExpression(pattern: "([a-z])([A-Z])")
     private static let numericSegmentRegex = try? NSRegularExpression(pattern: "/\\d+")
 
