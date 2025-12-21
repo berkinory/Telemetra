@@ -25,7 +25,7 @@ public struct ValidationConstants {
     }
 
     public struct Batch {
-        public static let maxSize = 5000
+        public static let maxSize = 1000
     }
 
     public struct Version {

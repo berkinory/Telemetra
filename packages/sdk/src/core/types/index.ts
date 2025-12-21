@@ -18,7 +18,7 @@ export const VALIDATION = {
     MAX_SIZE: 50_000,
   },
   BATCH: {
-    MAX_SIZE: 5000,
+    MAX_SIZE: 1000,
   },
   VERSION: {
     OS_VERSION_MAX_LENGTH: 64,
