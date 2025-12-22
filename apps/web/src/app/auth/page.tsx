@@ -643,7 +643,7 @@ function SignupForm({ defaultValues, onValuesChange }: SignupFormProps) {
         By signing up you agree to{' '}
         <a
           className="underline hover:text-foreground"
-          href="/terms"
+          href="https://phase.sh/docs/privacy/terms-of-service"
           rel="noopener noreferrer"
           target="_blank"
         >
@@ -652,7 +652,7 @@ function SignupForm({ defaultValues, onValuesChange }: SignupFormProps) {
         &{' '}
         <a
           className="underline hover:text-foreground"
-          href="/privacy"
+          href="https://phase.sh/docs/privacy/privacy-policy"
           rel="noopener noreferrer"
           target="_blank"
         >

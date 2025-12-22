@@ -1,7 +1,103 @@
 ---
 title: Publishing
-description: Configure how your analytics data is published and shared
+description: App store privacy requirements for Phase Analytics | Phase Analytics
 ---
 
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Configure how your analytics data is published and shared. Set up export options and integrations with other services.
+When submitting your app to the App Store or Google Play, you'll need to disclose how Phase Analytics collects and uses data. This guide helps you accurately complete the required privacy forms.
+
+<Callout type="info">
+Phase is privacy-first and collects no personally identifiable information (PII) by default. All data collection is anonymous unless you explicitly identify users.
+</Callout>
+
+## iOS (Apple App Store)
+
+When submitting your app to the App Store, you'll need to complete Apple's App Privacy questionnaire.
+
+<Accordions>
+<Accordion title="Data Collection">
+**Does your app collect data?**
+Select **Yes** - Phase collects anonymous analytics data.
+
+**Do you or your third-party partners collect data from this app?**
+Select **Yes, we collect data from this app** - Phase SDK collects analytics data.
+</Accordion>
+
+<Accordion title="Data Types">
+Select the following data types:
+
+**Product Interaction**
+- How users interact with your app (events, screen views, session duration)
+
+**Device ID**
+- Anonymous device identifiers for analytics purposes
+</Accordion>
+
+<Accordion title="Purpose">
+For each data type, select:
+- **Analytics** - To understand app usage and improve performance
+</Accordion>
+
+<Accordion title="Linking to User Identity">
+**Is this data linked to the user's identity?**
+Select **No** - Phase uses anonymous device IDs by default. Only select "Yes" if you explicitly call `Phase.identify()` with user-specific data like email or user ID.
+
+<Callout type="warn">
+If you call `Phase.identify()` with personally identifiable information (email, name, user ID), you must select "Yes" for linking data to user identity and disclose which data types you're collecting.
+</Callout>
+</Accordion>
+
+<Accordion title="Tracking">
+**Do you or your third-party partners use data from this app for tracking purposes?**
+Select **No** - Phase does not track users across apps and websites owned by other companies for targeted advertising or ad measurement purposes.
+</Accordion>
+</Accordions>
+
+## Android (Google Play Store)
+
+When submitting your app to Google Play, you'll need to complete the Data Safety form.
+
+<Accordions>
+<Accordion title="Data Collection and Security">
+**Does your app collect or share any of the required user data types?**
+Select **Yes** - Phase collects device and app interaction data.
+
+**Is all of the user data collected by your app encrypted in transit?**
+Select **Yes** - All data sent to Phase is encrypted using HTTPS.
+</Accordion>
+
+<Accordion title="Data Types">
+Select the following categories:
+
+**Device or other IDs**
+- Anonymous device identifiers for analytics
+
+**App interactions**
+- How users interact with your app (events, screen views, session duration)
+</Accordion>
+
+<Accordion title="Data Usage">
+For each data type, specify:
+- **Analytics** - To measure app usage and performance
+- **Data is collected but not shared** with third parties
+</Accordion>
+
+<Accordion title="User Control">
+**Can users request that data be deleted?**
+Select **Yes** - Users can contact support to request data deletion.
+
+<Callout type="info">
+Phase automatically anonymizes data and does not collect PII by default. If you implement custom user identification with PII, update your disclosures accordingly.
+</Callout>
+</Accordion>
+</Accordions>
+
+## Best Practices
+
+- **Review before each release** - Privacy requirements may change with app store policy updates
+- **Match your implementation** - Only disclose data types you actually collect through Phase
+- **Document custom properties** - If you track custom user properties with PII, update your privacy policy
+- **Test before submission** - Review your app's data collection behavior in production builds
+- **Keep privacy policy updated** - Ensure your app's privacy policy accurately reflects Phase usage

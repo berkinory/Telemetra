@@ -1,5 +1,0 @@
-{
-  "title": "Self Host",
-  "icon": "ServerStack03Icon",
-  "pages": ["coolify", "dokploy", "docker"]
-}

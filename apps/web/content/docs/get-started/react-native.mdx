@@ -1,47 +1,413 @@
 ---
 title: React Native
-description: Get started with Phase in your React Native app
+description: Privacy-first mobile analytics for React Native apps. Track users, sessions and events | Phase Analytics
 ---
 
-
-Learn how to integrate Phase into your bare React Native application.
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Tab, Tabs, TabsList, TabsTrigger, TabsContent } from 'fumadocs-ui/components/tabs';
+import { CodeBlock, Pre } from 'fumadocs-ui/components/codeblock';
 
 ## Installation
 
-Install the Phase SDK using your preferred package manager:
+<Steps>
 
+<Step>
+
+### Install the SDK
+
+<Tabs defaultValue="bun" groupId="pkg" persist>
+  <TabsList>
+    <TabsTrigger value="npm" className="gap-2">
+      <img src="https://cdn.simpleicons.org/npm/71717a" alt="npm" className="size-4 dark:brightness-200" />
+      npm
+    </TabsTrigger>
+    <TabsTrigger value="bun" className="gap-2">
+      <img src="https://cdn.simpleicons.org/bun/71717a" alt="bun" className="size-4 dark:brightness-200" />
+      bun
+    </TabsTrigger>
+    <TabsTrigger value="yarn" className="gap-2">
+      <img src="https://cdn.simpleicons.org/yarn/71717a" alt="yarn" className="size-4 dark:brightness-200" />
+      yarn
+    </TabsTrigger>
+    <TabsTrigger value="pnpm" className="gap-2">
+      <img src="https://cdn.simpleicons.org/pnpm/71717a" alt="pnpm" className="size-4 dark:brightness-200" />
+      pnpm
+    </TabsTrigger>
+  </TabsList>
+  <TabsContent value="npm">
+    <CodeBlock lang="bash" allowCopy={false}>
 ```bash
-npm install Phase-react-native
-# or
-yarn add Phase-react-native
+npm install phase-analytics
 ```
+    </CodeBlock>
+  </TabsContent>
+  <TabsContent value="bun">
+    <CodeBlock lang="bash" allowCopy={false}>
+```bash
+bun add phase-analytics
+```
+    </CodeBlock>
+  </TabsContent>
+  <TabsContent value="yarn">
+    <CodeBlock lang="bash" allowCopy={false}>
+```bash
+yarn add phase-analytics
+```
+    </CodeBlock>
+  </TabsContent>
+  <TabsContent value="pnpm">
+    <CodeBlock lang="bash" allowCopy={false}>
+```bash
+pnpm add phase-analytics
+```
+    </CodeBlock>
+  </TabsContent>
+</Tabs>
+
+</Step>
+
+<Step>
+
+### Install Required Peer Dependencies
+
+Phase Analytics requires the following React Native packages to function properly:
+
+<Tabs defaultValue="bun" groupId="pkg" persist>
+  <TabsList>
+    <TabsTrigger value="npm" className="gap-2">
+      <img src="https://cdn.simpleicons.org/npm/71717a" alt="npm" className="size-4 dark:brightness-200" />
+      npm
+    </TabsTrigger>
+    <TabsTrigger value="bun" className="gap-2">
+      <img src="https://cdn.simpleicons.org/bun/71717a" alt="bun" className="size-4 dark:brightness-200" />
+      bun
+    </TabsTrigger>
+    <TabsTrigger value="yarn" className="gap-2">
+      <img src="https://cdn.simpleicons.org/yarn/71717a" alt="yarn" className="size-4 dark:brightness-200" />
+      yarn
+    </TabsTrigger>
+    <TabsTrigger value="pnpm" className="gap-2">
+      <img src="https://cdn.simpleicons.org/pnpm/71717a" alt="pnpm" className="size-4 dark:brightness-200" />
+      pnpm
+    </TabsTrigger>
+  </TabsList>
+  <TabsContent value="npm">
+    <CodeBlock lang="bash" allowCopy={false}>
+```bash
+npm install @react-native-async-storage/async-storage react-native-device-info react-native-localize @react-native-community/netinfo @react-navigation/native
+```
+    </CodeBlock>
+  </TabsContent>
+  <TabsContent value="bun">
+    <CodeBlock lang="bash" allowCopy={false}>
+```bash
+bun add @react-native-async-storage/async-storage react-native-device-info react-native-localize @react-native-community/netinfo @react-navigation/native
+```
+    </CodeBlock>
+  </TabsContent>
+  <TabsContent value="yarn">
+    <CodeBlock lang="bash" allowCopy={false}>
+```bash
+yarn add @react-native-async-storage/async-storage react-native-device-info react-native-localize @react-native-community/netinfo @react-navigation/native
+```
+    </CodeBlock>
+  </TabsContent>
+  <TabsContent value="pnpm">
+    <CodeBlock lang="bash" allowCopy={false}>
+```bash
+pnpm add @react-native-async-storage/async-storage react-native-device-info react-native-localize @react-native-community/netinfo @react-navigation/native
+```
+    </CodeBlock>
+  </TabsContent>
+</Tabs>
+
+These dependencies are **required** for the SDK to work correctly. The SDK uses:
+- `@react-native-async-storage/async-storage` - Local storage for offline event queuing
+- `react-native-device-info` - Device information collection
+- `react-native-localize` - Locale and timezone detection
+- `@react-native-community/netinfo` - Network state monitoring
+- `@react-navigation/native` - Automatic screen tracking (only needed if using `trackNavigation`)
+
+</Step>
+
+<Step>
+
+### Install iOS Dependencies
+
+For iOS, install CocoaPods dependencies:
+
+<CodeBlock lang="bash" allowCopy={false}>
+```bash
+cd ios && pod install
+```
+</CodeBlock>
+
+</Step>
+
+<Step>
+
+### Get Your API Key
+
+1. Sign in to [Phase Dashboard](https://phase.sh/dashboard)
+2. Create a new project or select an existing one
+3. Open API Keys tab
+3. Copy your API Key (starts with `phase_`)
+
+</Step>
+
+</Steps>
+
+## Setup
+
+Wrap your app with the `PhaseProvider` component to initialize the SDK:
+
+<CodeBlock
+  title="App.tsx"
+  lang="tsx"
+  icon={<img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" className="size-4" />}
+>
+```tsx
+import { PhaseProvider } from 'phase-analytics/react-native';
+import { NavigationContainer } from '@react-navigation/native';
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <PhaseProvider apiKey="phase_xxx">
+        <YourApp />
+      </PhaseProvider>
+    </NavigationContainer>
+  );
+}
+```
+</CodeBlock>
+
+The `PhaseProvider` only initializes the SDK. You must call `Phase.identify()` before tracking events.
 
 ## Configuration
 
-Configure your Phase instance with your API key:
+The `PhaseProvider` component accepts the following props:
 
-```typescript
-import { Phase } from 'Phase-react-native';
+<TypeTable
+  type={{
+    apiKey: {
+      description: 'Your Phase API key (starts with `phase_`)',
+      type: 'string',
+      required: true,
+    },
+    navigationRef: {
+      description: 'Navigation container ref for automatic screen tracking',
+      type: 'NavigationContainerRef',
+      required: false,
+    },
+    trackNavigation: {
+      description: 'Automatically track screen views with React Navigation',
+      type: 'boolean',
+      default: 'false',
+    },
+    baseUrl: {
+      description: 'Custom API endpoint for self-hosted deployments',
+      type: 'string',
+      default: '"https://api.phase.sh"',
+    },
+    logLevel: {
+      description: 'Console logging level for debugging',
+      type: '"info" | "warn" | "error" | "none"',
+      default: '"none"',
+    },
+    deviceInfo: {
+      description: 'Collect device metadata (model, OS version, platform)',
+      type: 'boolean',
+      default: 'true',
+    },
+    userLocale: {
+      description: 'Collect user locale and timezone information',
+      type: 'boolean',
+      default: 'true',
+    },
+  }}
+/>
 
-const Phase = new Phase({
-  apiKey: 'your-api-key',
-  endpoint: 'https://api.Phase.com',
+## Usage
+
+### Identify User
+
+**Required:** Call `Phase.identify()` before using any other methods. This registers the device and starts a session.
+
+<CodeBlock
+  title="App.tsx"
+  lang="tsx"
+  icon={<img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" className="size-4" />}
+>
+```tsx
+import { Phase } from 'phase-analytics/react-native';
+import { useEffect } from 'react';
+
+export default function App() {
+  useEffect(() => {
+    // Initialize analytics - no PII collected by default
+    Phase.identify();
+  }, []);
+
+  return <YourApp />;
+}
+```
+</CodeBlock>
+
+**Privacy by default:**
+- No personal data is collected without explicit properties
+- Device ID is auto-generated and stored locally
+- Only technical metadata is collected (OS version, platform, locale)
+
+**Adding custom properties:**
+
+You can optionally attach user properties. **Important:** If you add PII (personally identifiable information), ensure you have proper user consent:
+
+<CodeBlock
+  lang="tsx"
+  icon={<img src="https://cdn.simpleicons.org/typescript/3178C6" alt="TypeScript" className="size-4" />}
+>
+```tsx
+// After user login and consent
+await Phase.identify({
+  user_id: '123',
+  plan: 'premium',
+  beta_tester: true
+});
+
+// ⚠️ If adding PII, get consent first
+const hasConsent = await customGetUserConsent();
+if (hasConsent) {
+  await Phase.identify({
+    email: 'user@example.com',
+    name: 'John Doe'
+  });
+}
+```
+</CodeBlock>
+
+Properties must be primitives: `string`, `number`, `boolean`, or `null`.
+
+### Track Events
+
+Track custom events with optional parameters. **Note:** `Phase.identify()` must be called first.
+
+<CodeBlock
+  lang="tsx"
+  icon={<img src="https://cdn.simpleicons.org/typescript/3178C6" alt="TypeScript" className="size-4" />}
+>
+```tsx
+// Event without parameters
+Phase.track('app_opened');
+
+// Event with parameters
+Phase.track('purchase_completed', {
+  amount: 99.99,
+  currency: 'USD',
+  product_id: 'premium_plan'
 });
 ```
+</CodeBlock>
 
-## Tracking Events
+**Event naming rules:**
+- Alphanumeric characters, underscores (`_`), hyphens (`-`), periods (`.`), and forward slashes (`/`)
+- 1-256 characters
+- Examples: `purchase`, `user.signup`, `payment/success`
 
-Track custom events in your application:
+**Event parameters:**
+- Must be primitives: `string`, `number`, `boolean`, or `null`
 
-```typescript
-Phase.track('button_clicked', {
-  buttonName: 'signup',
-  page: 'homepage',
-});
+### Automatic Screen Tracking
+
+Enable automatic screen tracking by setting `trackNavigation` to `true` and passing a `navigationRef`:
+
+<CodeBlock
+  title="App.tsx"
+  lang="tsx"
+  icon={<img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" className="size-4" />}
+>
+```tsx
+import { PhaseProvider } from 'phase-analytics/react-native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+const Stack = createNativeStackNavigator();
+
+export default function App() {
+  const navigationRef = useNavigationContainerRef();
+
+  return (
+    <NavigationContainer ref={navigationRef}>
+      <PhaseProvider
+        apiKey="phase_xxx"
+        trackNavigation={true}
+        navigationRef={navigationRef}
+      >
+        <Stack.Navigator>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
+        </Stack.Navigator>
+      </PhaseProvider>
+    </NavigationContainer>
+  );
+}
 ```
+</CodeBlock>
 
-## Next Steps
+**How it works:**
+- Requires `navigationRef` from `useNavigationContainerRef()` hook
+- Pass the ref to both `NavigationContainer` and `PhaseProvider`
+- Automatically tracks screen views on navigation state changes
+- Screen names are converted from route names
+- Works with nested navigators and dynamic routes
 
-- Learn about [Concepts](/docs/concepts)
-- Explore the API reference
+**Important:** The `navigationRef` must be passed to both `NavigationContainer` and `PhaseProvider` for automatic tracking to work.
 
+## Type Reference
+
+### DeviceProperties
+
+Custom user/device attributes passed to `Phase.identify()`:
+
+<TypeTable
+  type={{
+    '[key: string]': {
+      description: 'Any custom property name',
+      type: 'string | number | boolean | null',
+    },
+  }}
+/>
+
+### EventParams
+
+Event parameters passed to `Phase.track()`:
+
+<TypeTable
+  type={{
+    '[key: string]': {
+      description: 'Any custom parameter name',
+      type: 'string | number | boolean | null',
+    },
+  }}
+/>
+
+## How It Works
+
+### Offline Support
+
+Events are queued locally using `@react-native-async-storage/async-storage` when offline. The queue automatically syncs when connection is restored.
+
+### Privacy
+
+- No personal data is collected by default
+- Device IDs are generated locally and stored persistently
+- Geolocation is resolved server-side from IP address (disable with properties)
+- All data collection is optional via configuration
+
+### Performance
+
+- Offline events are batched and sent asynchronously
+- Network state is monitored via `@react-native-community/netinfo`
+- Failed requests retry with exponential backoff
+- Maximum batch size: 1000 events

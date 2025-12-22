@@ -231,7 +231,7 @@ export default function TeamPage() {
             <h2 className="mb-3 font-semibold text-muted-foreground text-sm uppercase">
               Documentation
             </h2>
-            <Link className="block" href="/docs">
+            <Link className="block" href="/docs/concepts/team-billing">
               <Card className="cursor-pointer py-0 transition-colors hover:bg-accent">
                 <CardContent className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
@@ -243,10 +243,10 @@ export default function TeamPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-muted-foreground text-sm uppercase">
-                        Team Management
+                        Team & Billing
                       </h3>
                       <p className="text-muted-foreground text-sm">
-                        Learn about roles and permissions
+                        Learn about roles, permissions, and billing
                       </p>
                     </div>
                   </div>

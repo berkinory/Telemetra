@@ -1,6 +1,95 @@
 ---
-title: Team / Billing
-description: Manage your team members and billing settings
+title: Team & Billing
+description: Manage team members and billing settings | Phase Analytics
 ---
 
-Manage your team members and billing settings. Add collaborators to your workspace and control access permissions.
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+## Team Management
+
+Collaborate with your team by inviting members to your Phase project. Team members can view analytics and reports while the project owner maintains full control.
+
+### Roles & Permissions
+
+**Owner**
+- Full control over the project
+- Rotate API keys
+- Delete or rename the project
+- Add and remove team members
+- Manage all project settings
+- Only the owner is billed for the project
+
+**Team Member** (Read-Only)
+- View analytics and reports
+- Access all data insights
+- Cannot modify project settings
+- Cannot manage API keys or team members
+- Does not affect billing
+
+### Adding Team Members
+
+1. Navigate to **[Dashboard](https://phase.sh/dashboard) → Application → Team**
+2. Click **Add Member**
+3. Enter the email address of the team member
+4. They will receive an invitation to join the project
+
+**No Limits:** You can add unlimited team members to your project at no additional cost.
+
+### Removing Team Members
+
+1. Navigate to **[Dashboard](https://phase.sh/dashboard) → Application → Team**
+2. Find the team member you want to remove
+3. Click **Remove**
+4. Confirm the action
+
+The removed member will immediately lose access to the project.
+
+### Transfer Ownership
+
+Currently, ownership transfer is not supported. If you need to transfer a project to another user, please contact support.
+
+## Billing
+
+Billing is managed through [Polar](https://polar.sh) and is tied to the project owner.
+
+### How Billing Works
+
+- **Only the project owner is billed** for the project
+- Team members do not affect billing costs
+- Adding team members is free (unlimited)
+- Billing is based on your project's usage and plan
+
+### Managing Your Subscription
+
+**For Project Owners:**
+The project owner can manage their subscription from the profile sidebar menu by selecting **Billing**.
+
+**For Team Members:**
+Team members can also access the Billing section from their profile, but this shows their personal Phase account billing, not the project's billing. Project billing is only visible to and managed by the project owner.
+
+### Billing FAQ
+
+<Accordions>
+<Accordion title="What happens if I add team members?">
+Team members are free and unlimited. Only the project owner is billed.
+</Accordion>
+
+<Accordion title="Can team members access billing information?">
+Team members can access their own personal Phase account billing, but cannot view or manage the project's billing. Only the project owner can manage project billing.
+</Accordion>
+
+<Accordion title="What happens if my subscription is cancelled?">
+Your project will be downgraded to the free tier with limited features. Your data remains accessible.
+</Accordion>
+
+<Accordion title="Can I transfer billing to another team member?">
+Billing is tied to the project owner. To transfer billing, you would need to transfer project ownership (contact support).
+</Accordion>
+</Accordions>
+
+## Best Practices
+
+- **Invite trusted team members:** Only invite people who need access to your analytics data
+- **Regular audits:** Periodically review your team members and remove those who no longer need access
+- **API key security:** Only the owner can rotate API keys - ensure your owner account is secure
+- **Billing alerts:** Set up payment method backups to avoid service interruptions

@@ -1,15 +1,12 @@
 'use client';
 
 import {
-  ArrowRight01Icon,
-  BookOpen01Icon,
   InformationCircleIcon,
   RotateTopRightIcon,
   ViewIcon,
   ViewOffIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import Link from 'next/link';
 import { useQueryState } from 'nuqs';
 import { useEffect, useRef, useState } from 'react';
 import { useScramble } from 'use-scramble';
@@ -204,38 +201,6 @@ export default function ApiKeysPage() {
               )}
             </CardContent>
           </Card>
-
-          <div>
-            <h2 className="mb-3 font-semibold text-muted-foreground text-sm uppercase">
-              Documentation
-            </h2>
-            <Link className="block" href="/docs" prefetch={false}>
-              <Card className="cursor-pointer py-0 transition-colors hover:bg-accent">
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-3">
-                      <HugeiconsIcon
-                        className="size-5 text-primary"
-                        icon={BookOpen01Icon}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-muted-foreground text-sm uppercase">
-                        API Key Usage
-                      </h3>
-                      <p className="text-muted-foreground text-sm">
-                        Learn how to integrate API keys in your app
-                      </p>
-                    </div>
-                  </div>
-                  <HugeiconsIcon
-                    className="size-5 text-muted-foreground"
-                    icon={ArrowRight01Icon}
-                  />
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
         </div>
       </div>
     </RequireApp>

@@ -1,0 +1,368 @@
+---
+title: Swift
+description: Privacy-first mobile analytics for Swift apps. Track users, sessions and events | Phase Analytics
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Tab, Tabs, TabsList, TabsTrigger, TabsContent } from 'fumadocs-ui/components/tabs';
+import { CodeBlock, Pre } from 'fumadocs-ui/components/codeblock';
+
+## Installation
+
+<Steps>
+
+<Step>
+
+### Add Swift Package
+
+Add Phase Analytics to your project using Swift Package Manager:
+
+1. In Xcode, go to **File → Add Package Dependencies**
+2. Enter the repository URL: <p className="font-mono text-sm">https://github.com/Phase-Analytics/Phase</p>
+3. Select the latest version
+4. Add to your target
+
+**Or add to Package.swift:**
+
+<CodeBlock
+  title="Package.swift"
+  lang="swift"
+  icon={<img src="https://cdn.simpleicons.org/swift/F05138" alt="Swift" className="size-4" />}
+>
+```swift
+dependencies: [
+    .package(url: "https://github.com/Phase-Analytics/Phase", from: "0.0.28")
+]
+```
+</CodeBlock>
+
+**Requirements:**
+- iOS 15.0+ or macOS 12.0+
+- Swift 6.0+
+
+</Step>
+
+<Step>
+
+### Get Your API Key
+
+1. Sign in to [Phase Dashboard](https://phase.sh/dashboard)
+2. Create a new project or select an existing one
+3. Open API Keys tab
+4. Copy your API Key (starts with `phase_`)
+
+</Step>
+
+</Steps>
+
+## Setup
+
+<Tabs defaultValue="swiftui" persist>
+  <TabsList>
+    <TabsTrigger value="swiftui">SwiftUI</TabsTrigger>
+    <TabsTrigger value="uikit">UIKit</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="swiftui">
+
+### SwiftUI
+
+Wrap your app with the `Phase` view to initialize the SDK:
+
+<CodeBlock
+  title="MyApp.swift"
+  lang="swift"
+  icon={<img src="https://cdn.simpleicons.org/swift/F05138" alt="Swift" className="size-4" />}
+>
+```swift
+import SwiftUI
+import PhaseAnalytics
+
+@main
+struct MyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            Phase(apiKey: "phase_xxx") {
+                ContentView()
+            }
+        }
+    }
+}
+```
+</CodeBlock>
+
+  </TabsContent>
+
+  <TabsContent value="uikit">
+
+### UIKit
+
+Initialize the SDK in your AppDelegate:
+
+<CodeBlock
+  title="AppDelegate.swift"
+  lang="swift"
+  icon={<img src="https://cdn.simpleicons.org/swift/F05138" alt="Swift" className="size-4" />}
+>
+```swift
+import UIKit
+import PhaseAnalytics
+
+@main
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        Task {
+            try await PhaseSDK.shared.initialize(apiKey: "phase_xxx")
+        }
+        return true
+    }
+}
+```
+</CodeBlock>
+
+  </TabsContent>
+</Tabs>
+
+The SDK initialization is asynchronous. You must call `identify()` before tracking events.
+
+## Configuration
+
+The `Phase` view and `initialize()` method accept the following parameters:
+
+<TypeTable
+  type={{
+    apiKey: {
+      description: 'Your Phase API key (starts with `phase_`)',
+      type: 'String',
+      required: true,
+    },
+    baseURL: {
+      description: 'Custom API endpoint for self-hosted deployments',
+      type: 'String',
+      default: '"https://api.phase.sh"',
+    },
+    logLevel: {
+      description: 'Console logging level for debugging',
+      type: 'LogLevel (.info | .warn | .error | .none)',
+      default: '.none',
+    },
+    deviceInfo: {
+      description: 'Collect device metadata (model, OS version, platform)',
+      type: 'Bool',
+      default: 'true',
+    },
+    userLocale: {
+      description: 'Collect user locale and timezone information',
+      type: 'Bool',
+      default: 'true',
+    },
+  }}
+/>
+
+## Usage
+
+### Identify User
+
+**Required:** Call `identify()` before using any other methods. This registers the device and starts a session.
+
+<CodeBlock
+  title="ContentView.swift"
+  lang="swift"
+  icon={<img src="https://cdn.simpleicons.org/swift/F05138" alt="Swift" className="size-4" />}
+>
+```swift
+import SwiftUI
+import PhaseAnalytics
+
+struct ContentView: View {
+    var body: some View {
+        Text("Hello, World!")
+            .onAppear {
+                Task {
+                    // Initialize analytics - no PII collected by default
+                    await PhaseSDK.shared.identify()
+                }
+            }
+    }
+}
+```
+</CodeBlock>
+
+**Privacy by default:**
+- No personal data is collected without explicit properties
+- Device ID is auto-generated and stored locally
+- Only technical metadata is collected (OS version, platform, locale)
+
+**Adding custom properties:**
+
+You can optionally attach user properties. **Important:** If you add PII (personally identifiable information), ensure you have proper user consent:
+
+<CodeBlock
+  lang="swift"
+  icon={<img src="https://cdn.simpleicons.org/swift/F05138" alt="Swift" className="size-4" />}
+>
+```swift
+// After user login and consent
+await PhaseSDK.shared.identify([
+    "user_id": "123",
+    "plan": "premium",
+    "beta_tester": true
+])
+
+// ⚠️ If adding PII, get consent first
+let hasConsent = await customGetUserConsent()
+if hasConsent {
+    await PhaseSDK.shared.identify([
+        "email": "user@example.com",
+        "name": "John Doe"
+    ])
+}
+```
+</CodeBlock>
+
+Properties must be primitives: `String`, `Int`, `Double`, `Bool`, or `nil`.
+
+### Track Events
+
+Track custom events with optional parameters. **Note:** `identify()` must be called first.
+
+<CodeBlock
+  lang="swift"
+  icon={<img src="https://cdn.simpleicons.org/swift/F05138" alt="Swift" className="size-4" />}
+>
+```swift
+// Event without parameters
+track("app_opened")
+
+// Event with parameters
+track("purchase_completed", [
+    "amount": 99.99,
+    "currency": "USD",
+    "product_id": "premium_plan"
+])
+
+// Using instance method
+PhaseSDK.shared.track("button_clicked", params: ["button_id": "submit"])
+```
+</CodeBlock>
+
+**Event naming rules:**
+- Alphanumeric characters, underscores (`_`), hyphens (`-`), periods (`.`), and forward slashes (`/`)
+- 1-256 characters
+- Examples: `purchase`, `user.signup`, `payment/success`
+
+**Event parameters:**
+- Must be primitives: `String`, `Int`, `Double`, `Bool`, or `nil`
+
+### Screen Tracking
+
+<Tabs defaultValue="swiftui" persist>
+  <TabsList>
+    <TabsTrigger value="swiftui">SwiftUI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="swiftui">
+
+Use the `.phaseScreen()` modifier to automatically track screen views:
+
+<CodeBlock
+  title="ProfileView.swift"
+  lang="swift"
+  icon={<img src="https://cdn.simpleicons.org/swift/F05138" alt="Swift" className="size-4" />}
+>
+```swift
+import SwiftUI
+import PhaseAnalytics
+
+struct ProfileView: View {
+    let userID: String
+
+    var body: some View {
+        VStack {
+            Text("Profile")
+        }
+        .phaseScreen("ProfileView", params: ["user_id": userID])
+    }
+}
+```
+</CodeBlock>
+
+**How it works:**
+
+Tracks screen view when the view first appears. Screen names are normalized automatically (e.g., `"ProfileView"` → `"/profile-view"`) with CamelCase converted to kebab-case. Supports optional parameters.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+Manually track screens using `trackScreen()`:
+
+<CodeBlock
+  lang="swift"
+  icon={<img src="https://cdn.simpleicons.org/swift/F05138" alt="Swift" className="size-4" />}
+>
+```swift
+// Using global function
+trackScreen("/profile", ["user_id": "123"])
+
+// Using instance method
+PhaseSDK.shared.trackScreen("/settings", params: nil)
+```
+</CodeBlock>
+
+  </TabsContent>
+</Tabs>
+
+## Type Reference
+
+### DeviceProperties
+
+Custom user/device attributes passed to `identify()`:
+
+<TypeTable
+  type={{
+    '[String: Any]': {
+      description: 'Dictionary of custom properties',
+      type: 'String | Int | Double | Bool | nil',
+    },
+  }}
+/>
+
+### EventParams
+
+Event parameters passed to `track()`:
+
+<TypeTable
+  type={{
+    '[String: Any]': {
+      description: 'Dictionary of custom parameters',
+      type: 'String | Int | Double | Bool | nil',
+    },
+  }}
+/>
+
+## How It Works
+
+### Offline Support
+
+Events are queued locally using `UserDefaults` when offline. The queue automatically syncs when connection is restored.
+
+### Privacy
+
+- No personal data is collected by default
+- Device IDs are generated locally and stored persistently
+- Geolocation is resolved server-side from IP address (disable with properties)
+- All data collection is optional via configuration
+
+### Performance
+
+- Offline events are batched and sent asynchronously
+- Network state is monitored automatically
+- Failed requests retry with exponential backoff
+- Maximum batch size: 1000 events
+- Thread-safe with Swift 6 concurrency
