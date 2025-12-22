@@ -41,12 +41,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
           closeButton:
             'absolute right-3 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 [&_svg]:size-3.5',
           success:
-            'border-success/30 bg-success text-white shadow-[var(--shadow),var(--highlight)] [&>[data-icon]]:text-white [&_[data-title]]:text-white [&_[data-description]]:text-white/80 [&_[data-close-button]]:text-white/70 [&_[data-close-button]:hover]:text-white [&_[data-close-button]:hover]:bg-white/20',
+            'border-success/30 bg-success/10 dark:bg-success/20 [&>[data-icon]]:text-success [&_[data-title]]:text-success [&_[data-description]]:text-success/80 [&_[data-close-button]]:text-success/70 [&_[data-close-button]:hover]:text-success [&_[data-close-button]:hover]:bg-success/20',
           error:
-            'border-destructive/30 bg-destructive text-white shadow-[var(--shadow),var(--highlight)] dark:bg-destructive/80 [&>[data-icon]]:text-white [&_[data-title]]:text-white [&_[data-description]]:text-white/80 [&_[data-close-button]]:text-white/70 [&_[data-close-button]:hover]:text-white [&_[data-close-button]:hover]:bg-white/20',
+            'border-destructive/30 bg-destructive/10 dark:bg-destructive/20 [&>[data-icon]]:text-destructive [&_[data-title]]:text-destructive [&_[data-description]]:text-destructive/80 [&_[data-close-button]]:text-destructive/70 [&_[data-close-button]:hover]:text-destructive [&_[data-close-button]:hover]:bg-destructive/20',
           warning:
-            'border-amber-500/30 bg-amber-500 text-white shadow-[var(--shadow),var(--highlight)] [&>[data-icon]]:text-white [&_[data-title]]:text-white [&_[data-description]]:text-white/80 [&_[data-close-button]]:text-white/70 [&_[data-close-button]:hover]:text-white [&_[data-close-button]:hover]:bg-white/20',
-          info: 'border-blue-500/30 bg-blue-500 text-white shadow-[var(--shadow),var(--highlight)] [&>[data-icon]]:text-white [&_[data-title]]:text-white [&_[data-description]]:text-white/80 [&_[data-close-button]]:text-white/70 [&_[data-close-button]:hover]:text-white [&_[data-close-button]:hover]:bg-white/20',
+            'border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/20 [&>[data-icon]]:text-amber-500 [&_[data-title]]:text-amber-500 [&_[data-description]]:text-amber-500/80 [&_[data-close-button]]:text-amber-500/70 [&_[data-close-button]:hover]:text-amber-500 [&_[data-close-button]:hover]:bg-amber-500/20',
+          info: 'border-blue-500/30 bg-blue-500/10 dark:bg-blue-500/20 [&>[data-icon]]:text-blue-500 [&_[data-title]]:text-blue-500 [&_[data-description]]:text-blue-500/80 [&_[data-close-button]]:text-blue-500/70 [&_[data-close-button]:hover]:text-blue-500 [&_[data-close-button]:hover]:bg-blue-500/20',
         },
       }}
       {...props}
