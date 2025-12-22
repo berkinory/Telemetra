@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ImageResponse } from 'next/og';
 import { getPageImage, source } from '@/app/docs/docs-source';
@@ -108,7 +107,8 @@ export async function GET(
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <Image
+          {/* biome-ignore lint/performance/noImgElement: ImageResponse requires standard img tag */}
+          <img
             alt="Phase Logo"
             height="80"
             src="https://phase.sh/logo.svg"
@@ -178,7 +178,7 @@ export async function GET(
                 color: colors.muted,
               }}
             >
-              phase-analytics/Phase
+              Phase-Analytics/Phase
             </span>
           </div>
         </div>
