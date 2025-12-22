@@ -290,7 +290,9 @@ function LoginForm({ defaultValues, onValuesChange }: LoginFormProps) {
             aria-label="Sign in with Github"
             className="w-full"
             onClick={async () => {
-              const webUrl = process.env.NEXT_PUBLIC_SERVER_URL?.includes('localhost')
+              const webUrl = process.env.NEXT_PUBLIC_SERVER_URL?.includes(
+                'localhost'
+              )
                 ? 'http://localhost:3002'
                 : 'https://phase.sh';
               await authClient.signIn.social({
@@ -640,7 +642,9 @@ function SignupForm({ defaultValues, onValuesChange }: SignupFormProps) {
             aria-label="Sign up with Github"
             className="w-full"
             onClick={async () => {
-              const webUrl = process.env.NEXT_PUBLIC_SERVER_URL?.includes('localhost')
+              const webUrl = process.env.NEXT_PUBLIC_SERVER_URL?.includes(
+                'localhost'
+              )
                 ? 'http://localhost:3002'
                 : 'https://phase.sh';
               await authClient.signIn.social({
