@@ -24,7 +24,7 @@ let package = Package(
                 .product(name: "ULID", package: "ULID.swift"),
                 .product(name: "Gzip", package: "GzipSwift")
             ],
-            path: "Sources/PhaseAnalytics"
+            path: "packages/swift/Sources/PhaseAnalytics"
         )
     ]
 )
