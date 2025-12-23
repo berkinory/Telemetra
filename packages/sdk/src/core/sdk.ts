@@ -154,6 +154,18 @@ export class PhaseSDK {
     logger.info('Device identified and session started');
 
     await this.processPendingCalls();
+
+    if (isOnline && this.offlineQueue && this.batchSender) {
+      const queueSize = this.offlineQueue.getSize();
+      if (queueSize > 0) {
+        logger.info(
+          `Flushing offline queue after identification (${queueSize} items)`
+        );
+        this.batchSender.flush().catch(() => {
+          logger.error('Failed to flush offline queue. Will retry later.');
+        });
+      }
+    }
   }
 
   track(name: string, params?: EventParams): void {

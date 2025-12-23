@@ -74,7 +74,8 @@ export class BatchSender {
   }
 
   private async sendBatch(items: BatchItem[]): Promise<boolean> {
-    const request: BatchRequest = { items };
+    const itemsWithoutRetryCount = items.map(({ retryCount, ...item }) => item);
+    const request: BatchRequest = { items: itemsWithoutRetryCount };
     const result = await this.httpClient.sendBatch(request);
 
     if (!result.success) {
