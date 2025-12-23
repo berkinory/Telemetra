@@ -23,7 +23,7 @@ Privacy-first mobile analytics for React Native and Expo applications.
 bun add phase-analytics
 
 # Install required peer dependencies
-bunx expo install @react-native-async-storage/async-storage expo-device expo-localization expo-router
+bunx expo install @react-native-async-storage/async-storage @react-native-community/netinfo expo-device expo-localization expo-router
 ```
 
 ### For React Native Projects
@@ -33,7 +33,7 @@ bunx expo install @react-native-async-storage/async-storage expo-device expo-loc
 bun add phase-analytics
 
 # Install required peer dependencies
-bun add @react-native-async-storage/async-storage react-native-device-info react-native-localize @react-native-community/netinfo @react-navigation/native
+bun add @react-native-async-storage/async-storage @react-native-community/netinfo react-native-device-info react-native-localize @react-navigation/native
 
 # iOS only: Install CocoaPods dependencies
 cd ios && pod install

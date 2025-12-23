@@ -95,28 +95,28 @@ Phase Analytics requires the following React Native packages to function properl
   <TabsContent value="npm">
     <CodeBlock lang="bash" allowCopy={false}>
 ```bash
-npm install @react-native-async-storage/async-storage react-native-device-info react-native-localize @react-native-community/netinfo @react-navigation/native
+npm install @react-native-async-storage/async-storage @react-native-community/netinfo react-native-device-info react-native-localize @react-navigation/native
 ```
     </CodeBlock>
   </TabsContent>
   <TabsContent value="bun">
     <CodeBlock lang="bash" allowCopy={false}>
 ```bash
-bun add @react-native-async-storage/async-storage react-native-device-info react-native-localize @react-native-community/netinfo @react-navigation/native
+bun add @react-native-async-storage/async-storage @react-native-community/netinfo react-native-device-info react-native-localize  @react-navigation/native
 ```
     </CodeBlock>
   </TabsContent>
   <TabsContent value="yarn">
     <CodeBlock lang="bash" allowCopy={false}>
 ```bash
-yarn add @react-native-async-storage/async-storage react-native-device-info react-native-localize @react-native-community/netinfo @react-navigation/native
+yarn add @react-native-async-storage/async-storage @react-native-community/netinfo react-native-device-info react-native-localize @react-navigation/native
 ```
     </CodeBlock>
   </TabsContent>
   <TabsContent value="pnpm">
     <CodeBlock lang="bash" allowCopy={false}>
 ```bash
-pnpm add @react-native-async-storage/async-storage react-native-device-info react-native-localize @react-native-community/netinfo @react-navigation/native
+pnpm add @react-native-async-storage/async-storage @react-native-community/netinfo react-native-device-info react-native-localize @react-navigation/native
 ```
     </CodeBlock>
   </TabsContent>
@@ -124,9 +124,9 @@ pnpm add @react-native-async-storage/async-storage react-native-device-info reac
 
 These dependencies are **required** for the SDK to work correctly. The SDK uses:
 - `@react-native-async-storage/async-storage` - Local storage for offline event queuing
+- `@react-native-community/netinfo` - Network state monitoring
 - `react-native-device-info` - Device information collection
 - `react-native-localize` - Locale and timezone detection
-- `@react-native-community/netinfo` - Network state monitoring
 - `@react-navigation/native` - Automatic screen tracking (only needed if using `trackNavigation`)
 
 </Step>
