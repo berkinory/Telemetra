@@ -124,6 +124,15 @@ export function SessionDetailsDialog({
       1000
   );
 
+  const isSessionActive = () => {
+    const now = Date.now();
+    const lastActivityTime = new Date(session.lastActivityAt).getTime();
+    const timeDifferenceInSeconds = Math.floor((now - lastActivityTime) / 1000);
+    return timeDifferenceInSeconds <= 30;
+  };
+
+  const sessionActive = isSessionActive();
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="flex max-h-[85vh] max-w-[95vw] flex-col p-0 sm:max-w-2xl lg:max-w-3xl">
@@ -236,25 +245,27 @@ export function SessionDetailsDialog({
 
           {!isLoading && eventsData?.events && (
             <div className="flex flex-col gap-1">
-              <motion.div
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-3 rounded-md bg-muted/30 px-3 py-2"
-                initial={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-              >
-                <HugeiconsIcon
-                  className="size-4 shrink-0 text-destructive"
-                  icon={StopCircleIcon}
-                />
-                <span className="flex-1 truncate font-medium text-sm">
-                  Session Ended
-                </span>
-                <ClientDate
-                  className="shrink-0 text-muted-foreground text-xs"
-                  date={session.lastActivityAt}
-                  format="time"
-                />
-              </motion.div>
+              {!sessionActive && (
+                <motion.div
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center gap-3 rounded-md bg-muted/30 px-3 py-2"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                >
+                  <HugeiconsIcon
+                    className="size-4 shrink-0 text-destructive"
+                    icon={StopCircleIcon}
+                  />
+                  <span className="flex-1 truncate font-medium text-sm">
+                    Session Ended
+                  </span>
+                  <ClientDate
+                    className="shrink-0 text-muted-foreground text-xs"
+                    date={session.lastActivityAt}
+                    format="time"
+                  />
+                </motion.div>
+              )}
 
               {eventsData.events.length > 0 && (
                 <AnimatePresence mode="popLayout">
