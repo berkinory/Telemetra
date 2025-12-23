@@ -49,7 +49,7 @@ Built with modern web technologies, Phase provides real-time analytics, offline 
 Phase is built with privacy as a core principle:
 
 - **GDPR Compliant**: Full compliance with EU data protection regulations (GDPR, CCPA, ePrivacy Directive)
-- **EU Data Centers**: All data stored in Nuremberg, Germany
+- **EU Data Centers**: All data stored in Falkenstein, Germany
 - **Data Retention**: Analytics data retained for 12 months, then automatically deleted
 - **Encryption**: Industry-standard encryption (HTTPS/TLS in transit, AES-256 at rest)
 - **Privacy by Default**: No personal data collected without explicit user properties
