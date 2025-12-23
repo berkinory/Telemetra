@@ -24,7 +24,7 @@ export default function EventsPage() {
     <RequireApp>
       <div className="flex flex-1 flex-col gap-6">
         <div>
-          <h1 className="font-bold font-sans text-2xl">Events</h1>
+          <h1 className="font-bold font-sans text-2xl">Activity</h1>
           <p className="font-sans text-muted-foreground text-sm">
             Track and analyze events in your application
           </p>

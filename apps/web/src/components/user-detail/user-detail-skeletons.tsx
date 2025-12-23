@@ -63,7 +63,6 @@ export function UserDetailCardSkeleton() {
 
           <div>
             <div className="flex items-center gap-1.5">
-              <Skeleton className="size-3.5" />
               <p className="text-muted-foreground text-xs uppercase">
                 Properties
               </p>

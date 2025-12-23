@@ -6,7 +6,6 @@ import {
   AppleIcon,
   Flag02Icon,
   LanguageSquareIcon,
-  PropertyNewIcon,
   SmartPhone01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -205,7 +204,6 @@ export function UserDetailCard({ deviceId }: UserDetailCardProps) {
           {device.properties && Object.keys(device.properties).length > 0 && (
             <div>
               <p className="flex items-center gap-1.5 text-muted-foreground text-xs uppercase">
-                <HugeiconsIcon className="size-3.5" icon={PropertyNewIcon} />
                 Properties
               </p>
               <div className="mt-1 space-y-2">

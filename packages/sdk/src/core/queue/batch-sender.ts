@@ -41,7 +41,10 @@ export class BatchSender {
     try {
       await Promise.race([flushPromise, timeoutPromise]);
     } catch (error) {
-      logger.error('Flush failed or timed out. Dropping remaining items.', error);
+      logger.error(
+        'Flush failed or timed out. Dropping remaining items.',
+        error
+      );
     }
   }
 
@@ -59,7 +62,10 @@ export class BatchSender {
       try {
         await this.sendBatch(batch);
       } catch (error) {
-        logger.error('Batch send error. Dropping batch (fire & forget).', error);
+        logger.error(
+          'Batch send error. Dropping batch (fire & forget).',
+          error
+        );
       }
     }
   }
