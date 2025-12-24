@@ -189,10 +189,22 @@ type JsonLdWebSite = {
   };
 };
 
+type JsonLdBreadcrumb = {
+  '@context': 'https://schema.org';
+  '@type': 'BreadcrumbList';
+  itemListElement: Array<{
+    '@type': 'ListItem';
+    position: number;
+    name: string;
+    item?: string;
+  }>;
+};
+
 export type JsonLdData =
   | JsonLdOrganization
   | JsonLdSoftwareApplication
-  | JsonLdWebSite;
+  | JsonLdWebSite
+  | JsonLdBreadcrumb;
 
 export const jsonLd = {
   organization: (): JsonLdOrganization => ({
@@ -224,5 +236,18 @@ export const jsonLd = {
     name: siteConfig.name,
     url: siteConfig.url,
     description: siteConfig.description,
+  }),
+
+  breadcrumb: (
+    items: Array<{ name: string; url?: string }>
+  ): JsonLdBreadcrumb => ({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      ...(item.url && { item: item.url }),
+    })),
   }),
 };

@@ -50,16 +50,6 @@ export function DashboardHeader({ children }: { children: ReactNode }) {
           external: true,
         },
         {
-          id: 'support',
-          name: 'Support',
-          description: 'Get help from our team',
-          category: 'Resources',
-          icon: QuestionIcon,
-          keywords: ['support', 'help', 'contact'],
-          path: '/support',
-          external: true,
-        },
-        {
           id: 'status',
           name: 'Status',
           description: 'Check service status and uptime',

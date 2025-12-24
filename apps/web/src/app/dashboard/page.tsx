@@ -6,10 +6,10 @@ import {
   ArrowRight01Icon,
   ArtboardIcon,
   ChartLineData03Icon,
-  CustomerSupportIcon,
   DatabaseIcon,
   File02Icon,
   GithubIcon,
+  Mail01Icon,
   UserGroupIcon,
   UserSquareIcon,
 } from '@hugeicons/core-free-icons';
@@ -207,19 +207,23 @@ export default function DashboardPage() {
                 </Card>
               </Link>
 
-              <Link className="block" href="/support" target="_blank">
+              <Link
+                className="block"
+                href="mailto:support@phase.sh"
+                target="_blank"
+              >
                 <Card className="cursor-pointer py-0 transition-colors hover:bg-accent">
                   <CardContent className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-primary/10 p-3">
                         <HugeiconsIcon
                           className="size-5 text-primary"
-                          icon={CustomerSupportIcon}
+                          icon={Mail01Icon}
                         />
                       </div>
                       <div>
                         <h3 className="font-semibold text-muted-foreground text-sm uppercase">
-                          Support
+                          Mail
                         </h3>
                         <p className="text-muted-foreground text-sm">
                           Get help from our team

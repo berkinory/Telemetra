@@ -18,7 +18,10 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <div className="mx-auto flex w-full max-w-5xl flex-1 items-center px-4 py-12 lg:px-8 lg:py-16">
+      <div
+        className="mx-auto flex w-full max-w-5xl flex-1 items-center px-4 py-12 lg:px-8 lg:py-16"
+        id="hero"
+      >
         <div className="grid w-full items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="flex flex-col justify-center space-y-4">
             <Badge
@@ -138,6 +141,18 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      <section
+        className="mx-auto w-full max-w-5xl px-4 py-16 lg:px-8 lg:py-24"
+        id="pricing"
+      >
+        <div className="text-center">
+          <h2 className="mb-3 font-semibold text-muted-foreground text-sm uppercase">
+            Pricing
+          </h2>
+        </div>
+      </section>
+
       <Footer
         brandName="Phase Analytics"
         copyright={{
