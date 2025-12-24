@@ -40,7 +40,7 @@ export function Footer({
 }: FooterProps) {
   return (
     <footer className="pt-16 pb-6 lg:pt-24 lg:pb-8">
-      <div className="px-4 lg:px-8">
+      <div className="mx-auto w-full max-w-5xl px-4 lg:px-8">
         <div className="md:flex md:items-center md:justify-between">
           <a
             aria-label={brandName}
@@ -109,7 +109,7 @@ export function Footer({
               >
                 <div className="relative flex size-[14px] items-center justify-center">
                   <span className="absolute inline-flex size-2 animate-ping rounded-full bg-success" />
-                  <span className="relative inline-flex size-2 rounded-full bg-success" />
+                  <span className="relative inline-flex size-2.5 rounded-full bg-success" />
                 </div>
                 {status.label}
               </a>

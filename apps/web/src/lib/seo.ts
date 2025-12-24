@@ -39,7 +39,7 @@ export const baseMetadata: Metadata = {
   title: {
     template: `%s | ${siteConfig.name}`,
     default:
-      'Phase Analytics – Privacy-First Open Source Mobile Analytics for Android & iOS',
+      'Phase Analytics | Privacy-First Open Source Mobile Analytics for Android & iOS',
   },
   icons: {
     icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
