@@ -51,7 +51,7 @@ export function Header() {
         {
           'border-border bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/50 md:top-4 md:max-w-4xl md:shadow':
             scrolled && !open,
-          'bg-background/90': open,
+          'border-border bg-background/98': open,
         }
       )}
     >
@@ -108,7 +108,7 @@ export function Header() {
         <div
           className={cn(
             'data-[slot=open]:zoom-in-95 data-[slot=closed]:zoom-out-95 ease-out data-[slot=closed]:animate-out data-[slot=open]:animate-in',
-            'flex h-full w-full flex-col justify-between gap-y-2 p-4'
+            'flex h-full w-full flex-col gap-y-2 p-4'
           )}
           data-slot={open ? 'open' : 'closed'}
         >
@@ -118,6 +118,7 @@ export function Header() {
                 className="text-muted-foreground text-sm underline-offset-4 hover:underline"
                 href={link.href}
                 key={link.label}
+                onClick={() => setOpen(false)}
                 {...(link.external && {
                   target: '_blank',
                   rel: 'noopener noreferrer',
@@ -126,10 +127,8 @@ export function Header() {
                 {link.label}
               </a>
             ))}
-          </div>
-          <div className="flex flex-col gap-2">
-            <Link href="/dashboard">
-              <Button className="w-full cursor-pointer">Get Started</Button>
+            <Link href="/dashboard" onClick={() => setOpen(false)}>
+              <Button className="w-full cursor-pointer">GET STARTED</Button>
             </Link>
           </div>
         </div>

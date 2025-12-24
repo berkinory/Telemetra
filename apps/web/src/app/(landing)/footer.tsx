@@ -74,8 +74,10 @@ export function Footer({
                   <a
                     className="text-primary text-sm underline-offset-4 hover:underline"
                     href={link.href}
-                    rel="noopener noreferrer"
-                    target="_blank"
+                    {...(link.href.startsWith('http') && {
+                      rel: 'noopener noreferrer',
+                      target: '_blank',
+                    })}
                   >
                     {link.label}
                   </a>

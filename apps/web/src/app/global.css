@@ -279,6 +279,7 @@
   html {
     overscroll-behavior: none;
     height: 100%;
+    scroll-behavior: smooth;
   }
 
   body {

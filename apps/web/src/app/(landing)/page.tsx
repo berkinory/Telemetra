@@ -1,13 +1,22 @@
+'use client';
+
 import {
   CopyrightIcon,
+  CursorPointer02Icon,
   GithubIcon,
+  GlobalIcon,
   Mail01Icon,
+  MirroringScreenIcon,
   NewTwitterIcon,
+  PlaySquareIcon,
   SparklesIcon,
+  UserIcon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
+import { ExpandCard, LocationMap } from '@/components/expand';
 import { LogoCloud } from '@/components/logo-slider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +25,12 @@ import { Footer } from './footer';
 import { Header } from './header';
 
 export default function HomePage() {
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+
+  const handleCardToggle = (cardId: string) => {
+    setExpandedCardId((prev) => (prev === cardId ? null : cardId));
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -118,6 +133,7 @@ export default function HomePage() {
                   <svg
                     fill="none"
                     height="12"
+                    key="server-stack-icon"
                     stroke="currentColor"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -127,24 +143,15 @@ export default function HomePage() {
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <title>Server Stack</title>
-                    <path
-                      d="M18 3H6C5.06812 3 4.60218 3 4.23463 3.15224C3.74458 3.35523 3.35523 3.74458 3.15224 4.23463C3 4.60218 3 5.06812 3 6C3 6.93188 3 7.39782 3.15224 7.76537C3.35523 8.25542 3.74458 8.64477 4.23463 8.84776C4.60218 9 5.06812 9 6 9H18C18.9319 9 19.3978 9 19.7654 8.84776C20.2554 8.64477 20.6448 8.25542 20.8478 7.76537C21 7.39782 21 6.93188 21 6C21 5.06812 21 4.60218 20.8478 4.23463C20.6448 3.74458 20.2554 3.35523 19.7654 3.15224C19.3978 3 18.9319 3 18 3Z"
-                      key="server-1"
-                    />
-                    <path
-                      d="M18 9H6C5.06812 9 4.60218 9 4.23463 9.15224C3.74458 9.35523 3.35523 9.74458 3.15224 10.2346C3 10.6022 3 11.0681 3 12C3 12.9319 3 13.3978 3.15224 13.7654C3.35523 14.2554 3.74458 14.6448 4.23463 14.8478C4.60218 15 5.06812 15 6 15H18C18.9319 15 19.3978 15 19.7654 14.8478C20.2554 14.6448 20.6448 14.2554 20.8478 13.7654C21 13.3978 21 12.9319 21 12C21 11.0681 21 10.6022 20.8478 10.2346C20.6448 9.74458 20.2554 9.35523 19.7654 9.15224C19.3978 9 18.9319 9 18 9Z"
-                      key="server-2"
-                    />
-                    <path
-                      d="M18 15H6C5.06812 15 4.60218 15 4.23463 15.1522C3.74458 15.3552 3.35523 15.7446 3.15224 16.2346C3 16.6022 3 17.0681 3 18C3 18.9319 3 19.3978 3.15224 19.7654C3.35523 20.2554 3.74458 20.6448 4.23463 20.8478C4.60218 21 5.06812 21 6 21H18C18.9319 21 19.3978 21 19.7654 20.8478C20.2554 20.6448 20.6448 20.2554 20.8478 19.7654C21 19.3978 21 18.9319 21 18C21 17.0681 21 16.6022 20.8478 16.2346C20.6448 15.7446 20.2554 15.3552 19.7654 15.1522C19.3978 15 18.9319 15 18 15Z"
-                      key="server-3"
-                    />
-                    <path d="M6 6H6.01" key="dot-1" />
-                    <path d="M6 12H6.01" key="dot-2" />
-                    <path d="M6 18H6.01" key="dot-3" />
-                    <path d="M9 6H9.01" key="dot-4" />
-                    <path d="M9 12H9.01" key="dot-5" />
-                    <path d="M9 18H9.01" key="dot-6" />
+                    <path d="M18 3H6C5.06812 3 4.60218 3 4.23463 3.15224C3.74458 3.35523 3.35523 3.74458 3.15224 4.23463C3 4.60218 3 5.06812 3 6C3 6.93188 3 7.39782 3.15224 7.76537C3.35523 8.25542 3.74458 8.64477 4.23463 8.84776C4.60218 9 5.06812 9 6 9H18C18.9319 9 19.3978 9 19.7654 8.84776C20.2554 8.64477 20.6448 8.25542 20.8478 7.76537C21 7.39782 21 6.93188 21 6C21 5.06812 21 4.60218 20.8478 4.23463C20.6448 3.74458 20.2554 3.35523 19.7654 3.15224C19.3978 3 18.9319 3 18 3Z" />
+                    <path d="M18 9H6C5.06812 9 4.60218 9 4.23463 9.15224C3.74458 9.35523 3.35523 9.74458 3.15224 10.2346C3 10.6022 3 11.0681 3 12C3 12.9319 3 13.3978 3.15224 13.7654C3.35523 14.2554 3.74458 14.6448 4.23463 14.8478C4.60218 15 5.06812 15 6 15H18C18.9319 15 19.3978 15 19.7654 14.8478C20.2554 14.6448 20.6448 14.2554 20.8478 13.7654C21 13.3978 21 12.9319 21 12C21 11.0681 21 10.6022 20.8478 10.2346C20.6448 9.74458 20.2554 9.35523 19.7654 9.15224C19.3978 9 18.9319 9 18 9Z" />
+                    <path d="M18 15H6C5.06812 15 4.60218 15 4.23463 15.1522C3.74458 15.3552 3.35523 15.7446 3.15224 16.2346C3 16.6022 3 17.0681 3 18C3 18.9319 3 19.3978 3.15224 19.7654C3.35523 20.2554 3.74458 20.6448 4.23463 20.8478C4.60218 21 5.06812 21 6 21H18C18.9319 21 19.3978 21 19.7654 20.8478C20.2554 20.6448 20.6448 20.2554 20.8478 19.7654C21 19.3978 21 18.9319 21 18C21 17.0681 21 16.6022 20.8478 16.2346C20.6448 15.7446 20.2554 15.3552 19.7654 15.1522C19.3978 15 18.9319 15 18 15Z" />
+                    <path d="M6 6H6.01" />
+                    <path d="M6 12H6.01" />
+                    <path d="M6 18H6.01" />
+                    <path d="M9 6H9.01" />
+                    <path d="M9 12H9.01" />
+                    <path d="M9 18H9.01" />
                   </svg>
                 ),
                 text: 'PHASE INFRASTRUCTURE',
@@ -252,6 +259,172 @@ export default function HomePage() {
       </section>
 
       <section
+        className="mx-auto w-full max-w-5xl px-4 py-12 lg:px-8 lg:py-16"
+        id="features"
+      >
+        <div className="space-y-8">
+          <div className="text-center">
+            <h2 className="mb-3 font-semibold text-muted-foreground text-sm uppercase">
+              Features
+            </h2>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-6">
+            <LocationMap
+              coordinates="San Francisco, USA"
+              isExpanded={expandedCardId === 'geolocation'}
+              location="Geolocation"
+              onToggle={() => handleCardToggle('geolocation')}
+            />
+            <ExpandCard
+              expandedIcon={
+                <svg
+                  className="drop-shadow-lg"
+                  fill="none"
+                  height="32"
+                  style={{
+                    filter: 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.5))',
+                  }}
+                  viewBox="0 0 24 24"
+                  width="32"
+                >
+                  <title>User tracking icon</title>
+                  <circle cx="12" cy="8" fill="#3B82F6" r="4" />
+                  <path
+                    d="M4 20c0-4 3.5-7 8-7s8 3 8 7"
+                    fill="#3B82F6"
+                    opacity="0.7"
+                  />
+                </svg>
+              }
+              iconGlowColor="rgba(59, 130, 246, 0.6)"
+              isExpanded={expandedCardId === 'user-tracking'}
+              onToggle={() => handleCardToggle('user-tracking')}
+              statusBadge={{
+                text: 'Active',
+                color: '#3B82F6',
+              }}
+              triggerIcon={
+                <HugeiconsIcon
+                  className="h-[18px] w-[18px] text-blue-400"
+                  icon={UserIcon}
+                />
+              }
+              triggerSubtext="741 users online"
+              triggerText="User Tracking"
+            />
+            <ExpandCard
+              expandedIcon={
+                <HugeiconsIcon
+                  className="text-orange-400"
+                  icon={PlaySquareIcon}
+                  size={32}
+                  style={{
+                    filter: 'drop-shadow(0 0 10px rgba(251, 146, 60, 0.5))',
+                  }}
+                />
+              }
+              iconGlowColor="rgba(251, 146, 60, 0.6)"
+              isExpanded={expandedCardId === 'session-tracking'}
+              onToggle={() => handleCardToggle('session-tracking')}
+              statusBadge={{
+                text: 'Duration',
+                color: '#FB923C',
+              }}
+              triggerIcon={
+                <HugeiconsIcon
+                  className="h-[18px] w-[18px] text-orange-400"
+                  icon={PlaySquareIcon}
+                />
+              }
+              triggerSubtext="2m 41s Average Session Duration"
+              triggerText="Session Tracking"
+            />
+            <ExpandCard
+              expandedIcon={
+                <HugeiconsIcon
+                  className="text-purple-400"
+                  icon={CursorPointer02Icon}
+                  size={32}
+                  style={{
+                    filter: 'drop-shadow(0 0 10px rgba(168, 85, 247, 0.5))',
+                  }}
+                />
+              }
+              iconGlowColor="rgba(168, 85, 247, 0.6)"
+              isExpanded={expandedCardId === 'event-tracking'}
+              onToggle={() => handleCardToggle('event-tracking')}
+              statusBadge={{
+                text: 'Active',
+                color: '#A855F7',
+              }}
+              triggerIcon={
+                <HugeiconsIcon
+                  className="h-[18px] w-[18px] text-purple-400"
+                  icon={CursorPointer02Icon}
+                />
+              }
+              triggerSubtext="8263 Events Today"
+              triggerText="Event Tracking"
+            />
+            <ExpandCard
+              expandedIcon={
+                <HugeiconsIcon
+                  className="text-yellow-400"
+                  icon={MirroringScreenIcon}
+                  size={32}
+                  style={{
+                    filter: 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.5))',
+                  }}
+                />
+              }
+              iconGlowColor="rgba(234, 179, 8, 0.6)"
+              isExpanded={expandedCardId === 'screen-navigation'}
+              onToggle={() => handleCardToggle('screen-navigation')}
+              statusBadge={{
+                text: 'Live',
+                color: '#EAB308',
+              }}
+              triggerIcon={
+                <HugeiconsIcon
+                  className="h-[18px] w-[18px] text-yellow-400"
+                  icon={MirroringScreenIcon}
+                />
+              }
+              triggerSubtext="43 People Viewed /paywall"
+              triggerText="Screen Navigation"
+            />
+            <ExpandCard
+              expandedIcon={
+                <HugeiconsIcon
+                  className="text-red-400"
+                  icon={GlobalIcon}
+                  size={32}
+                  style={{
+                    filter: 'drop-shadow(0 0 10px rgba(248, 113, 113, 0.5))',
+                  }}
+                />
+              }
+              iconGlowColor="rgba(248, 113, 113, 0.6)"
+              isExpanded={expandedCardId === 'realtime-screen'}
+              onToggle={() => handleCardToggle('realtime-screen')}
+              statusBadge={{
+                text: 'Live',
+                color: '#F87171',
+              }}
+              triggerIcon={
+                <HugeiconsIcon
+                  className="h-[18px] w-[18px] text-red-400"
+                  icon={GlobalIcon}
+                />
+              }
+              triggerSubtext="Bob Marley started new session."
+              triggerText="Realtime Screen"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section
         className="mx-auto w-full max-w-5xl px-4 py-16 lg:px-8 lg:py-24"
         id="pricing"
       >
@@ -295,6 +468,8 @@ export default function HomePage() {
           />
         }
         mainLinks={[
+          { href: '#features', label: 'FEATURES' },
+          { href: '#pricing', label: 'PRICING' },
           { href: 'https://phase.sh/docs', label: 'DOCUMENTATION' },
           { href: '/dashboard', label: 'DASHBOARD' },
         ]}
