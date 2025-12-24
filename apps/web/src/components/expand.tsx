@@ -6,7 +6,7 @@ import {
   useMotionValue,
   useSpring,
   useTransform,
-} from 'framer-motion';
+} from 'motion/react';
 import React, { type ReactNode, useEffect, useRef, useState } from 'react';
 
 function DefaultMapBackground() {
