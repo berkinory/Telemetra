@@ -9,7 +9,7 @@ export const authClient = createAuthClient({
   plugins: [polarClient()],
 });
 
-export const { useSession, signIn, signOut, signUp } = authClient;
+export const { useSession, signIn, signOut, signUp, checkout } = authClient;
 
 export async function forgotPassword(email: string, redirectTo: string) {
   return await authClient.requestPasswordReset({

@@ -50,7 +50,7 @@ export const auth = betterAuth({
               slug: 'enterprise-yearly',
             },
           ],
-          successUrl: '/checkout/success?checkout_id={CHECKOUT_ID}',
+          successUrl: '/dashboard',
           authenticatedUsersOnly: true,
         }),
       ],

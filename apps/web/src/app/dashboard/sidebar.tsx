@@ -50,8 +50,15 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { UserSettings } from '@/components/user-settings';
-import { authClient, polarPortal, useSession } from '@/lib/auth';
+import { authClient, checkout, polarPortal, useSession } from '@/lib/auth';
 import { getQueryClient } from '@/lib/queries/query-client';
+
+const PRODUCT_PLANS: Record<string, string> = {
+  '424d9f27-70f9-4c59-9194-53b9203e759d': 'Starter',
+  '502762e6-b5d7-4e5a-8f5d-8ce981d0f8b9': 'Starter',
+  '746f7856-ed6a-439b-969f-392d0e97b510': 'Enterprise',
+  '2f41af77-87b9-4a17-ae1d-6ef179b48bdc': 'Enterprise',
+};
 
 type NavItem = {
   label: string;
@@ -154,6 +161,8 @@ export function DashboardSidebar() {
   const [isUserLoaded, setIsUserLoaded] = useState(false);
   const [appId] = useQueryState('app');
   const { isMobile, setOpenMobile } = useSidebar();
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [isLoadingPlan, setIsLoadingPlan] = useState(true);
 
   const user = session?.user;
   const username = user?.email || 'User';
@@ -189,6 +198,46 @@ export function DashboardSidebar() {
     }
   }, [session?.user?.id]);
 
+  useEffect(() => {
+    const fetchCustomerPlan = async () => {
+      if (!session?.user) {
+        setIsLoadingPlan(false);
+        return;
+      }
+
+      try {
+        const response = await polarPortal.getCustomerState();
+        if ('data' in response && response.data) {
+          // biome-ignore lint/suspicious/noExplicitAny: <>
+          const subscriptions = (response.data as any).subscriptions || [];
+          // biome-ignore lint/suspicious/noExplicitAny: <>
+          const activeSubscription = subscriptions.find((sub: any) =>
+            ['active', 'trialing'].includes(sub.status)
+          );
+
+          if (activeSubscription) {
+            const productId =
+              // biome-ignore lint/suspicious/noExplicitAny: <>
+              (activeSubscription as any).product_id ||
+              // biome-ignore lint/suspicious/noExplicitAny: <>
+              (activeSubscription as any).product?.id;
+            const planName = productId ? PRODUCT_PLANS[productId] : null;
+            setCurrentPlan(planName || 'Unknown');
+          } else {
+            setCurrentPlan(null);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch customer plan:', error);
+        setCurrentPlan(null);
+      } finally {
+        setIsLoadingPlan(false);
+      }
+    };
+
+    fetchCustomerPlan();
+  }, [session?.user]);
+
   const handleLogout = async () => {
     await authClient.signOut();
     const queryClient = getQueryClient();
@@ -203,6 +252,21 @@ export function DashboardSidebar() {
       }
     } catch (error) {
       console.error('Failed to open billing portal:', error);
+    }
+  };
+
+  const handleUpgrade = async () => {
+    try {
+      await checkout({
+        products: [
+          '424d9f27-70f9-4c59-9194-53b9203e759d', // starter-monthly
+          '502762e6-b5d7-4e5a-8f5d-8ce981d0f8b9', // starter-yearly
+          '746f7856-ed6a-439b-969f-392d0e97b510', // enterprise-monthly
+          '2f41af77-87b9-4a17-ae1d-6ef179b48bdc', // enterprise-yearly
+        ],
+      });
+    } catch (error) {
+      console.error('Failed to start checkout:', error);
     }
   };
 
@@ -445,6 +509,24 @@ export function DashboardSidebar() {
                     <span className="font-sans">User Settings</span>
                   </DropdownMenuItem>
                 </UserSettings>
+                {!isLoadingPlan &&
+                  (currentPlan ? (
+                    <DropdownMenuItem disabled>
+                      <HugeiconsIcon
+                        className="mr-2 size-4"
+                        icon={CreditCardIcon}
+                      />
+                      <span className="font-sans">{currentPlan} Plan</span>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={handleUpgrade}>
+                      <HugeiconsIcon
+                        className="mr-2 size-4"
+                        icon={CreditCardIcon}
+                      />
+                      <span className="font-sans">Upgrade Plan</span>
+                    </DropdownMenuItem>
+                  ))}
                 <DropdownMenuItem onClick={handleBilling}>
                   <HugeiconsIcon
                     className="mr-2 size-4"
