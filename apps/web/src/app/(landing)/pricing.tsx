@@ -42,7 +42,7 @@ export function PricingTable({
   features,
   plans,
   onPlanSelect,
-  defaultPlan = 'pro',
+  defaultPlan = 'starter',
   defaultInterval = 'monthly',
   className,
   containerClassName,
