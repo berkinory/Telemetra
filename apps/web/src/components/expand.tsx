@@ -199,6 +199,7 @@ type ExpandCardProps = {
   };
 
   expandedIcon?: ReactNode;
+  expandedTitle?: string;
   expandedContent?: ReactNode;
   expandedBackground?: ReactNode;
 
@@ -218,6 +219,8 @@ type LocationMapProps = {
   location?: string;
   statusText?: string;
   coordinates?: string;
+  expandedTitle?: string;
+  expandedContent?: ReactNode;
   className?: string;
   isExpanded?: boolean;
   onToggle?: () => void;
@@ -229,6 +232,7 @@ export function ExpandCard({
   triggerSubtext,
   statusBadge,
   expandedIcon,
+  expandedTitle,
   expandedContent,
   expandedBackground,
   collapsedWidth = 240,
@@ -441,7 +445,7 @@ export function ExpandCard({
               className="font-medium text-foreground text-sm tracking-tight"
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
-              {triggerText}
+              {isExpanded && expandedTitle ? expandedTitle : triggerText}
             </motion.h3>
 
             <AnimatePresence>
@@ -479,19 +483,6 @@ export function ExpandCard({
           </div>
         </div>
       </motion.div>
-
-      <motion.p
-        animate={{
-          opacity: isHovered && !isExpanded ? 1 : 0,
-          y: isHovered ? 0 : 4,
-        }}
-        className="-bottom-6 absolute left-1/2 whitespace-nowrap text-[10px] text-muted-foreground"
-        initial={{ opacity: 0 }}
-        style={{ x: '-50%' }}
-        transition={{ duration: 0.2 }}
-      >
-        Click to expand
-      </motion.p>
     </motion.div>
   );
 }
@@ -500,6 +491,8 @@ export function LocationMap({
   location = 'San Francisco, CA',
   statusText = 'Live',
   coordinates = '37.7749° N, 122.4194° W',
+  expandedTitle,
+  expandedContent,
   className,
   isExpanded,
   onToggle,
@@ -507,6 +500,7 @@ export function LocationMap({
   return (
     <ExpandCard
       className={className}
+      expandedContent={expandedContent}
       expandedIcon={
         <svg
           className="drop-shadow-lg"
@@ -526,6 +520,7 @@ export function LocationMap({
           <circle className="fill-background" cx="12" cy="9" r="2.5" />
         </svg>
       }
+      expandedTitle={expandedTitle}
       iconGlowColor="rgba(52, 211, 153, 0.6)"
       isExpanded={isExpanded}
       onToggle={onToggle}

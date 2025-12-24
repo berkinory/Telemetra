@@ -44,13 +44,13 @@ const faqs = [
 export function FAQ() {
   return (
     <section
-      className="mx-auto w-full max-w-5xl px-4 py-8 lg:px-8 lg:py-12"
+      className="mx-auto w-full max-w-5xl px-4 py-12 lg:px-8 lg:py-16"
       id="faq"
     >
       <div className="space-y-8">
         <div className="text-center">
           <h2 className="mb-3 font-semibold text-lg text-muted-foreground uppercase">
-            Phase Analytics FAQ
+            Frequently Asked Questions
           </h2>
         </div>
         <Accordion className="w-full" collapsible type="single">

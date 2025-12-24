@@ -35,7 +35,7 @@ export default function HomePage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <div
-        className="mx-auto flex w-full max-w-5xl flex-1 items-center px-4 py-8 lg:px-8 lg:py-12"
+        className="mx-auto flex w-full max-w-5xl flex-1 items-center px-4 py-12 lg:px-8 lg:py-16"
         id="hero"
       >
         <div className="grid w-full items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -151,7 +151,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8">
+      <section className="mx-auto w-full max-w-5xl px-4 py-12 lg:px-8 lg:py-16">
         <div className="text-center">
           <p className="mb-6 font-medium text-lg text-muted-foreground uppercase tracking-wider">
             Built with industry-leading technologies
@@ -249,18 +249,20 @@ export default function HomePage() {
       </section>
 
       <section
-        className="mx-auto w-full max-w-5xl px-4 py-8 lg:px-8 lg:py-12"
+        className="mx-auto w-full max-w-5xl px-4 py-12 lg:px-8 lg:py-16"
         id="features"
       >
         <div className="space-y-8">
           <div className="text-center">
-            <h2 className="mb-3 font-semibold text-lg text-muted-foreground uppercase">
+            <h2 className="mb-1 font-semibold text-lg text-muted-foreground uppercase">
               Privacy-Focused Features
             </h2>
+            <p className="text-muted-foreground text-xs">Click to Expand</p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-6">
             <LocationMap
               coordinates="San Francisco, USA"
+              expandedTitle="See user's country and city informations."
               isExpanded={expandedCardId === 'geolocation'}
               location="Geolocation"
               onToggle={() => handleCardToggle('geolocation')}
@@ -287,6 +289,7 @@ export default function HomePage() {
                   />
                 </svg>
               }
+              expandedTitle="Track total, daily and current online users."
               iconGlowColor="rgba(59, 130, 246, 0.6)"
               isExpanded={expandedCardId === 'user-tracking'}
               onToggle={() => handleCardToggle('user-tracking')}
@@ -314,6 +317,7 @@ export default function HomePage() {
                   }}
                 />
               }
+              expandedTitle="Check daily sessions and average durations."
               iconGlowColor="rgba(251, 146, 60, 0.6)"
               isExpanded={expandedCardId === 'session-tracking'}
               onToggle={() => handleCardToggle('session-tracking')}
@@ -341,6 +345,7 @@ export default function HomePage() {
                   }}
                 />
               }
+              expandedTitle="Track and analyze all user interactions."
               iconGlowColor="rgba(168, 85, 247, 0.6)"
               isExpanded={expandedCardId === 'event-tracking'}
               onToggle={() => handleCardToggle('event-tracking')}
@@ -368,6 +373,7 @@ export default function HomePage() {
                   }}
                 />
               }
+              expandedTitle="See which screens users visit most."
               iconGlowColor="rgba(234, 179, 8, 0.6)"
               isExpanded={expandedCardId === 'screen-navigation'}
               onToggle={() => handleCardToggle('screen-navigation')}
@@ -395,6 +401,7 @@ export default function HomePage() {
                   }}
                 />
               }
+              expandedTitle="Watch user activity as it happens live."
               iconGlowColor="rgba(248, 113, 113, 0.6)"
               isExpanded={expandedCardId === 'realtime-screen'}
               onToggle={() => handleCardToggle('realtime-screen')}
@@ -419,9 +426,8 @@ export default function HomePage() {
         features={[
           { name: 'Unlimited Users', included: 'all' },
           { name: 'Unlimited Sessions', included: 'all' },
-          { name: 'Realtime Analytics', included: 'all' },
           { name: 'Geolocation', included: 'all' },
-          { name: 'Unlimited Team Seats', included: 'all' },
+          { name: 'Unlimited Seats', included: 'all' },
           {
             name: 'Data Retention',
             included: 'all',
