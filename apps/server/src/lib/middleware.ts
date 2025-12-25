@@ -136,6 +136,32 @@ export const authPlugin = new ElysiaClass({ name: 'auth' })
       );
     },
 
+    requireAdmin(enabled: boolean) {
+      if (!enabled) {
+        return;
+      }
+
+      onBeforeHandle(
+        ({ user, set }: { user: BetterAuthUser; set: { status: number } }) => {
+          if (!user) {
+            set.status = HttpStatus.UNAUTHORIZED;
+            return {
+              code: ErrorCode.UNAUTHORIZED,
+              detail: 'Authentication required',
+            };
+          }
+
+          if (user.id !== 'C28lEs9hf2vqiFyQDJ8JmPx4HQvQimGl') {
+            set.status = HttpStatus.FORBIDDEN;
+            return {
+              code: ErrorCode.FORBIDDEN,
+              detail: 'Admin access required',
+            };
+          }
+        }
+      );
+    },
+
     requireAppKey(enabled: boolean) {
       if (!enabled) {
         return;

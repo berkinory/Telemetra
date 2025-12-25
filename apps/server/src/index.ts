@@ -16,6 +16,7 @@ import {
 } from '@/lib/rate-limit';
 import { initSessionActivityBuffer } from '@/lib/session-activity-buffer';
 import { sseManager } from '@/lib/sse-manager';
+import { adminWebRouter } from '@/routes/admin';
 import { appWebRouter } from '@/routes/app';
 import { authRouter } from '@/routes/auth';
 import { batchSdkRouter } from '@/routes/batch';
@@ -125,6 +126,7 @@ const webRoutes = new Elysia({ prefix: '/web' })
       set
     );
   })
+  .use(adminWebRouter)
   .use(appWebRouter)
   .use(deviceWebRouter)
   .use(eventWebRouter)

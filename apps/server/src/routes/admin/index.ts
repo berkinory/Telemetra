@@ -1,0 +1,1 @@
+export { adminWebRouter } from './web';
