@@ -1,3 +1,4 @@
+export * from './admin';
 export * from './app';
 export * from './batch';
 export * from './common';

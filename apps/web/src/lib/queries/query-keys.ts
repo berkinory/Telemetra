@@ -76,4 +76,10 @@ export const queryKeys = {
     timeseries: (appId: string, params?: Record<string, unknown>) =>
       [...queryKeys.events.all, 'timeseries', appId, params] as const,
   },
+
+  admin: {
+    all: ['admin'] as const,
+    stats: () => [...queryKeys.admin.all, 'stats'] as const,
+    users: () => [...queryKeys.admin.all, 'users'] as const,
+  },
 } as const;
