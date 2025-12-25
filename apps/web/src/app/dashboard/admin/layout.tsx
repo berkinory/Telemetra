@@ -9,14 +9,18 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isAdmin = useIsAdmin();
+  const { isAdmin, isPending } = useIsAdmin();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!(isPending || isAdmin)) {
       router.replace('/dashboard');
     }
-  }, [isAdmin, router]);
+  }, [isAdmin, isPending, router]);
+
+  if (isPending) {
+    return null;
+  }
 
   if (!isAdmin) {
     return null;

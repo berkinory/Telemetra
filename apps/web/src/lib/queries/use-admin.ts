@@ -8,13 +8,18 @@ import { queryKeys } from './query-keys';
 const ADMIN_USER_ID = 'C28lEs9hf2vqiFyQDJ8JmPx4HQvQimGl';
 
 export function useIsAdmin() {
-  const { data: session } = useSession();
-  return session?.user?.id === ADMIN_USER_ID;
+  const { data: session, isPending } = useSession();
+
+  if (isPending) {
+    return { isAdmin: false, isPending: true };
+  }
+
+  return { isAdmin: session?.user?.id === ADMIN_USER_ID, isPending: false };
 }
 
 export function useAdminStats() {
   const { data: session } = useSession();
-  const isAdmin = useIsAdmin();
+  const { isAdmin } = useIsAdmin();
 
   return useQuery({
     queryKey: queryKeys.admin.stats(),
@@ -26,7 +31,7 @@ export function useAdminStats() {
 
 export function useAdminUsers() {
   const { data: session } = useSession();
-  const isAdmin = useIsAdmin();
+  const { isAdmin } = useIsAdmin();
 
   return useQuery({
     queryKey: queryKeys.admin.users(),
