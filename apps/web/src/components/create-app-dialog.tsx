@@ -7,17 +7,17 @@ import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
 import { GettingStartedDialog } from '@/components/getting-started-dialog';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { AutoHeight } from '@/components/ui/primitives/effects/auto-height';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { useCreateApp } from '@/lib/queries';
 
@@ -69,16 +69,16 @@ export function CreateAppDialog({ children, onSuccess }: CreateAppDialogProps) {
 
   return (
     <>
-      <Dialog onOpenChange={handleOpenChange} open={open}>
-        <DialogTrigger asChild>
+      <ResponsiveDialog onOpenChange={handleOpenChange} open={open}>
+        <ResponsiveDialogTrigger asChild>
           {children || (
             <Button type="button" variant="success">
               <HugeiconsIcon className="mr-2 size-4" icon={AddSquareIcon} />
               Create New
             </Button>
           )}
-        </DialogTrigger>
-        <DialogContent>
+        </ResponsiveDialogTrigger>
+        <ResponsiveDialogContent>
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -86,12 +86,14 @@ export function CreateAppDialog({ children, onSuccess }: CreateAppDialogProps) {
               form.handleSubmit();
             }}
           >
-            <DialogHeader>
-              <DialogTitle>Create New Application</DialogTitle>
-              <DialogDescription>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>
+                Create New Application
+              </ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>
                 Give your application a name to get started with analytics.
-              </DialogDescription>
-            </DialogHeader>
+              </ResponsiveDialogDescription>
+            </ResponsiveDialogHeader>
             <div className="py-4">
               <form.Subscribe selector={(state) => state.submissionAttempts}>
                 {(submissionAttempts) => (
@@ -162,7 +164,7 @@ export function CreateAppDialog({ children, onSuccess }: CreateAppDialogProps) {
                 )}
               </form.Subscribe>
             </div>
-            <DialogFooter>
+            <ResponsiveDialogFooter>
               <Button
                 disabled={createApp.isPending}
                 onClick={() => setOpen(false)}
@@ -199,10 +201,10 @@ export function CreateAppDialog({ children, onSuccess }: CreateAppDialogProps) {
                   </Button>
                 )}
               </form.Subscribe>
-            </DialogFooter>
+            </ResponsiveDialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
       <GettingStartedDialog
         onOpenChange={handleGettingStartedClose}
         open={gettingStartedOpen}

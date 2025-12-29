@@ -5,14 +5,14 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { useDeleteDevice } from '@/lib/queries';
 
@@ -52,30 +52,30 @@ export function DeviceBanDialog({
   };
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog onOpenChange={handleOpenChange} open={open}>
+      <ResponsiveDialogTrigger asChild>
         {children || (
           <Button type="button" variant="destructive">
             <HugeiconsIcon className="size-4" icon={UserBlock01Icon} />
             Ban User
           </Button>
         )}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Ban User</DialogTitle>
-          <DialogDescription>
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Ban User</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             This action cannot be undone. This will permanently ban this user
             and delete all associated sessions and data. The user will no longer
             be able to send data to your application.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         {deleteDevice.error && (
           <p className="text-destructive text-sm">
             {deleteDevice.error.message || 'Failed to ban user'}
           </p>
         )}
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           <Button
             disabled={deleteDevice.isPending}
             onClick={() => setOpen(false)}
@@ -98,8 +98,8 @@ export function DeviceBanDialog({
               Ban User
             </span>
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

@@ -5,14 +5,14 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { useRemoveTeamMember } from '@/lib/queries';
 
@@ -51,8 +51,8 @@ export function RemoveMemberDialog({
   };
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog onOpenChange={handleOpenChange} open={open}>
+      <ResponsiveDialogTrigger asChild>
         {children || (
           <Button
             className="w-full sm:w-auto"
@@ -64,17 +64,17 @@ export function RemoveMemberDialog({
             Remove
           </Button>
         )}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Remove Team Member</DialogTitle>
-          <DialogDescription>
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Remove Team Member</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Are you sure you want to remove{' '}
             <span className="font-semibold text-foreground">{email}</span> from
             the team? This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogFooter>
           <Button
             disabled={removeMember.isPending}
             onClick={() => setOpen(false)}
@@ -97,8 +97,8 @@ export function RemoveMemberDialog({
               Remove Member
             </span>
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

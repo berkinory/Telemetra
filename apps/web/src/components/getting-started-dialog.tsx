@@ -10,12 +10,12 @@ import Link from 'next/link';
 import type { ComponentProps } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 
 type GettingStartedDialogProps = {
   open: boolean;
@@ -60,14 +60,16 @@ export function GettingStartedDialog({
   onOpenChange,
 }: GettingStartedDialogProps) {
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Getting Started with Phase</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog onOpenChange={onOpenChange} open={open}>
+      <ResponsiveDialogContent className="max-w-2xl">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
+            Getting Started with Phase
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Choose your platform to start tracking analytics in your application
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <div className="space-y-3 py-4">
           <PlatformLink
             description="Add Phase to your Expo application"
@@ -93,7 +95,7 @@ export function GettingStartedDialog({
             Close
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

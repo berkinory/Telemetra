@@ -5,17 +5,17 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { AutoHeight } from '@/components/ui/primitives/effects/auto-height';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { useAddTeamMember } from '@/lib/queries';
 
@@ -56,16 +56,16 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
   };
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog onOpenChange={handleOpenChange} open={open}>
+      <ResponsiveDialogTrigger asChild>
         {children || (
           <Button type="button" variant="default">
             <HugeiconsIcon className="mr-2 size-4" icon={UserAdd01Icon} />
             Add Member
           </Button>
         )}
-      </DialogTrigger>
-      <DialogContent>
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -73,13 +73,13 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
             form.handleSubmit();
           }}
         >
-          <DialogHeader>
-            <DialogTitle>Add Team Member</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>Add Team Member</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               Enter the email address of the user you want to add to your team.
               They must have a Phase account.
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="space-y-4 py-4">
             <form.Subscribe selector={(state) => state.submissionAttempts}>
               {(submissionAttempts) => (
@@ -147,7 +147,7 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
               )}
             </form.Subscribe>
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button
               disabled={addMember.isPending}
               onClick={() => setOpen(false)}
@@ -184,9 +184,9 @@ export function AddMemberDialog({ appId, children }: AddMemberDialogProps) {
                 </Button>
               )}
             </form.Subscribe>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

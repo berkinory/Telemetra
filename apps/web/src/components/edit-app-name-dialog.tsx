@@ -6,17 +6,17 @@ import { APP_NAME } from '@phase/shared/constants/validation';
 import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { AutoHeight } from '@/components/ui/primitives/effects/auto-height';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { useRenameApp } from '@/lib/queries';
 
@@ -64,16 +64,16 @@ export function EditAppNameDialog({
   };
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger asChild disabled={disabled}>
+    <ResponsiveDialog onOpenChange={handleOpenChange} open={open}>
+      <ResponsiveDialogTrigger asChild disabled={disabled}>
         {children || (
           <Button disabled={disabled} size="sm" type="button" variant="outline">
             <HugeiconsIcon className="mr-1.5 size-3" icon={PencilEdit02Icon} />
             Edit
           </Button>
         )}
-      </DialogTrigger>
-      <DialogContent>
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -81,13 +81,13 @@ export function EditAppNameDialog({
             form.handleSubmit();
           }}
         >
-          <DialogHeader>
-            <DialogTitle>Edit Application Name</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>Edit Application Name</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               Change the name of your application. This will be visible to all
               team members.
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="py-4">
             <form.Subscribe selector={(state) => state.submissionAttempts}>
               {(submissionAttempts) => (
@@ -165,7 +165,7 @@ export function EditAppNameDialog({
               )}
             </form.Subscribe>
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button
               disabled={renameApp.isPending}
               onClick={() => setOpen(false)}
@@ -202,9 +202,9 @@ export function EditAppNameDialog({
                 </Button>
               )}
             </form.Subscribe>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

@@ -6,17 +6,17 @@ import { useForm } from '@tanstack/react-form';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { AutoHeight } from '@/components/ui/primitives/effects/auto-height';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { forgotPassword } from '@/lib/auth';
 
@@ -63,15 +63,15 @@ export function PasswordResetDialog({ children }: PasswordResetDialogProps) {
   };
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog onOpenChange={handleOpenChange} open={open}>
+      <ResponsiveDialogTrigger asChild>
         {children || (
           <Button type="button" variant="link">
             Forgot password?
           </Button>
         )}
-      </DialogTrigger>
-      <DialogContent>
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -79,13 +79,13 @@ export function PasswordResetDialog({ children }: PasswordResetDialogProps) {
             form.handleSubmit();
           }}
         >
-          <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>Reset Password</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               Enter your email address and we'll send you a link to reset your
               password.
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="py-4">
             {successMessage ? (
               <div className="flex items-start gap-3 rounded-md border border-green-200 bg-green-50 p-4 text-success dark:border-green-800 dark:bg-green-950">
@@ -160,7 +160,7 @@ export function PasswordResetDialog({ children }: PasswordResetDialogProps) {
               </form.Subscribe>
             )}
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             {successMessage ? (
               <Button onClick={() => setOpen(false)} type="button">
                 Close
@@ -209,9 +209,9 @@ export function PasswordResetDialog({ children }: PasswordResetDialogProps) {
                 </form.Subscribe>
               </>
             )}
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

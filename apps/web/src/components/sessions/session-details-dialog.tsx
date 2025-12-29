@@ -20,11 +20,11 @@ import { ClientDate, ClientDuration } from '@/components/client-date';
 import { EventsSheet } from '@/components/events/event-details-sheet';
 import { CopyButton } from '@/components/ui/copy-button';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getGeneratedName, UserAvatar } from '@/components/user-profile';
 import { buildQueryString, fetchApi } from '@/lib/api/client';
@@ -134,10 +134,10 @@ export function SessionDetailsDialog({
   const sessionActive = isSessionActive();
 
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="flex max-h-[85vh] max-w-[95vw] flex-col p-0 sm:max-w-2xl lg:max-w-3xl">
-        <DialogHeader className="border-b px-4 pt-4 pb-3 text-left sm:px-6 sm:pt-6 sm:pb-4">
-          <DialogTitle>Session Details</DialogTitle>
+    <ResponsiveDialog onOpenChange={onOpenChange} open={open}>
+      <ResponsiveDialogContent className="flex max-h-[85vh] max-w-[95vw] flex-col p-0 sm:max-w-2xl lg:max-w-3xl">
+        <ResponsiveDialogHeader className="border-b px-4 pt-4 pb-3 text-left sm:px-6 sm:pt-6 sm:pb-4">
+          <ResponsiveDialogTitle>Session Details</ResponsiveDialogTitle>
           <div className="space-y-3 pt-3 sm:pt-4">
             <div className="space-y-2">
               <p className="text-muted-foreground text-xs uppercase">User</p>
@@ -211,7 +211,7 @@ export function SessionDetailsDialog({
               </div>
             </div>
           </div>
-        </DialogHeader>
+        </ResponsiveDialogHeader>
 
         <div className="flex-1 overflow-y-auto px-4 pb-4 sm:px-6">
           {isLoading && (
@@ -320,8 +320,8 @@ export function SessionDetailsDialog({
             </div>
           )}
         </div>
-      </DialogContent>
+      </ResponsiveDialogContent>
       <EventsSheet appId={appId} />
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

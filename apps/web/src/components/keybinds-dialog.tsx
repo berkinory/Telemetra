@@ -4,15 +4,15 @@ import { KeyboardIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getModifierKey } from '@/lib/platform';
 
@@ -59,20 +59,20 @@ export function KeybindsDialog() {
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <ResponsiveDialog>
+      <ResponsiveDialogTrigger asChild>
         <Button className="hidden md:inline-flex" size="icon" variant="ghost">
           <HugeiconsIcon className="size-4" icon={KeyboardIcon} />
           <span className="sr-only">Keyboard shortcuts</span>
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Keyboard Shortcuts</DialogTitle>
-          <DialogDescription>
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent className="sm:max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Keyboard Shortcuts</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             View all available keyboard shortcuts for faster navigation.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <ScrollArea className="max-h-[400px] py-4">
           <div className="space-y-2 pr-4">
             {keybinds.map((keybind) => (
@@ -90,7 +90,7 @@ export function KeybindsDialog() {
             ))}
           </div>
         </ScrollArea>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

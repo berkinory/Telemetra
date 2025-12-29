@@ -7,14 +7,14 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Blur } from '@/components/ui/blur';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { getModifierKey } from '@/lib/platform';
 import { cn } from '@/lib/utils';
 
@@ -171,11 +171,14 @@ export function CommandMenu({ open, onOpenChange, items }: CommandMenuProps) {
   }, [open, filteredItems, selectedIndex, handleSelect]);
 
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="gap-0 p-0 sm:max-w-md" showCloseButton={false}>
-        <DialogHeader className="sr-only">
-          <DialogTitle>Command Menu</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog onOpenChange={onOpenChange} open={open}>
+      <ResponsiveDialogContent
+        className="gap-0 p-0 sm:max-w-md"
+        showCloseButton={false}
+      >
+        <ResponsiveDialogHeader className="sr-only">
+          <ResponsiveDialogTitle>Command Menu</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         <Input
           className="h-auto rounded-none border-none bg-transparent px-4 py-3 shadow-none focus-within:ring-0 [&_input]:px-0 [&_input]:py-0 [&_span]:left-4"
           maxLength={24}
@@ -237,8 +240,8 @@ export function CommandMenu({ open, onOpenChange, items }: CommandMenuProps) {
             </span>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
 

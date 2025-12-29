@@ -6,17 +6,17 @@ import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/ui/copy-button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { AutoHeight } from '@/components/ui/primitives/effects/auto-height';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { useDeleteApp } from '@/lib/queries';
 
@@ -60,16 +60,16 @@ export function DeleteAppDialog({
   };
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog onOpenChange={handleOpenChange} open={open}>
+      <ResponsiveDialogTrigger asChild>
         {children || (
           <Button type="button" variant="destructive">
             <HugeiconsIcon className="mr-2 size-4" icon={Delete02Icon} />
             Delete Application
           </Button>
         )}
-      </DialogTrigger>
-      <DialogContent>
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -77,14 +77,14 @@ export function DeleteAppDialog({
             form.handleSubmit();
           }}
         >
-          <DialogHeader>
-            <DialogTitle>Delete Application</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>Delete Application</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               This action cannot be undone. This will permanently delete the{' '}
               <span className="font-semibold text-foreground">{appName}</span>{' '}
               application and remove all associated data.
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="pt-4 pb-2">
             <form.Subscribe selector={(state) => state.submissionAttempts}>
               {(submissionAttempts) => (
@@ -154,7 +154,7 @@ export function DeleteAppDialog({
               )}
             </form.Subscribe>
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button
               disabled={deleteApp.isPending}
               onClick={() => setOpen(false)}
@@ -192,9 +192,9 @@ export function DeleteAppDialog({
                 </Button>
               )}
             </form.Subscribe>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

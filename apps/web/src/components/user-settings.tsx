@@ -3,12 +3,12 @@
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { useTimezoneStore } from '@/stores/timezone-store';
 
 function getTimezoneOffset(timezone: string): string {
@@ -141,12 +141,12 @@ export function UserSettings({ children }: UserSettingsProps) {
   const currentTimezoneLabel = getTimezoneLabel(timezone);
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader className="sr-only">
-          <DialogTitle>Time & Date Settings</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog>
+      <ResponsiveDialogTrigger asChild>{children}</ResponsiveDialogTrigger>
+      <ResponsiveDialogContent className="sm:max-w-[500px]">
+        <ResponsiveDialogHeader className="sr-only">
+          <ResponsiveDialogTitle>Time & Date Settings</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         <div className="space-y-6 py-2">
           <div className="space-y-4">
             <div className="space-y-3">
@@ -293,7 +293,7 @@ export function UserSettings({ children }: UserSettingsProps) {
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

@@ -5,14 +5,14 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { useRotateAppKey } from '@/lib/queries';
 
@@ -41,23 +41,23 @@ export function RotateKeyDialog({ appId, children }: RotateKeyDialogProps) {
   };
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog onOpenChange={handleOpenChange} open={open}>
+      <ResponsiveDialogTrigger asChild>
         {children || (
           <Button type="button" variant="outline">
             <HugeiconsIcon className="mr-2 size-4" icon={Loading02Icon} />
             Rotate Key
           </Button>
         )}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Rotate API Key</DialogTitle>
-          <DialogDescription>
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Rotate API Key</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             This will generate a new API key and invalidate the current one.
             Make sure to update your applications with the new key.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4">
           <p className="font-medium text-sm">Warning</p>
           <p className="text-muted-foreground text-sm">
@@ -65,7 +65,7 @@ export function RotateKeyDialog({ appId, children }: RotateKeyDialogProps) {
             after rotation.
           </p>
         </div>
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           <Button
             disabled={rotateKey.isPending}
             onClick={() => setOpen(false)}
@@ -88,8 +88,8 @@ export function RotateKeyDialog({ appId, children }: RotateKeyDialogProps) {
               Rotate Key
             </span>
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
