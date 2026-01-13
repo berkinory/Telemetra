@@ -439,12 +439,16 @@ export default function HomePage() {
             {
               name: 'Event Tracking',
               included: 'all',
-              values: { free: '150K/mo', starter: '5M/mo', pro: '25M/mo' },
+              values: { free: '100K/mo', starter: '1M/mo', pro: '5M/mo' },
             },
             {
               name: 'Support',
               included: 'all',
-              values: { free: 'Email', starter: 'Email', pro: 'Custom' },
+              values: {
+                free: 'Email',
+                starter: 'Priority Support',
+                pro: 'Custom',
+              },
             },
           ]}
           plans={[
@@ -456,13 +460,13 @@ export default function HomePage() {
             {
               name: 'Starter',
               level: 'starter',
-              price: { monthly: 20, yearly: 200 },
+              price: { monthly: 17, yearly: 170 },
               popular: true,
             },
             {
               name: 'Enterprise',
               level: 'pro',
-              price: { monthly: 50, yearly: 500 },
+              price: { monthly: 45, yearly: 450 },
             },
           ]}
         />
