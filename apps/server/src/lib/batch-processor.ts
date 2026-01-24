@@ -701,10 +701,9 @@ async function processPings(
         continue;
       }
 
-      // Additional check: Reject pings that are too far in the future relative to session start
       const timeSinceSessionStart =
         clientTimestamp.getTime() - sessionData.session.startedAt.getTime();
-      const MAX_SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+      const MAX_SESSION_DURATION = 24 * 60 * 60 * 1000;
       if (timeSinceSessionStart > MAX_SESSION_DURATION) {
         errors.push({
           clientOrder,

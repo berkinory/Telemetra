@@ -74,7 +74,7 @@ export const eventSdkRouter = new Elysia({ prefix: '/events' })
 
         const timeSinceSessionStart =
           clientTimestamp.getTime() - session.startedAt.getTime();
-        const MAX_SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+        const MAX_SESSION_DURATION = 24 * 60 * 60 * 1000;
         if (timeSinceSessionStart > MAX_SESSION_DURATION) {
           set.status = HttpStatus.BAD_REQUEST;
           return {
