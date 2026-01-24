@@ -12,7 +12,7 @@ export const VALIDATION = {
   EVENT_NAME: {
     MIN_LENGTH: 1,
     MAX_LENGTH: 256,
-    PATTERN: /^[\w./-]+$/,
+    PATTERN: /^[\w./ -]+$/,
   },
   EVENT_PARAMS: {
     MAX_SIZE: 50_000,
