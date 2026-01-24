@@ -50,7 +50,7 @@ function getCountryLabel(countryCode: string) {
 export function UsersDistributionCard() {
   const [appId] = useQueryState('app', parseAsString);
   const [activeTab, setActiveTab] = useState<'platform' | 'country' | 'city'>(
-    'platform'
+    'country'
   );
   const { data: overview } = useDeviceOverviewResponse(appId || '');
 
@@ -109,12 +109,6 @@ export function UsersDistributionCard() {
           <TabsList className="h-8">
             <TabsTrigger
               className="text-muted-foreground text-xs uppercase"
-              value="platform"
-            >
-              <span>Platforms</span>
-            </TabsTrigger>
-            <TabsTrigger
-              className="text-muted-foreground text-xs uppercase"
               value="country"
             >
               <span>Countries</span>
@@ -125,6 +119,12 @@ export function UsersDistributionCard() {
             >
               <span>Cities</span>
             </TabsTrigger>
+            <TabsTrigger
+              className="text-muted-foreground text-xs uppercase"
+              value="platform"
+            >
+              <span>Platforms</span>
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -132,44 +132,6 @@ export function UsersDistributionCard() {
 
         <ScrollArea className="h-[220px]">
           <div className="space-y-3 pr-4">
-            {activeTab === 'platform' &&
-              sortedPlatforms.map((platform) => {
-                const countNum = platformStats[platform] || 0;
-                const percentage = totalDevices
-                  ? (countNum / totalDevices) * 100
-                  : 0;
-
-                return (
-                  <div className="space-y-1.5" key={platform}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <HugeiconsIcon
-                          className="size-4 text-muted-foreground"
-                          icon={getPlatformIcon(platform)}
-                        />
-                        <span className="font-medium text-sm">
-                          {getPlatformLabel(platform)}
-                        </span>
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-semibold text-sm">
-                          {countNum.toLocaleString()}
-                        </span>
-                        <span className="text-muted-foreground text-xs">
-                          ({percentage.toFixed(1)}%)
-                        </span>
-                      </div>
-                    </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                      <div
-                        className="h-full bg-primary transition-all"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-
             {activeTab === 'country' &&
               sortedCountries.length > 0 &&
               sortedCountries.map(([country, count]) => {
@@ -299,6 +261,44 @@ export function UsersDistributionCard() {
                 </p>
               </div>
             )}
+
+            {activeTab === 'platform' &&
+              sortedPlatforms.map((platform) => {
+                const countNum = platformStats[platform] || 0;
+                const percentage = totalDevices
+                  ? (countNum / totalDevices) * 100
+                  : 0;
+
+                return (
+                  <div className="space-y-1.5" key={platform}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <HugeiconsIcon
+                          className="size-4 text-muted-foreground"
+                          icon={getPlatformIcon(platform)}
+                        />
+                        <span className="font-medium text-sm">
+                          {getPlatformLabel(platform)}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-semibold text-sm">
+                          {countNum.toLocaleString()}
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          ({percentage.toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className="h-full bg-primary transition-all"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </ScrollArea>
       </CardContent>

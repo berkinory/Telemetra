@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePaginationStore } from '@/stores/pagination-store';
 
 export function UsersOverviewCardsSkeleton() {
@@ -61,7 +62,28 @@ export function UsersDistributionCardSkeleton() {
   return (
     <Card className="py-0">
       <CardContent className="space-y-4 p-4">
-        <Skeleton className="h-8 w-56" />
+        <Tabs value="country">
+          <TabsList className="h-8">
+            <TabsTrigger
+              className="text-muted-foreground text-xs uppercase"
+              value="country"
+            >
+              <span>Countries</span>
+            </TabsTrigger>
+            <TabsTrigger
+              className="text-muted-foreground text-xs uppercase"
+              value="city"
+            >
+              <span>Cities</span>
+            </TabsTrigger>
+            <TabsTrigger
+              className="text-muted-foreground text-xs uppercase"
+              value="platform"
+            >
+              <span>Platforms</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
         <Skeleton className="h-5 w-48" />
         <div className="h-[220px] space-y-3">
           {Array.from({ length: 4 }, (_, i) => `skeleton-dist-${i}`).map(
