@@ -6,7 +6,7 @@ import {
   Loading03Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { format } from 'date-fns';
+import { format, subDays, subMonths, subYears } from 'date-fns';
 import { useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
@@ -24,6 +24,13 @@ type ExportButtonProps<T> = {
   fetchData: (startDate: string, endDate: string) => Promise<T>;
   disabled?: boolean;
 };
+
+const DATE_PRESETS = [
+  { label: '7 Days', getValue: () => subDays(new Date(), 7) },
+  { label: '1 Month', getValue: () => subMonths(new Date(), 1) },
+  { label: '6 Months', getValue: () => subMonths(new Date(), 6) },
+  { label: '1 Year', getValue: () => subYears(new Date(), 1) },
+] as const;
 
 function normalizeStartOfDay(date: Date): string {
   const normalized = new Date(date);
@@ -63,7 +70,7 @@ export function ExportButton<T>({
       const rangeLabel = `${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`;
       const filename = getExportFileName(filePrefix, rangeLabel);
       downloadJson(data, filename);
-      toast.success('Export downloaded successfully');
+      toast.success('Data downloaded successfully');
       setIsOpen(false);
     } catch {
       toast.error('Failed to export data');
@@ -82,7 +89,7 @@ export function ExportButton<T>({
     if (hasDateRange && dateRange.from && dateRange.to) {
       return `${format(dateRange.from, 'MMM dd')} - ${format(dateRange.to, 'MMM dd')}`;
     }
-    return 'Export';
+    return 'Export Data';
   };
 
   return (
@@ -111,9 +118,22 @@ export function ExportButton<T>({
             className="size-4 text-muted-foreground"
             icon={Calendar04Icon}
           />
-          <span className="font-medium text-sm">
-            Select date range to export
-          </span>
+          <span className="font-medium text-sm">Select date range</span>
+        </div>
+        <div className="flex gap-1 border-b p-2">
+          {DATE_PRESETS.map((preset) => (
+            <Button
+              key={preset.label}
+              onClick={() =>
+                setDateRange({ from: preset.getValue(), to: new Date() })
+              }
+              size="sm"
+              type="button"
+              variant="ghost"
+            >
+              {preset.label}
+            </Button>
+          ))}
         </div>
         <Calendar
           className="rounded-lg"

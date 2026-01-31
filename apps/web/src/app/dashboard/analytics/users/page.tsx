@@ -38,10 +38,11 @@ type UsersExportData = {
     cities: Record<string, { count: number; country: string }>;
     platforms: Record<string, number>;
   };
-  timeseries: {
-    totalUsers: Array<{ date: string; value: number }>;
-    dailyActiveUsers: Array<{ date: string; value: number }>;
-  };
+  timeseries: Array<{
+    date: string;
+    totalUsers: number;
+    dailyActiveUsers: number;
+  }>;
 };
 
 function UsersExportButton() {
@@ -100,6 +101,10 @@ function UsersExportButton() {
         }),
       ]);
 
+      const dauByDate = new Map(
+        dauTimeseries.data.map((point) => [point.date, point.activeUsers ?? 0])
+      );
+
       return {
         exportedAt: new Date().toISOString(),
         period: {
@@ -116,16 +121,11 @@ function UsersExportButton() {
             ).cityStats ?? {},
           platforms: overview.platformStats,
         },
-        timeseries: {
-          totalUsers: totalTimeseries.data.map((point) => ({
-            date: point.date,
-            value: point.totalUsers ?? 0,
-          })),
-          dailyActiveUsers: dauTimeseries.data.map((point) => ({
-            date: point.date,
-            value: point.activeUsers ?? 0,
-          })),
-        },
+        timeseries: totalTimeseries.data.map((point) => ({
+          date: point.date,
+          totalUsers: point.totalUsers ?? 0,
+          dailyActiveUsers: dauByDate.get(point.date) ?? 0,
+        })),
       };
     },
     [appId]
