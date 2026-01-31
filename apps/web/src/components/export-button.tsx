@@ -120,7 +120,7 @@ export function ExportButton<T>({
           />
           <span className="font-medium text-sm">Select date range</span>
         </div>
-        <div className="flex gap-1 border-b p-2">
+        <div className="grid grid-cols-2 gap-1 border-b p-2">
           {DATE_PRESETS.map((preset) => (
             <Button
               key={preset.label}
